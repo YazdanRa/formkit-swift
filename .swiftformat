@@ -1,0 +1,3 @@
+--swiftversion 6.3
+--exclude .build
+--disable andOperator,blankLinesAtEndOfScope,hoistPatternLet,hoistTry,indent,redundantClosure,redundantFileprivate,redundantReturn,redundantSelf,redundantSendable,redundantThrows,sortImports,spaceAroundOperators,trailingCommas,typeSugar,unusedArguments,wrapArguments,wrapPropertyBodies

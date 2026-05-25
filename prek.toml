@@ -1,0 +1,43 @@
+default_install_hook_types = [
+    "pre-commit",
+    "commit-msg",
+    "pre-push"
+]
+default_stages = ["pre-commit"]
+
+[[repos]]
+repo = "meta"
+hooks = [
+    { id = "check-hooks-apply" },
+    { id = "check-useless-excludes" }
+]
+
+[[repos]]
+repo = "https://github.com/commitizen-tools/commitizen"
+rev = "v4.13.10"
+hooks = [
+    { id = "commitizen" }
+]
+
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+hooks = [
+    { id = "check-vcs-permalinks" },
+    { id = "end-of-file-fixer" },
+    { id = "trailing-whitespace", args = ["--markdown-linebreak-ext=md"] },
+    { id = "check-merge-conflict" },
+    { id = "check-toml" },
+    { id = "check-yaml" },
+    { id = "check-json" },
+    { id = "check-shebang-scripts-are-executable" },
+    { id = "check-added-large-files" },
+    { id = "detect-private-key" },
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+    { id = "swiftlint", name = "SwiftLint", entry = "swiftlint --quiet --force-exclude", language = "system", types = ["swift"] },
+    { id = "swiftformat", name = "SwiftFormat", entry = "swiftformat --swift-version 6.3", language = "system", types = ["swift"] }
+]
