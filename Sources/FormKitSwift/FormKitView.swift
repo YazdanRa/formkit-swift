@@ -4,12 +4,28 @@ struct FormKitOwnedSessionConfiguration: Equatable {
     let schemaJSON: String
     let instanceJSON: String?
     let defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior
+    let conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]
     let validationBehavior: FormKitValidationBehavior
+
+    init(
+        schemaJSON: String,
+        instanceJSON: String?,
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior] = [:],
+        validationBehavior: FormKitValidationBehavior
+    ) {
+        self.schemaJSON = schemaJSON
+        self.instanceJSON = instanceJSON
+        self.defaultConditionalRenderBehavior = defaultConditionalRenderBehavior
+        self.conditionalRenderBehaviorOverrides = conditionalRenderBehaviorOverrides
+        self.validationBehavior = validationBehavior
+    }
 
     @MainActor
     func makeSession() -> FormKitSession {
         FormKitRenderer(
-            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior
+            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
+            conditionalRenderBehaviorOverrides: conditionalRenderBehaviorOverrides
         ).makeFormSession(
             schemaJSON: schemaJSON,
             instanceJSON: instanceJSON,
@@ -40,6 +56,7 @@ public struct FormKitView: View {
             schemaJSON: schemaJSON,
             instanceJSON: instanceJSON,
             defaultConditionalRenderBehavior: options.defaultConditionalRenderBehavior,
+            conditionalRenderBehaviorOverrides: options.conditionalRenderBehaviorOverrides,
             validationBehavior: options.validationBehavior
         )
 

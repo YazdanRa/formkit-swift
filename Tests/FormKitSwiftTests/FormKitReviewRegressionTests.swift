@@ -22,6 +22,31 @@ final class FormKitReviewRegressionTests: XCTestCase {
         XCTAssertEqual(secondConfiguration.makeSession().renderPlan.title, "Second")
     }
 
+    func testOwnedSessionConfigurationRebuildsWhenRenderBehaviorOverridesChange() throws {
+        let baseConfiguration = FormKitOwnedSessionConfiguration(
+            schemaJSON: Self.conditionalSchema,
+            instanceJSON: nil,
+            defaultConditionalRenderBehavior: .hide,
+            validationBehavior: .revalidateAfterFirstAttempt
+        )
+        let overrideConfiguration = FormKitOwnedSessionConfiguration(
+            schemaJSON: Self.conditionalSchema,
+            instanceJSON: nil,
+            defaultConditionalRenderBehavior: .hide,
+            conditionalRenderBehaviorOverrides: ["#/advancedNotes": .ignore],
+            validationBehavior: .revalidateAfterFirstAttempt
+        )
+
+        XCTAssertNotEqual(baseConfiguration, overrideConfiguration)
+        XCTAssertNil(field(named: "advancedNotes", in: baseConfiguration.makeSession()))
+
+        let advancedNotesField = try XCTUnwrap(
+            field(named: "advancedNotes", in: overrideConfiguration.makeSession())
+        )
+        XCTAssertTrue(advancedNotesField.isConditionallyInactive)
+        XCTAssertTrue(advancedNotesField.shouldSerialize)
+    }
+
     func testToolClearRemovesBooleanValues() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
@@ -94,6 +119,43 @@ final class FormKitReviewRegressionTests: XCTestCase {
           }
         }
         """
+    }
+
+    private static let conditionalSchema =
+        """
+        {
+          "title": "Conditional Notes",
+          "type": "object",
+          "properties": {
+            "mode": {
+              "title": "Mode",
+              "enum": ["basic", "advanced"],
+              "default": "basic"
+            }
+          },
+          "required": ["mode"],
+          "if": {
+            "properties": {
+              "mode": { "const": "advanced" }
+            },
+            "required": ["mode"]
+          },
+          "then": {
+            "properties": {
+              "advancedNotes": {
+                "type": "string",
+                "title": "Advanced Notes"
+              }
+            }
+          }
+        }
+        """
+
+    private func field(
+        named propertyKey: String,
+        in session: FormKitSession
+    ) -> FormKitFieldDescriptor? {
+        session.renderPlan.fields.first(where: { $0.propertyKey == propertyKey })
     }
 
     private static func decodeJSONObject(_ json: String) throws -> [String: Any] {

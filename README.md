@@ -57,9 +57,13 @@ Use a controlled `FormKitSession` when the host app needs validation, current JS
 
 ## Customization
 
-`FormKitOptions` controls editing mode, validation behavior, conditional rendering behavior, labels, colors, field state, and component overrides:
+`FormKitOptions` controls editing mode, validation behavior, render-engine conditional behavior, labels, colors, field state, and component overrides. Keep JSON Schemas pure; use `conditionalRenderBehaviorOverrides` for per-pointer render exceptions when building the session:
 
 ```swift
+let session = FormKitRenderer(
+    conditionalRenderBehaviorOverrides: ["#/advancedNotes": .ignore]
+).makeFormSession(schemaJSON: schemaJSON, instanceJSON: instanceJSON)
+
 FormKitView(
     session: session,
     options: FormKitOptions(
@@ -71,6 +75,8 @@ FormKitView(
     )
 )
 ```
+
+If the view owns the session, pass the same override map through `FormKitOptions`. Override keys may use concrete rendered JSON Pointers such as `#/advancedNotes` or a `*` segment for repeated array rows, such as `#/entries/*/notes`.
 
 For deeper customization, set `FormKitOptions.components.field` or `sectionHeader` and render with package-owned context types. Future package-native components can be added behind these same options without leaking host app models.
 

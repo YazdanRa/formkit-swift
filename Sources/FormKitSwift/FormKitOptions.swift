@@ -4,6 +4,7 @@ public struct FormKitOptions {
     public var mode: FormKitMode
     public var validationBehavior: FormKitValidationBehavior
     public var defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior
+    public var conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]
     public var style: FormKitStyle
     public var labels: FormKitLabels
     public var fieldState: @MainActor (FormKitFieldDescriptor) -> FormKitFieldVisualState
@@ -13,6 +14,7 @@ public struct FormKitOptions {
         mode: FormKitMode = .editable,
         validationBehavior: FormKitValidationBehavior = .revalidateAfterFirstAttempt,
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior = .hide,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior] = [:],
         style: FormKitStyle = .init(),
         labels: FormKitLabels = .init(),
         fieldState: @escaping @MainActor (FormKitFieldDescriptor) -> FormKitFieldVisualState = { _ in .normal },
@@ -21,6 +23,7 @@ public struct FormKitOptions {
         self.mode = mode
         self.validationBehavior = validationBehavior
         self.defaultConditionalRenderBehavior = defaultConditionalRenderBehavior
+        self.conditionalRenderBehaviorOverrides = conditionalRenderBehaviorOverrides
         self.style = style
         self.labels = labels
         self.fieldState = fieldState
