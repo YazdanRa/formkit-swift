@@ -522,6 +522,58 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(jsonObject["priority"] as? String, "Standard")
     }
 
+    func testBlankTextSerializesAsNullOnlyWhenNullable() throws {
+        let session = FormKitRenderer().makeFormSession(schemaJSON: supportedSchema, instanceJSON: nil)
+        let websiteField = tryUnwrapField("website", in: session)
+        let emailField = tryUnwrapField("email", in: session)
+
+        var jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        var contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
+        XCTAssertTrue(contact["website"] is NSNull)
+
+        session.setStringValue("", for: websiteField)
+        session.setStringValue("", for: emailField)
+
+        jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
+        XCTAssertTrue(contact["website"] is NSNull)
+        XCTAssertEqual(contact["email"] as? String, "")
+
+        let optionalSession = FormKitRenderer().makeFormSession(
+            schemaJSON: #"{"type":"object","properties":{"note":{"type":"string"}}}"#,
+            instanceJSON: nil
+        )
+        optionalSession.setStringValue("", for: tryUnwrapField("note", in: optionalSession))
+        let optionalObject = try decodeJSONObject(optionalSession.currentInstanceJSON)
+        XCTAssertEqual(optionalObject["note"] as? String, "")
+    }
+
+    func testEnumConstraintDeterminesEffectiveNullability() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "concrete": {
+                  "type": ["string", "null"],
+                  "enum": ["A"]
+                },
+                "nullable": {
+                  "type": ["string", "null"],
+                  "enum": ["A", null]
+                }
+              }
+            }
+            """
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let concreteField = tryUnwrapField("concrete", in: session)
+        let nullableField = tryUnwrapField("nullable", in: session)
+
+        XCTAssertFalse(concreteField.allowsNull)
+        XCTAssertTrue(nullableField.allowsNull)
+        XCTAssertEqual(nullableField.enumOptions.map(\.value), [.string("A"), .null])
+    }
+
     func testStaticFieldEditDoesNotPublishRenderPlanWhenPlanIsUnchanged() throws {
         let session = FormKitRenderer().makeFormSession(schemaJSON: supportedSchema, instanceJSON: nil)
         let nameField = tryUnwrapField("fullName", in: session)
@@ -551,6 +603,7 @@ final class FormKitRendererTests: XCTestCase {
             isRequired: false,
             allowsNull: false,
             defaultValue: nil,
+            uiComponent: nil,
             renderBehavior: .hide,
             conditionalState: .active,
             accessibilityIdentifier: "json_schema_field_name"
@@ -568,6 +621,7 @@ final class FormKitRendererTests: XCTestCase {
             fieldIDs: [field.id],
             propertyOrder: [field.propertyKey],
             ownerArrayRowID: nil,
+            uiComponent: nil,
             renderBehavior: .hide,
             conditionalState: .active,
             arrayDescriptor: nil

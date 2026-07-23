@@ -154,25 +154,25 @@ public func setStringValue(_ text: String, for field: FormKitFieldDescriptor) {
         switch field.scalarType {
         case .string, .email, .uri:
             if trimmed.isEmpty {
-                setPrimitiveValue(field.isRequired ? .string("") : nil, for: field)
+                setPrimitiveValue(field.allowsNull ? .null : .string(""), for: field)
             } else {
                 setPrimitiveValue(.string(text), for: field)
             }
         case .date:
             if trimmed.isEmpty {
-                setPrimitiveValue(field.isRequired ? .string("") : nil, for: field)
+                setPrimitiveValue(field.allowsNull ? .null : field.isRequired ? .string("") : nil, for: field)
             } else {
                 setPrimitiveValue(.string(text), for: field)
             }
         case .dateTime:
             if trimmed.isEmpty {
-                setPrimitiveValue(field.isRequired ? .string("") : nil, for: field)
+                setPrimitiveValue(field.allowsNull ? .null : field.isRequired ? .string("") : nil, for: field)
             } else {
                 setPrimitiveValue(.string(text), for: field)
             }
         case .integer:
             if trimmed.isEmpty {
-                setPrimitiveValue(nil, for: field)
+                setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
             } else if let value = Int(trimmed) {
                 setPrimitiveValue(.integer(value), for: field)
             } else {
@@ -180,7 +180,7 @@ public func setStringValue(_ text: String, for field: FormKitFieldDescriptor) {
             }
         case .number:
             if trimmed.isEmpty {
-                setPrimitiveValue(nil, for: field)
+                setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
             } else if let value = Double(trimmed) {
                 setPrimitiveValue(.number(value), for: field)
             } else {
@@ -231,7 +231,7 @@ public func setSelectedEnumChoiceID(_ choiceID: String?, for field: FormKitField
         }
 
         guard let choiceID else {
-            setPrimitiveValue(nil, for: field)
+            setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
             handleFieldEdit(for: field)
             return
         }
@@ -280,6 +280,55 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
         }
 
         handleFieldEdit(for: field)
+    }
+
+    public func arrayValue(for section: FormKitRenderPlan.SectionDescriptor) -> [FormKitJSONValue]? {
+        makeInstanceJSONValue().value(atPointer: section.pointer)?.array
+    }
+
+    public func setArrayValue(
+        _ value: [FormKitJSONValue]?,
+        for section: FormKitRenderPlan.SectionDescriptor
+    ) {
+        guard renderPlan.sections.contains(section),
+              section.arrayDescriptor != nil,
+              section.shouldSerialize,
+              !section.isDisabled
+        else {
+            return
+        }
+
+        var instance = makeInstanceJSONValue()
+        if let value {
+            insert(.array(value), at: section.pointer, into: &instance)
+        } else {
+            instance = removingValue(from: instance, path: Self.tokens(from: section.pointer))
+        }
+
+        let descendantPrefix = "\(section.pointer)/"
+        touchedFieldIDs = touchedFieldIDs.filter {
+            $0 != section.pointer && !$0.hasPrefix(descendantPrefix)
+        }
+        let descendantArrayIDs = Set(
+            renderPlan.sections
+                .filter { $0.pointer == section.pointer || $0.pointer.hasPrefix(descendantPrefix) }
+                .map(\.id)
+        )
+        touchedArrayIDs.subtract(descendantArrayIDs)
+        fieldErrors = fieldErrors.filter {
+            $0.key != section.pointer && !$0.key.hasPrefix(descendantPrefix)
+        }
+        arrayErrors = arrayErrors.filter { !descendantArrayIDs.contains($0.key) }
+        if let firstInvalidFieldID,
+           firstInvalidFieldID == section.pointer || firstInvalidFieldID.hasPrefix(descendantPrefix)
+        {
+            self.firstInvalidFieldID = nil
+        }
+        if value != nil {
+            touchedArrayIDs.insert(section.id)
+        }
+
+        applyInstance(instance)
     }
 
 public func appendArrayRow(to section: FormKitRenderPlan.SectionDescriptor) {
@@ -392,7 +441,7 @@ public func setFormMessage(_ message: String?) {
             return
         }
 
-        setPrimitiveValue(nil, for: field)
+        setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
         handleFieldEdit(for: field)
     }
 
@@ -419,7 +468,7 @@ public func setFormMessage(_ message: String?) {
     }
 
     private func restoreConcreteValue(for field: FormKitFieldDescriptor) -> FormKitFieldDescriptor.PrimitiveValue? {
-        seededValue(for: field, preferInitialInstance: false)
+        seededValue(for: field, preferInitialInstance: false, usesNullFallback: false)
     }
 
     private func makeInstanceJSONValue() -> FormKitJSONValue {
@@ -589,7 +638,8 @@ public func setFormMessage(_ message: String?) {
 
     private func seededValue(
         for field: FormKitFieldDescriptor,
-        preferInitialInstance: Bool = true
+        preferInitialInstance: Bool = true,
+        usesNullFallback: Bool = true
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
         if preferInitialInstance,
            let initialInstance,
@@ -604,6 +654,10 @@ public func setFormMessage(_ message: String?) {
 
         if let defaultValue = field.defaultValue {
             return defaultValue
+        }
+
+        if field.allowsNull, usesNullFallback {
+            return .null
         }
 
         if field.isEnum {
@@ -821,6 +875,27 @@ public func setFormMessage(_ message: String?) {
             ),
             path: Array(path.dropFirst())
         )
+        return .object(object)
+    }
+
+    private func removingValue(from currentValue: FormKitJSONValue, path: [String]) -> FormKitJSONValue {
+        guard let head = path.first else { return currentValue }
+        if let index = Int(head) {
+            guard var array = currentValue.array, array.indices.contains(index) else { return currentValue }
+            if path.count == 1 {
+                array.remove(at: index)
+                return .array(array)
+            }
+            array[index] = removingValue(from: array[index], path: Array(path.dropFirst()))
+            return .array(array)
+        }
+        guard var object = currentValue.object else { return currentValue }
+        if path.count == 1 {
+            object.removeValue(forKey: head)
+            return .object(object)
+        }
+        guard let child = object[head] else { return currentValue }
+        object[head] = removingValue(from: child, path: Array(path.dropFirst()))
         return .object(object)
     }
 

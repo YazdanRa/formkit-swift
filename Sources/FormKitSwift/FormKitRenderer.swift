@@ -9,6 +9,13 @@ public protocol FormKitRendering {
         schemaJSON: String,
         instanceJSON: String?,
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
+        validationBehavior: FormKitValidationBehavior
+    ) -> FormKitSession
+
+    func makeFormSession(
+        schemaJSON: String,
+        instanceJSON: String?,
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
         conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]?,
         validationBehavior: FormKitValidationBehavior
     ) -> FormKitSession
@@ -24,13 +31,13 @@ public extension FormKitRendering {
         schemaJSON: String,
         instanceJSON: String?,
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]?,
         validationBehavior: FormKitValidationBehavior
     ) -> FormKitSession {
         makeFormSession(
             schemaJSON: schemaJSON,
             instanceJSON: instanceJSON,
             defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
-            conditionalRenderBehaviorOverrides: nil,
             validationBehavior: validationBehavior
         )
     }
@@ -434,6 +441,7 @@ public final class FormKitRenderer: FormKitRendering {
             ?? fallbackTitle
         let sectionDescription = resolvedSchema.object["description"]?.string?.trimmedForJSONSchemaForm()
             ?? fallbackDescription
+        let sectionUIComponent = uiComponent(from: resolvedSchema.object)
         let sectionRenderBehavior = resolvedRenderBehavior(
             for: pointerTokens,
             from: resolvedSchema.object
@@ -565,6 +573,7 @@ public final class FormKitRenderer: FormKitRendering {
                 fieldIDs: sectionFieldIDs,
                 propertyOrder: propertyOrder,
                 ownerArrayRowID: ownerArrayRowID,
+                uiComponent: sectionUIComponent,
                 renderBehavior: sectionRenderBehavior,
                 conditionalState: sectionConditionalState,
                 arrayDescriptor: nil
@@ -691,6 +700,17 @@ public final class FormKitRenderer: FormKitRendering {
             pointerTokens: pointerTokens + ["items"],
             reasons: &reasons
         )
+        let itemScalarType: FormKitFieldDescriptor.ScalarType? = {
+            guard case .scalar(let primitiveType, _) = itemType else {
+                return nil
+            }
+            return scalarType(
+                from: primitiveType,
+                format: materializedItemSchema.object["format"]?.string?.trimmedForJSONSchemaForm(),
+                location: JSONPointer.pointerString(from: pointerTokens + ["items"]),
+                reasons: &reasons
+            )
+        }()
 
         guard itemType != .unsupported else {
             return false
@@ -718,6 +738,7 @@ public final class FormKitRenderer: FormKitRendering {
             ?? fallbackTitle
         let sectionDescription = schemaObject["description"]?.string?.trimmedForJSONSchemaForm()
             ?? fallbackDescription
+        let sectionUIComponent = uiComponent(from: schemaObject)
         let sectionRenderBehavior = resolvedRenderBehavior(
             for: pointerTokens,
             from: schemaObject
@@ -873,12 +894,16 @@ public final class FormKitRenderer: FormKitRendering {
                 fieldIDs: [],
                 propertyOrder: [],
                 ownerArrayRowID: ownerArrayRowID,
+                uiComponent: sectionUIComponent,
                 renderBehavior: sectionRenderBehavior,
                 conditionalState: sectionConditionalState,
                 arrayDescriptor: FormKitArraySectionDescriptor(
                     pointer: sectionPointer,
                     propertyKey: propertyKey,
                     itemKind: itemKind,
+                    itemScalarType: itemScalarType,
+                    itemHasValueConstraint: materializedItemSchema.object["enum"] != nil
+                        || materializedItemSchema.object["const"] != nil,
                     itemTitle: itemTitle,
                     minItems: minItems,
                     maxItems: maxItems,
@@ -1932,7 +1957,7 @@ public final class FormKitRenderer: FormKitRendering {
                 )
             )
             return nil
-        case .scalar(let primitiveType, let allowsNull):
+        case .scalar(let primitiveType, let declaredAllowsNull):
             let fieldScalarType = scalarType(
                 from: primitiveType,
                 format: schemaObject["format"]?.string?.trimmedForJSONSchemaForm(),
@@ -1944,6 +1969,9 @@ public final class FormKitRenderer: FormKitRendering {
                 return nil
             }
 
+            let allowsNull = declaredAllowsNull
+                && (schemaObject["enum"]?.array.map { $0.contains(.null) } ?? true)
+                && (schemaObject["const"].map { $0 == .null } ?? true)
             let enumOptions = enumOptions(
                 from: schemaObject["enum"]?.array ?? schemaObject["const"].map { [$0] },
                 scalarType: fieldScalarType,
@@ -1969,11 +1997,20 @@ public final class FormKitRenderer: FormKitRendering {
                 isRequired: isRequired,
                 allowsNull: allowsNull,
                 defaultValue: defaultValue,
+                uiComponent: uiComponent(from: schemaObject),
                 renderBehavior: resolvedRenderBehavior(for: pointerTokens, from: schemaObject),
                 conditionalState: conditionalRenderState(from: schemaObject),
                 accessibilityIdentifier: accessibilityIdentifier(for: pointer)
             )
         }
+    }
+
+    private func uiComponent(from schemaObject: [String: FormKitJSONValue]) -> FormKitUIComponent? {
+        guard let value = schemaObject[Self.uiComponentKey]?.string else {
+            return nil
+        }
+        let component = FormKitUIComponent(rawValue: value)
+        return component.rawValue.isEmpty ? nil : component
     }
 
     private func resolvedRenderBehavior(
@@ -2097,6 +2134,10 @@ public final class FormKitRenderer: FormKitRendering {
 
         if let defaultValue = field.defaultValue {
             return defaultValue
+        }
+
+        if field.allowsNull {
+            return .null
         }
 
         if field.enumOptions.isEmpty == false && field.isRequired {
@@ -2934,6 +2975,7 @@ public final class FormKitRenderer: FormKitRendering {
 
     private static let internalResolvedRenderBehaviorKey = "x-formkit-render-behavior"
     private static let internalConditionalStateKey = "x-formkit-conditional-state"
+    private static let uiComponentKey = "x-formkit-ui-component"
     private static let renderEngineAnnotationKeys: Set<String> = [
         internalResolvedRenderBehaviorKey,
         internalConditionalStateKey
@@ -2993,6 +3035,7 @@ public struct FormKitRenderPlan: Sendable, Equatable {
         public let fieldIDs: [String]
         public let propertyOrder: [String]
         public let ownerArrayRowID: String?
+        public let uiComponent: FormKitUIComponent?
         public let renderBehavior: FormKitConditionalRenderBehavior
         public let conditionalState: FormKitConditionalRenderState
         public let arrayDescriptor: FormKitArraySectionDescriptor?
@@ -3054,6 +3097,8 @@ public struct FormKitArraySectionDescriptor: Sendable, Equatable {
     public let pointer: String
     public let propertyKey: String?
     public let itemKind: ItemKind
+    public let itemScalarType: FormKitFieldDescriptor.ScalarType?
+    public let itemHasValueConstraint: Bool
     public let itemTitle: String
     public let minItems: Int
     public let maxItems: Int?
@@ -3139,6 +3184,7 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
     public let isRequired: Bool
     public let allowsNull: Bool
     public let defaultValue: PrimitiveValue?
+    public let uiComponent: FormKitUIComponent?
     public let renderBehavior: FormKitConditionalRenderBehavior
     public let conditionalState: FormKitConditionalRenderState
     public let accessibilityIdentifier: String

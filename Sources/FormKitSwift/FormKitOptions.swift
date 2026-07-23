@@ -1,3 +1,8 @@
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 import SwiftUI
 
 public struct FormKitOptions {
@@ -9,6 +14,7 @@ public struct FormKitOptions {
     public var labels: FormKitLabels
     public var fieldState: @MainActor (FormKitFieldDescriptor) -> FormKitFieldVisualState
     public var components: FormKitComponents
+    public var uploadHandler: FormKitUploadHandler?
 
     public init(
         mode: FormKitMode = .editable,
@@ -18,7 +24,8 @@ public struct FormKitOptions {
         style: FormKitStyle = .init(),
         labels: FormKitLabels = .init(),
         fieldState: @escaping @MainActor (FormKitFieldDescriptor) -> FormKitFieldVisualState = { _ in .normal },
-        components: FormKitComponents = .init()
+        components: FormKitComponents = .init(),
+        uploadHandler: FormKitUploadHandler? = nil
     ) {
         self.mode = mode
         self.validationBehavior = validationBehavior
@@ -28,6 +35,7 @@ public struct FormKitOptions {
         self.labels = labels
         self.fieldState = fieldState
         self.components = components
+        self.uploadHandler = uploadHandler
     }
 }
 
@@ -43,11 +51,20 @@ public enum FormKitFieldVisualState: Equatable, Sendable {
 }
 
 public struct FormKitStyle: Equatable, Sendable {
+    public static var defaultFieldBackground: Color {
+        #if os(macOS)
+        Color(nsColor: .textBackgroundColor)
+        #else
+        Color(uiColor: .systemBackground)
+        #endif
+    }
+
     public var accent: Color
     public var destructive: Color
     public var success: Color
     public var secondaryText: Color
     public var fieldBackground: Color
+    public var disabledFieldBackground: Color
     public var cornerRadius: CGFloat
     public var fieldSpacing: CGFloat
 
@@ -56,7 +73,8 @@ public struct FormKitStyle: Equatable, Sendable {
         destructive: Color = .red,
         success: Color = .green,
         secondaryText: Color = .secondary,
-        fieldBackground: Color = Color.gray.opacity(0.12),
+        fieldBackground: Color = FormKitStyle.defaultFieldBackground,
+        disabledFieldBackground: Color = Color.gray.opacity(0.1),
         cornerRadius: CGFloat = 8,
         fieldSpacing: CGFloat = 8
     ) {
@@ -65,6 +83,7 @@ public struct FormKitStyle: Equatable, Sendable {
         self.success = success
         self.secondaryText = secondaryText
         self.fieldBackground = fieldBackground
+        self.disabledFieldBackground = disabledFieldBackground
         self.cornerRadius = cornerRadius
         self.fieldSpacing = fieldSpacing
     }
@@ -106,13 +125,19 @@ public struct FormKitLabels: Equatable, Sendable {
 
 public struct FormKitComponents {
     public var field: (@MainActor (FormKitFieldComponentContext) -> AnyView)?
+    public var fieldInput: (@MainActor (FormKitFieldComponentContext) -> AnyView?)?
+    public var arraySection: (@MainActor (FormKitArraySectionComponentContext) -> AnyView?)?
     public var sectionHeader: (@MainActor (FormKitSectionComponentContext) -> AnyView)?
 
     public init(
         field: (@MainActor (FormKitFieldComponentContext) -> AnyView)? = nil,
+        fieldInput: (@MainActor (FormKitFieldComponentContext) -> AnyView?)? = nil,
+        arraySection: (@MainActor (FormKitArraySectionComponentContext) -> AnyView?)? = nil,
         sectionHeader: (@MainActor (FormKitSectionComponentContext) -> AnyView)? = nil
     ) {
         self.field = field
+        self.fieldInput = fieldInput
+        self.arraySection = arraySection
         self.sectionHeader = sectionHeader
     }
 }
@@ -123,6 +148,18 @@ public struct FormKitFieldComponentContext {
     public let errors: [String]
     public let state: FormKitFieldVisualState
     public let isEditingLocked: Bool
+    public let style: FormKitStyle
+    public let uploadHandler: FormKitUploadHandler?
+}
+
+public struct FormKitArraySectionComponentContext {
+    public let session: FormKitSession
+    public let section: FormKitRenderPlan.SectionDescriptor
+    public let descriptor: FormKitArraySectionDescriptor
+    public let errors: [String]
+    public let isEditingLocked: Bool
+    public let style: FormKitStyle
+    public let uploadHandler: FormKitUploadHandler?
 }
 
 public struct FormKitSectionComponentContext {

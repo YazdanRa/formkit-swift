@@ -1,0 +1,289 @@
+import XCTest
+@testable import FormKitSwift
+
+@MainActor
+final class FormKitComponentTests: XCTestCase {
+    func testUIComponentAnnotationsPropagateToFieldsAndSections() throws {
+        let session = FormKitRenderer().makeFormSession(schemaJSON: Self.componentSchema, instanceJSON: nil)
+
+        XCTAssertEqual(field(named: "license", in: session)?.uiComponent, .fileField)
+        XCTAssertEqual(field(named: "signature", in: session)?.uiComponent, .signaturePad)
+        XCTAssertEqual(
+            session.renderPlan.sections.first(where: { $0.title == "Attachments" })?.uiComponent,
+            .multipleFileField
+        )
+
+        let itemAnnotatedSection = try XCTUnwrap(
+            session.renderPlan.sections.first(where: { $0.title == "Item Annotated Attachments" })
+        )
+        let descriptor = try XCTUnwrap(itemAnnotatedSection.arrayDescriptor)
+        let rowFieldID = try XCTUnwrap(descriptor.rows.first?.fieldIDs.first)
+        let rowField = try XCTUnwrap(session.renderPlan.fields.first(where: { $0.id == rowFieldID }))
+        XCTAssertEqual(rowField.uiComponent, .signaturePad)
+    }
+
+    func testComponentRegistryResolvesOnlyCompatibleFieldComponents() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "format": "uri",
+                  "x-formkit-ui-component": "file-field"
+                },
+                "signature": {
+                  "type": "string",
+                  "x-formkit-ui-component": "signature-pad"
+                },
+                "numberFile": {
+                  "type": "number",
+                  "x-formkit-ui-component": "file-field"
+                },
+                "enumFile": {
+                  "type": "string",
+                  "enum": ["A", "B"],
+                  "x-formkit-ui-component": "file-field"
+                }
+              }
+            }
+            """
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+
+        XCTAssertNotNil(fieldComponent(for: tryUnwrapField("file", in: session), session: session))
+        XCTAssertNotNil(fieldComponent(for: tryUnwrapField("signature", in: session), session: session))
+        XCTAssertNil(fieldComponent(for: tryUnwrapField("numberFile", in: session), session: session))
+        XCTAssertNil(fieldComponent(for: tryUnwrapField("enumFile", in: session), session: session))
+    }
+
+    func testComponentRegistryResolvesOnlyCompatibleArrayComponents() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "files": {
+                  "type": "array",
+                  "x-formkit-ui-component": "multiple-file-field",
+                  "items": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "numbers": {
+                  "type": "array",
+                  "x-formkit-ui-component": "multiple-file-field",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "enumFiles": {
+                  "type": "array",
+                  "x-formkit-ui-component": "multiple-file-field",
+                  "items": {
+                    "type": "string",
+                    "enum": ["a.pdf", "b.pdf"]
+                  }
+                },
+                "constFiles": {
+                  "type": "array",
+                  "x-formkit-ui-component": "multiple-file-field",
+                  "items": {
+                    "type": "string",
+                    "const": "required.pdf"
+                  }
+                },
+                "generic": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+            """
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let filesSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "files" }))
+        let numbersSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "numbers" }))
+        let enumSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "enumFiles" }))
+        let constSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "constFiles" }))
+        let genericSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "generic" }))
+
+        XCTAssertNotNil(arrayComponent(for: filesSection, session: session))
+        XCTAssertNil(arrayComponent(for: numbersSection, session: session))
+        XCTAssertNil(arrayComponent(for: enumSection, session: session))
+        XCTAssertNil(arrayComponent(for: constSection, session: session))
+        XCTAssertNil(arrayComponent(for: genericSection, session: session))
+    }
+
+    func testSectionArrayValueSetterReplacesAndClearsArrayValues() throws {
+        let session = FormKitRenderer().makeFormSession(schemaJSON: Self.multipleFileSchema, instanceJSON: nil)
+        let section = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.title == "Attachments" }))
+        let startingRevision = session.revision
+
+        session.setArrayValue(
+            [
+                .string("https://example.com/a.pdf"),
+                .string("https://example.com/b.pdf")
+            ],
+            for: section
+        )
+
+        XCTAssertGreaterThan(session.revision, startingRevision)
+        XCTAssertEqual(
+            session.arrayValue(for: section),
+            [
+                .string("https://example.com/a.pdf"),
+                .string("https://example.com/b.pdf")
+            ]
+        )
+        var jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(
+            jsonObject["attachments"] as? [String],
+            ["https://example.com/a.pdf", "https://example.com/b.pdf"]
+        )
+
+        let updatedSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.id == section.id }))
+        session.setArrayValue(nil, for: updatedSection)
+
+        jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertNil(jsonObject["attachments"])
+        XCTAssertNil(session.arrayValue(for: section))
+    }
+
+    private func fieldComponent(
+        for field: FormKitFieldDescriptor,
+        session: FormKitSession
+    ) -> Any? {
+        FormKitComponentRegistry.fieldInput(for: componentContext(for: field, session: session))
+    }
+
+    private func arrayComponent(
+        for section: FormKitRenderPlan.SectionDescriptor,
+        session: FormKitSession
+    ) -> Any? {
+        FormKitComponentRegistry.arraySection(for: arrayComponentContext(for: section, session: session))
+    }
+
+    private func componentContext(
+        for field: FormKitFieldDescriptor,
+        session: FormKitSession
+    ) -> FormKitFieldComponentContext {
+        FormKitFieldComponentContext(
+            session: session,
+            field: field,
+            errors: [],
+            state: .normal,
+            isEditingLocked: false,
+            style: .init(),
+            uploadHandler: nil
+        )
+    }
+
+    private func arrayComponentContext(
+        for section: FormKitRenderPlan.SectionDescriptor,
+        session: FormKitSession
+    ) -> FormKitArraySectionComponentContext {
+        FormKitArraySectionComponentContext(
+            session: session,
+            section: section,
+            descriptor: section.arrayDescriptor!,
+            errors: [],
+            isEditingLocked: false,
+            style: .init(),
+            uploadHandler: nil
+        )
+    }
+
+    private func field(named propertyKey: String, in session: FormKitSession) -> FormKitFieldDescriptor? {
+        session.renderPlan.fields.first(where: { $0.propertyKey == propertyKey })
+    }
+
+    private func tryUnwrapField(
+        _ propertyKey: String,
+        in session: FormKitSession,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> FormKitFieldDescriptor {
+        guard let field = field(named: propertyKey, in: session) else {
+            XCTFail("Missing field \(propertyKey)", file: file, line: line)
+            fatalError("Missing field \(propertyKey)")
+        }
+        return field
+    }
+
+    private func decodeJSONObject(_ json: String) throws -> [String: Any] {
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    private static let multipleFileSchema =
+        """
+        {
+          "title": "Uploads",
+          "type": "object",
+          "properties": {
+            "attachments": {
+              "type": "array",
+              "title": "Attachments",
+              "x-formkit-ui-component": "multiple-file-field",
+              "items": {
+                "type": "string",
+                "format": "uri",
+                "title": "Attachment"
+              }
+            }
+          }
+        }
+        """
+
+    private static let componentSchema =
+        """
+        {
+          "title": "Uploads",
+          "type": "object",
+          "properties": {
+            "license": {
+              "type": "string",
+              "format": "uri",
+              "title": "License",
+              "x-formkit-ui-component": " FILE-FIELD "
+            },
+            "signature": {
+              "$ref": "#/$defs/signature"
+            },
+            "attachments": {
+              "type": "array",
+              "title": "Attachments",
+              "x-formkit-ui-component": "multiple-file-field",
+              "items": {
+                "type": "string",
+                "format": "uri",
+                "title": "Attachment"
+              }
+            },
+            "itemAnnotatedAttachments": {
+              "type": "array",
+              "title": "Item Annotated Attachments",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "format": "uri",
+                "title": "Item Attachment",
+                "x-formkit-ui-component": "signature-pad"
+              }
+            }
+          },
+          "$defs": {
+            "signature": {
+              "type": "string",
+              "format": "uri",
+              "title": "Signature",
+              "x-formkit-ui-component": "signature-pad"
+            }
+          }
+        }
+        """
+}

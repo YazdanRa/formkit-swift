@@ -3,6 +3,20 @@ import XCTest
 
 @MainActor
 final class FormKitReviewRegressionTests: XCTestCase {
+    func testLegacyRendererConformanceUsesNewOverrideOverload() {
+        let renderer: any FormKitRendering = LegacyFormKitRenderer()
+
+        let session = renderer.makeFormSession(
+            schemaJSON: #"{"type":"object"}"#,
+            instanceJSON: nil,
+            defaultConditionalRenderBehavior: nil,
+            conditionalRenderBehaviorOverrides: [:],
+            validationBehavior: .revalidateAfterFirstAttempt
+        )
+
+        XCTAssertTrue(session.renderPlan.isSupported)
+    }
+
     func testOwnedSessionConfigurationRebuildsWhenSchemaChanges() {
         let firstConfiguration = FormKitOwnedSessionConfiguration(
             schemaJSON: Self.schema(title: "First", fieldName: "first"),
@@ -162,6 +176,23 @@ final class FormKitReviewRegressionTests: XCTestCase {
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try XCTUnwrap(
             JSONSerialization.jsonObject(with: data) as? [String: Any]
+        )
+    }
+}
+
+@MainActor
+private struct LegacyFormKitRenderer: FormKitRendering {
+    func makeFormSession(
+        schemaJSON: String,
+        instanceJSON: String?,
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
+        validationBehavior: FormKitValidationBehavior
+    ) -> FormKitSession {
+        FormKitRenderer().makeFormSession(
+            schemaJSON: schemaJSON,
+            instanceJSON: instanceJSON,
+            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
+            validationBehavior: validationBehavior
         )
     }
 }
