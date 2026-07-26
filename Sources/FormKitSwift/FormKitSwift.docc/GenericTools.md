@@ -8,6 +8,8 @@ Build context from the visible render plan:
 let context = session.makeToolContext(focusedPointers: ["/notes"])
 ```
 
+`focusedPointers` marks those fields as locked in the generated context so a tool can avoid proposing edits to them. Pass the same protected pointers as `lockedPointers` when applying edits to enforce the lock.
+
 Apply edits with optional revision and pointer locking:
 
 ```swift
@@ -31,6 +33,14 @@ result.appliedEdits
 result.rejectedEdits
 result.context
 ```
+
+## Edit Contract
+
+Tool pointers omit the descriptor's leading `#`. Set edits require a value. Clear edits apply the same nullable and empty-value rules as stock controls.
+
+Pass `baseRevision` to reject an entire stale batch after another mutation changes the session. Pass `lockedPointers` to protect fields owned by the user or another workflow. In a current batch, invalid edits are rejected individually while valid sibling edits can still apply. Rejections are reported in ``FormKitToolEditResult/rejectedEdits``.
+
+The returned context is refreshed after the batch, so it is the appropriate input to the next tool call.
 
 ## Host Boundary
 
