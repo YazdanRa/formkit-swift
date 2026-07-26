@@ -206,6 +206,61 @@ final class FormKitSessionMutationTests: XCTestCase {
         ])
         XCTAssertEqual(repeatedClear.rejectedEdits.map(\.reason), ["no_change"])
     }
+}
+
+extension FormKitSessionMutationTests {
+    func testToolClearHandlesSchemaAuthoredBlankEnumValues() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "blank": { "type": "string", "enum": ["", "value"] },
+                "nullable": {
+                  "type": ["string", "null"],
+                  "enum": ["", "value", null],
+                  "default": ""
+                },
+                "whitespace": {
+                  "type": ["string", "null"],
+                  "enum": [" ", "value", null]
+                },
+                "undeclaredBlank": {
+                  "type": ["string", "null"],
+                  "enum": ["value", null]
+                }
+              }
+            }
+            """,
+            instanceJSON: #"{"blank":"","whitespace":" ","undeclaredBlank":""}"#
+        )
+        let blankField = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "blank" })
+        let nullableField = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "nullable" })
+        let whitespaceField = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "whitespace" })
+        let undeclaredField = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "undeclaredBlank" })
+
+        XCTAssertEqual(session.primitiveValue(for: blankField), .string(""))
+        XCTAssertEqual(session.primitiveValue(for: nullableField), .string(""))
+        XCTAssertEqual(session.primitiveValue(for: whitespaceField), .string(" "))
+        XCTAssertEqual(session.primitiveValue(for: undeclaredField), .null)
+
+        let edits = [
+            FormKitToolEdit(pointer: "/blank", operation: .clear),
+            FormKitToolEdit(pointer: "/nullable", operation: .clear),
+            FormKitToolEdit(pointer: "/whitespace", operation: .clear)
+        ]
+        let result = session.applyToolEdits(edits)
+        let object = try Self.decodeJSONObject(session.currentInstanceJSON)
+
+        XCTAssertEqual(result.appliedEdits.map(\.pointer), ["/blank", "/nullable", "/whitespace"])
+        XCTAssertNil(object["blank"])
+        XCTAssertTrue(object["nullable"] is NSNull)
+        XCTAssertTrue(object["whitespace"] is NSNull)
+        XCTAssertEqual(
+            session.applyToolEdits(edits).rejectedEdits.map(\.reason),
+            ["no_change", "no_change", "no_change"]
+        )
+    }
 
     private func makeSession(instanceJSON: String?) -> FormKitSession {
         FormKitRenderer().makeFormSession(
@@ -224,5 +279,10 @@ final class FormKitSessionMutationTests: XCTestCase {
             """,
             instanceJSON: instanceJSON
         )
+    }
+
+    private static func decodeJSONObject(_ json: String) throws -> [String: Any] {
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 }

@@ -244,7 +244,7 @@ public extension FormKitSession {
         case .clear:
             if field.isEnum {
                 let hadValue = selectedEnumChoiceID(for: field) != nil
-                    && primitiveValue(for: field).map(hasConcreteToolValue) == true
+                    && primitiveValue(for: field) != .null
                 guard hadValue else {
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
                 }

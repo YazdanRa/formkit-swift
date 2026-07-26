@@ -674,10 +674,14 @@ public func setFormMessage(_ message: String?) {
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
         if preferInitialInstance,
            let initialInstance,
+           let initialValue = initialInstance.value(at: JSONPointer(from: field.pointer)),
            let seededFromInstance = primitiveValue(
-            from: initialInstance.value(at: JSONPointer(from: field.pointer)),
+            from: initialValue,
             scalarType: field.scalarType,
-            allowsNull: field.allowsNull
+            allowsNull: field.allowsNull,
+            normalizesEmptyText: !field.enumOptions.contains {
+                jsonValue(from: $0.value) == initialValue
+            }
            )
         {
             return seededFromInstance
@@ -710,7 +714,8 @@ public func setFormMessage(_ message: String?) {
     private func primitiveValue(
         from jsonValue: FormKitJSONValue?,
         scalarType: FormKitFieldDescriptor.ScalarType,
-        allowsNull: Bool
+        allowsNull: Bool,
+        normalizesEmptyText: Bool = true
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
         guard let jsonValue else {
             return nil
@@ -720,7 +725,10 @@ public func setFormMessage(_ message: String?) {
         case .null:
             return allowsNull ? .null : nil
         case .string(let value):
-            if allowsNull, value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if allowsNull,
+               normalizesEmptyText,
+               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            {
                 return .null
             }
             switch scalarType {

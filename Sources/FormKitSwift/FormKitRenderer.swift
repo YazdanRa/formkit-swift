@@ -1498,16 +1498,19 @@ public final class FormKitRenderer: FormKitRendering {
                 return .null
             }
 
+            let declaredValues = schemaObject["enum"]?.array ?? schemaObject["const"].map { [$0] } ?? []
+            let rawDefaultValue = schemaObject["default"]
             if let defaultValue = primitiveValue(
-                from: schemaObject["default"],
+                from: rawDefaultValue,
                 scalarType: scalarType,
-                allowsNull: allowsNull
+                allowsNull: allowsNull,
+                normalizesEmptyText: !declaredValues.contains { $0 == rawDefaultValue }
             ) {
                 return jsonValue(from: defaultValue)
             }
 
             if let firstOption = enumOptions(
-                from: schemaObject["enum"]?.array ?? schemaObject["const"].map { [$0] },
+                from: declaredValues,
                 scalarType: scalarType,
                 location: JSONPointer.pointerString(from: pointerTokens),
                 reasons: &reasons
@@ -1987,7 +1990,10 @@ public final class FormKitRenderer: FormKitRendering {
             let defaultValue = primitiveValue(
                 from: schemaObject["default"],
                 scalarType: fieldScalarType,
-                allowsNull: allowsNull
+                allowsNull: allowsNull,
+                normalizesEmptyText: !enumOptions.contains {
+                    jsonValue(from: $0.value) == schemaObject["default"]
+                }
             )
 
             return FormKitFieldDescriptor(
@@ -2133,7 +2139,10 @@ public final class FormKitRenderer: FormKitRendering {
             return primitiveValue(
                 from: instanceValue,
                 scalarType: field.scalarType,
-                allowsNull: field.allowsNull
+                allowsNull: field.allowsNull,
+                normalizesEmptyText: !field.enumOptions.contains {
+                    jsonValue(from: $0.value) == instanceValue
+                }
             )
         }
 
@@ -2372,7 +2381,8 @@ public final class FormKitRenderer: FormKitRendering {
     private func primitiveValue(
         from jsonValue: FormKitJSONValue?,
         scalarType: FormKitFieldDescriptor.ScalarType,
-        allowsNull: Bool
+        allowsNull: Bool,
+        normalizesEmptyText: Bool = true
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
         guard let jsonValue else {
             return nil
@@ -2382,7 +2392,10 @@ public final class FormKitRenderer: FormKitRendering {
         case .null:
             return allowsNull ? .null : nil
         case .string(let value):
-            if allowsNull, value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if allowsNull,
+               normalizesEmptyText,
+               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            {
                 return .null
             }
             switch scalarType {
