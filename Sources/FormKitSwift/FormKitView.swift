@@ -314,9 +314,6 @@ private struct FormKitContainerView: View {
                 ?? FormKitComponentRegistry.fieldInput(for: componentContext)
             let usesStackedLabel = componentInput != nil
                 || (!field.isEnum && ![.boolean, .date, .dateTime].contains(field.scalarType))
-            let usesNullableScalarStatePicker = field.allowsNull
-                && !field.isEnum
-                && [.string, .email, .uri, .integer, .number].contains(field.scalarType)
             VStack(alignment: .leading, spacing: options.style.fieldSpacing) {
                 if usesStackedLabel {
                     Text(field.title)
@@ -329,25 +326,6 @@ private struct FormKitContainerView: View {
                     Text(description)
                         .font(.caption)
                         .foregroundStyle(options.style.secondaryText)
-                }
-
-                if usesNullableScalarStatePicker {
-                    Picker(
-                        options.labels.valueState,
-                        selection: Binding(
-                            get: { nullableValueSelection(for: field) },
-                            set: { setNullableScalarSelection($0, for: field) }
-                        )
-                    ) {
-                        if !field.isRequired {
-                            Text(options.labels.notSet).tag(NullableValueSelection.absent)
-                        }
-                        Text(options.labels.noValue).tag(NullableValueSelection.null)
-                        Text(options.labels.value).tag(NullableValueSelection.value)
-                    }
-                    .pickerStyle(.segmented)
-                    .disabled(locked || field.isDisabled)
-                    .accessibilityIdentifier("\(fieldIdentifier(for: field))_null_picker")
                 }
 
                 if usesStackedLabel {
@@ -713,20 +691,6 @@ private struct FormKitContainerView: View {
             return .absent
         default:
             return field.isRequired ? .null : .absent
-        }
-    }
-
-    private func setNullableScalarSelection(
-        _ selection: NullableValueSelection,
-        for field: FormKitFieldDescriptor
-    ) {
-        switch selection {
-        case .absent:
-            session.unsetValue(for: field)
-        case .null:
-            session.setNullSelection(true, for: field)
-        case .value:
-            session.setNullSelection(false, for: field)
         }
     }
 
