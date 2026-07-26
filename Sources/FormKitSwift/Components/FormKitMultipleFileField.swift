@@ -302,7 +302,7 @@ struct FormKitMultipleFileField: View {
     }
 
     static func occupiedValueCount(in values: [FormKitJSONValue]) -> Int {
-        values.filter { !Self.isVacant($0) }.count
+        values.count { !Self.isVacant($0) }
     }
 
     private static func isVacant(_ value: FormKitJSONValue) -> Bool {
