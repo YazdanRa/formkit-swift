@@ -129,7 +129,7 @@ final class FormKitSessionMutationTests: XCTestCase {
             XCTAssertNil(session.primitiveValue(for: field))
             session.setStringValue(inputs[index], for: field)
             XCTAssertEqual(session.primitiveValue(for: field), parsedValues[index])
-            session.setStringValue("", for: field)
+            session.setStringValue(" \t", for: field)
             XCTAssertEqual(session.primitiveValue(for: field), .null)
             session.unsetValue(for: field)
             XCTAssertNil(session.primitiveValue(for: field))
@@ -150,6 +150,61 @@ final class FormKitSessionMutationTests: XCTestCase {
         session.setNullSelection(true, for: defaultedAmount)
         session.setNullSelection(false, for: defaultedAmount)
         XCTAssertEqual(session.primitiveValue(for: defaultedAmount), .number(2.5))
+    }
+
+    func testEmptyTextNormalizesAcrossNullableScalarTypes() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "text": { "type": ["string", "null"] },
+                "email": { "type": ["string", "null"], "format": "email" },
+                "uri": { "type": ["string", "null"], "format": "uri" },
+                "date": { "type": ["string", "null"], "format": "date" },
+                "dateTime": { "type": ["string", "null"], "format": "date-time" },
+                "integer": { "type": ["integer", "null"] },
+                "number": { "type": ["number", "null"] }
+              }
+            }
+            """,
+            instanceJSON: nil
+        )
+
+        for propertyKey in ["text", "email", "uri", "date", "dateTime", "integer", "number"] {
+            let field = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == propertyKey })
+            session.setStringValue(" \n\t", for: field)
+            XCTAssertEqual(session.primitiveValue(for: field), .null)
+        }
+    }
+
+    func testToolEmptyValuesUseCanonicalRepresentation() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "nullable": { "type": ["string", "null"] },
+                "blank": { "type": "string" }
+              }
+            }
+            """,
+            instanceJSON: #"{"nullable":"value","blank":"value"}"#
+        )
+
+        let result = session.applyToolEdits([
+            FormKitToolEdit(pointer: "/nullable", operation: .set, value: .string("")),
+            FormKitToolEdit(pointer: "/blank", operation: .clear)
+        ])
+
+        XCTAssertEqual(result.appliedEdits.map(\.value), [.null, nil])
+        XCTAssertEqual(result.context.currentValues["/nullable"], .null)
+        XCTAssertEqual(result.context.currentValues["/blank"], .string(""))
+
+        let repeatedClear = session.applyToolEdits([
+            FormKitToolEdit(pointer: "/blank", operation: .clear)
+        ])
+        XCTAssertEqual(repeatedClear.rejectedEdits.map(\.reason), ["no_change"])
     }
 
     private func makeSession(instanceJSON: String?) -> FormKitSession {

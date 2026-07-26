@@ -52,6 +52,7 @@ public private(set) var formErrorMessage: String?
     private var fieldValues: [String: FormKitFieldDescriptor.PrimitiveValue]
     private var touchedFieldIDs: Set<String> = []
     private var touchedArrayIDs: Set<String> = []
+    private var pendingConcreteFieldIDs: Set<String> = []
 
     init(
         renderPlan: FormKitRenderPlan,
@@ -113,15 +114,23 @@ public func isNullSelected(for field: FormKitFieldDescriptor) -> Bool {
         primitiveValue(for: field) == .null
     }
 
+    func isConcreteValuePending(for field: FormKitFieldDescriptor) -> Bool {
+        pendingConcreteFieldIDs.contains(field.id)
+    }
+
 public func setNullSelection(_ isNullSelected: Bool, for field: FormKitFieldDescriptor) {
-        guard field.isInteractive else {
+        guard field.isInteractive, field.allowsNull else {
             return
         }
 
         if isNullSelected {
+            pendingConcreteFieldIDs.remove(field.id)
             setPrimitiveValue(.null, for: field)
+        } else if let concreteValue = restoreConcreteValue(for: field) {
+            pendingConcreteFieldIDs.remove(field.id)
+            setPrimitiveValue(concreteValue, for: field)
         } else {
-            setPrimitiveValue(restoreConcreteValue(for: field), for: field)
+            pendingConcreteFieldIDs.insert(field.id)
         }
         handleFieldEdit(for: field)
     }
@@ -150,34 +159,25 @@ public func setStringValue(_ text: String, for field: FormKitFieldDescriptor) {
             return
         }
 
+        pendingConcreteFieldIDs.remove(field.id)
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty, field.scalarType != .boolean {
+            setPrimitiveValue(field.allowsNull ? .null : .string(text), for: field)
+            handleFieldEdit(for: field)
+            return
+        }
+
         switch field.scalarType {
-        case .string, .email, .uri:
+        case .string, .email, .uri, .date, .dateTime:
             setPrimitiveValue(.string(text), for: field)
-        case .date:
-            if trimmed.isEmpty {
-                setPrimitiveValue(field.allowsNull ? .null : field.isRequired ? .string("") : nil, for: field)
-            } else {
-                setPrimitiveValue(.string(text), for: field)
-            }
-        case .dateTime:
-            if trimmed.isEmpty {
-                setPrimitiveValue(field.allowsNull ? .null : field.isRequired ? .string("") : nil, for: field)
-            } else {
-                setPrimitiveValue(.string(text), for: field)
-            }
         case .integer:
-            if trimmed.isEmpty {
-                setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
-            } else if let value = Int(trimmed) {
+            if let value = Int(trimmed) {
                 setPrimitiveValue(.integer(value), for: field)
             } else {
                 setPrimitiveValue(.string(text), for: field)
             }
         case .number:
-            if trimmed.isEmpty {
-                setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
-            } else if let value = Double(trimmed) {
+            if let value = Double(trimmed) {
                 setPrimitiveValue(.number(value), for: field)
             } else {
                 setPrimitiveValue(.string(text), for: field)
@@ -210,6 +210,7 @@ public func setBooleanValue(_ isOn: Bool, for field: FormKitFieldDescriptor) {
             return
         }
 
+        pendingConcreteFieldIDs.remove(field.id)
         setPrimitiveValue(.boolean(isOn), for: field)
         handleFieldEdit(for: field)
     }
@@ -226,6 +227,7 @@ public func setSelectedEnumChoiceID(_ choiceID: String?, for field: FormKitField
             return
         }
 
+        pendingConcreteFieldIDs.remove(field.id)
         guard let choiceID else {
             setPrimitiveValue(nil, for: field)
             handleFieldEdit(for: field)
@@ -266,6 +268,7 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
             return
         }
 
+        pendingConcreteFieldIDs.remove(field.id)
         switch field.scalarType {
         case .date:
             setPrimitiveValue(.string(FormKitRenderer.dateFormatter.string(from: date)), for: field)
@@ -437,7 +440,14 @@ public func setFormMessage(_ message: String?) {
             return
         }
 
-        setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
+        pendingConcreteFieldIDs.remove(field.id)
+        if field.allowsNull {
+            setPrimitiveValue(.null, for: field)
+        } else if field.isEnum || field.scalarType == .boolean {
+            setPrimitiveValue(nil, for: field)
+        } else {
+            setPrimitiveValue(.string(""), for: field)
+        }
         handleFieldEdit(for: field)
     }
 
@@ -446,6 +456,7 @@ public func setFormMessage(_ message: String?) {
             return
         }
 
+        pendingConcreteFieldIDs.remove(field.id)
         setPrimitiveValue(nil, for: field)
         handleFieldEdit(for: field)
     }
@@ -473,12 +484,13 @@ public func setFormMessage(_ message: String?) {
     }
 
     private func restoreConcreteValue(for field: FormKitFieldDescriptor) -> FormKitFieldDescriptor.PrimitiveValue? {
-        if let seededValue = seededValue(for: field, preferInitialInstance: false, usesNullFallback: false) {
+        if let seededValue = seededValue(for: field, preferInitialInstance: false, usesNullFallback: false),
+           seededValue != .null,
+           !seededValue.isBlankString
+        {
             return seededValue
         }
         switch field.scalarType {
-        case .string, .email, .uri:
-            return .string("")
         case .integer:
             return .integer(0)
         case .number:
@@ -567,6 +579,7 @@ public func setFormMessage(_ message: String?) {
             }
         )
         fieldErrors = fieldErrors.filter { visibleFieldIDs.contains($0.key) }
+        pendingConcreteFieldIDs = pendingConcreteFieldIDs.filter { visibleFieldIDs.contains($0) }
         arrayErrors = arrayErrors.filter { visibleArrayIDs.contains($0.key) }
         if let firstInvalidFieldID, !visibleFieldIDs.contains(firstInvalidFieldID) {
             self.firstInvalidFieldID = nil
@@ -610,6 +623,7 @@ public func setFormMessage(_ message: String?) {
         )
         touchedFieldIDs = touchedFieldIDs.filter { visibleFieldIDs.contains($0) }
         touchedArrayIDs = touchedArrayIDs.filter { visibleArrayIDs.contains($0) }
+        pendingConcreteFieldIDs = pendingConcreteFieldIDs.filter { visibleFieldIDs.contains($0) }
         fieldErrors = fieldErrors.filter { visibleFieldIDs.contains($0.key) }
         arrayErrors = arrayErrors.filter { visibleArrayIDs.contains($0.key) }
         if let firstInvalidFieldID, !visibleFieldIDs.contains(firstInvalidFieldID) {
@@ -706,6 +720,9 @@ public func setFormMessage(_ message: String?) {
         case .null:
             return allowsNull ? .null : nil
         case .string(let value):
+            if allowsNull, value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return .null
+            }
             switch scalarType {
             case .string, .email, .uri, .date, .dateTime:
                 return .string(value)
@@ -743,8 +760,10 @@ public func setFormMessage(_ message: String?) {
                 return
             }
 
-            let pointer = JSONPointer(from: field.pointer)
-            if instance.value(at: pointer) == nil {
+            let value = instance.value(at: JSONPointer(from: field.pointer))
+            let isBlank = !field.allowsNull
+                && value?.string?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
+            if value == nil || isBlank {
                 result[field.id] = [String(localized: "This field is required.")]
             }
         }
@@ -1046,4 +1065,13 @@ public func setFormMessage(_ message: String?) {
         formatter.minimumFractionDigits = 0
         return formatter
     }()
+}
+
+private extension FormKitFieldDescriptor.PrimitiveValue {
+    var isBlankString: Bool {
+        guard case .string(let value) = self else {
+            return false
+        }
+        return value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 }

@@ -2382,6 +2382,9 @@ public final class FormKitRenderer: FormKitRendering {
         case .null:
             return allowsNull ? .null : nil
         case .string(let value):
+            if allowsNull, value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return .null
+            }
             switch scalarType {
             case .string, .email, .uri, .date, .dateTime:
                 return .string(value)

@@ -522,40 +522,49 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(jsonObject["priority"] as? String, "Standard")
     }
 
-    func testBlankTextAndExplicitNullRemainDistinct() throws {
-        let session = FormKitRenderer().makeFormSession(schemaJSON: supportedSchema, instanceJSON: nil)
-        let websiteField = tryUnwrapField("website", in: session)
-        let emailField = tryUnwrapField("email", in: session)
-
-        var jsonObject = try decodeJSONObject(session.currentInstanceJSON)
-        var contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
-        XCTAssertNil(contact["website"])
-
-        session.setStringValue("", for: websiteField)
-        session.setStringValue("", for: emailField)
-
-        jsonObject = try decodeJSONObject(session.currentInstanceJSON)
-        contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
-        XCTAssertEqual(contact["website"] as? String, "")
-        XCTAssertEqual(contact["email"] as? String, "")
-
-        session.setStringValue(" \t", for: websiteField)
-        jsonObject = try decodeJSONObject(session.currentInstanceJSON)
-        contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
-        XCTAssertEqual(contact["website"] as? String, " \t")
-
-        session.setNullSelection(true, for: websiteField)
-        jsonObject = try decodeJSONObject(session.currentInstanceJSON)
-        contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
-        XCTAssertTrue(contact["website"] is NSNull)
-
-        let optionalSession = FormKitRenderer().makeFormSession(
-            schemaJSON: #"{"type":"object","properties":{"note":{"type":"string"}}}"#,
-            instanceJSON: nil
+    func testEmptyTextUsesNullOrBlankByNullability() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "nullable": { "type": ["string", "null"] },
+                "defaulted": { "type": ["string", "null"], "default": "" },
+                "optional": { "type": "string" },
+                "required": { "type": "string" }
+              },
+              "required": ["required"]
+            }
+            """,
+            instanceJSON: #"{"nullable":" \t","required":"value"}"#,
+            validationBehavior: .onDemandOnly
         )
-        optionalSession.setStringValue("", for: tryUnwrapField("note", in: optionalSession))
-        let optionalObject = try decodeJSONObject(optionalSession.currentInstanceJSON)
-        XCTAssertEqual(optionalObject["note"] as? String, "")
+        let nullableField = tryUnwrapField("nullable", in: session)
+        let optionalField = tryUnwrapField("optional", in: session)
+        let requiredField = tryUnwrapField("required", in: session)
+
+        var object = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertTrue(object["nullable"] is NSNull)
+        XCTAssertTrue(object["defaulted"] is NSNull)
+
+        session.setStringValue("", for: optionalField)
+        session.setStringValue(" \t", for: requiredField)
+        session.setStringValue("", for: nullableField)
+
+        object = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(object["optional"] as? String, "")
+        XCTAssertEqual(object["required"] as? String, " \t")
+        XCTAssertTrue(object["nullable"] is NSNull)
+        XCTAssertFalse(session.validate())
+        XCTAssertEqual(session.errorMessages(for: requiredField), ["This field is required."])
+
+        session.setNullSelection(true, for: requiredField)
+        object = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(object["required"] as? String, " \t")
+
+        session.setStringValue("value", for: nullableField)
+        session.setStringValue(" \n", for: nullableField)
+        XCTAssertTrue(try decodeJSONObject(session.currentInstanceJSON)["nullable"] is NSNull)
     }
 
     func testEnumConstraintDeterminesEffectiveNullability() throws {

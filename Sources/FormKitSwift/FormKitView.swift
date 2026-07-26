@@ -700,6 +700,10 @@ private struct FormKitContainerView: View {
     }
 
     private func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
+        if session.isConcreteValuePending(for: field) {
+            return .value
+        }
+
         switch session.primitiveValue(for: field) {
         case .string, .integer, .number:
             return .value

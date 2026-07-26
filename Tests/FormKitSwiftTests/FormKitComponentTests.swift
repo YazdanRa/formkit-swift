@@ -207,7 +207,7 @@ final class FormKitComponentTests: XCTestCase {
         )
     }
 
-    func testClearingOptionalFileComponentsRemovesTheirProperties() throws {
+    func testClearingNonnullableFileComponentsKeepsBlankValues() throws {
         let schema =
             """
             {
@@ -239,8 +239,13 @@ final class FormKitComponentTests: XCTestCase {
         session.clearValue(for: tryUnwrapField("signature", in: session))
 
         let jsonObject = try decodeJSONObject(session.currentInstanceJSON)
-        XCTAssertNil(jsonObject["file"])
-        XCTAssertNil(jsonObject["signature"])
+        XCTAssertEqual(jsonObject["file"] as? String, "")
+        XCTAssertEqual(jsonObject["signature"] as? String, "")
+    }
+
+    func testUploadURLsAreTrimmedAndBlankURLsAreRejected() {
+        XCTAssertEqual("  https://example.com/file.pdf \n".formKitNonEmpty, "https://example.com/file.pdf")
+        XCTAssertNil(" \n\t".formKitNonEmpty)
     }
 
     private func fieldComponent(

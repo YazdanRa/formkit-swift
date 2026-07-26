@@ -31,15 +31,20 @@ final class FormKitReviewRegressionTests: XCTestCase {
 
         let optionalField = try XCTUnwrap(field(named: "optional", in: session))
         session.setStringValue("", for: optionalField)
-        XCTAssertEqual(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"] as? String, "")
+        XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"] is NSNull)
         session.setNullSelection(true, for: optionalField)
         XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"] is NSNull)
         session.unsetValue(for: optionalField)
         XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"])
 
-        session.setNullSelection(false, for: try XCTUnwrap(field(named: "required", in: session)))
+        let requiredField = try XCTUnwrap(field(named: "required", in: session))
+        session.setNullSelection(false, for: requiredField)
+        XCTAssertTrue(session.isConcreteValuePending(for: requiredField))
         object = try Self.decodeJSONObject(session.currentInstanceJSON)
-        XCTAssertEqual(object["required"] as? String, "")
+        XCTAssertTrue(object["required"] is NSNull)
+        session.setStringValue("entered", for: requiredField)
+        XCTAssertFalse(session.isConcreteValuePending(for: requiredField))
+        XCTAssertEqual(try Self.decodeJSONObject(session.currentInstanceJSON)["required"] as? String, "entered")
     }
 
     func testOptionalNullableEnumKeepsAbsenceDistinctFromNull() throws {
@@ -153,7 +158,7 @@ final class FormKitReviewRegressionTests: XCTestCase {
         XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["requiredDate"] is NSNull)
     }
 
-    func testMultipleFileUploadsReplaceInvalidNonStringValues() {
+    func testMultipleFileUploadsReplaceVacantNullAndInvalidValues() {
         for invalidValue in [FormKitJSONValue.null, .number(42)] {
             XCTAssertEqual(FormKitMultipleFileField.occupiedValueCount(in: [invalidValue]), 0)
             XCTAssertEqual(
@@ -165,11 +170,6 @@ final class FormKitReviewRegressionTests: XCTestCase {
                 [.string("https://example.com/replacement.pdf")]
             )
         }
-    }
-
-    func testUploadURLsAreTrimmedAndBlankURLsAreRejected() {
-        XCTAssertEqual("  https://example.com/file.pdf \n".formKitNonEmpty, "https://example.com/file.pdf")
-        XCTAssertNil(" \n\t".formKitNonEmpty)
     }
 
     func testLegacyRendererConformanceUsesNewOverrideOverload() {
