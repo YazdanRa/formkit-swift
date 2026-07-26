@@ -153,11 +153,7 @@ public func setStringValue(_ text: String, for field: FormKitFieldDescriptor) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         switch field.scalarType {
         case .string, .email, .uri:
-            if trimmed.isEmpty {
-                setPrimitiveValue(field.allowsNull ? .null : .string(""), for: field)
-            } else {
-                setPrimitiveValue(.string(text), for: field)
-            }
+            setPrimitiveValue(.string(text), for: field)
         case .date:
             if trimmed.isEmpty {
                 setPrimitiveValue(field.allowsNull ? .null : field.isRequired ? .string("") : nil, for: field)
@@ -231,7 +227,7 @@ public func setSelectedEnumChoiceID(_ choiceID: String?, for field: FormKitField
         }
 
         guard let choiceID else {
-            setPrimitiveValue(field.allowsNull ? .null : nil, for: field)
+            setPrimitiveValue(nil, for: field)
             handleFieldEdit(for: field)
             return
         }
@@ -468,7 +464,15 @@ public func setFormMessage(_ message: String?) {
     }
 
     private func restoreConcreteValue(for field: FormKitFieldDescriptor) -> FormKitFieldDescriptor.PrimitiveValue? {
-        seededValue(for: field, preferInitialInstance: false, usesNullFallback: false)
+        if let seededValue = seededValue(for: field, preferInitialInstance: false, usesNullFallback: false) {
+            return seededValue
+        }
+        switch field.scalarType {
+        case .string, .email, .uri:
+            return .string("")
+        default:
+            return nil
+        }
     }
 
     private func makeInstanceJSONValue() -> FormKitJSONValue {
@@ -656,7 +660,7 @@ public func setFormMessage(_ message: String?) {
             return defaultValue
         }
 
-        if field.allowsNull, usesNullFallback {
+        if field.allowsNull, field.isRequired, usesNullFallback {
             return .null
         }
 

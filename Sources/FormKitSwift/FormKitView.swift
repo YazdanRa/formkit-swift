@@ -314,6 +314,9 @@ private struct FormKitContainerView: View {
                 ?? FormKitComponentRegistry.fieldInput(for: componentContext)
             let usesStackedLabel = componentInput != nil
                 || (!field.isEnum && ![.boolean, .date, .dateTime].contains(field.scalarType))
+            let usesNullableTextStatePicker = field.allowsNull
+                && !field.isEnum
+                && [.string, .email, .uri].contains(field.scalarType)
             VStack(alignment: .leading, spacing: options.style.fieldSpacing) {
                 if usesStackedLabel {
                     Text(field.title)
@@ -326,6 +329,22 @@ private struct FormKitContainerView: View {
                     Text(description)
                         .font(.caption)
                         .foregroundStyle(options.style.secondaryText)
+                }
+
+                if usesNullableTextStatePicker {
+                    Picker(
+                        options.labels.valueState,
+                        selection: Binding(
+                            get: { session.isNullSelected(for: field) ? 1 : 0 },
+                            set: { session.setNullSelection($0 == 1, for: field) }
+                        )
+                    ) {
+                        Text(options.labels.value).tag(0)
+                        Text(options.labels.noValue).tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(locked || field.isDisabled)
+                    .accessibilityIdentifier("\(fieldIdentifier(for: field))_null_picker")
                 }
 
                 if usesStackedLabel {
@@ -406,7 +425,7 @@ private struct FormKitContainerView: View {
                     set: { session.setSelectedEnumChoiceID($0, for: field) }
                 )
             ) {
-                if !field.isRequired, !field.enumOptions.contains(where: { $0.value == .null }) {
+                if !field.isRequired {
                     Text(options.labels.notSet).tag(String?.none)
                 }
                 ForEach(field.enumOptions) { choice in

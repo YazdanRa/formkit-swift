@@ -522,22 +522,32 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(jsonObject["priority"] as? String, "Standard")
     }
 
-    func testBlankTextSerializesAsNullOnlyWhenNullable() throws {
+    func testBlankTextAndExplicitNullRemainDistinct() throws {
         let session = FormKitRenderer().makeFormSession(schemaJSON: supportedSchema, instanceJSON: nil)
         let websiteField = tryUnwrapField("website", in: session)
         let emailField = tryUnwrapField("email", in: session)
 
         var jsonObject = try decodeJSONObject(session.currentInstanceJSON)
         var contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
-        XCTAssertTrue(contact["website"] is NSNull)
+        XCTAssertNil(contact["website"])
 
         session.setStringValue("", for: websiteField)
         session.setStringValue("", for: emailField)
 
         jsonObject = try decodeJSONObject(session.currentInstanceJSON)
         contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
-        XCTAssertTrue(contact["website"] is NSNull)
+        XCTAssertEqual(contact["website"] as? String, "")
         XCTAssertEqual(contact["email"] as? String, "")
+
+        session.setStringValue(" \t", for: websiteField)
+        jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
+        XCTAssertEqual(contact["website"] as? String, " \t")
+
+        session.setNullSelection(true, for: websiteField)
+        jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        contact = try XCTUnwrap(jsonObject["contact"] as? [String: Any])
+        XCTAssertTrue(contact["website"] is NSNull)
 
         let optionalSession = FormKitRenderer().makeFormSession(
             schemaJSON: #"{"type":"object","properties":{"note":{"type":"string"}}}"#,
@@ -1248,6 +1258,34 @@ final class FormKitRendererTests: XCTestCase {
         )
 
         XCTAssertNotNil(field(named: "matched", in: session))
+    }
+
+    func testLocalReferenceTargetsIgnoreRenderAnnotations() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "x-local-schemas": {
+                "value": {
+                  "type": "string",
+                  "x-formkit-render-behavior": "disable",
+                  "x-formkit-conditional-state": "inactive"
+                }
+              },
+              "properties": {
+                "value": {
+                  "$ref": "#/x-local-schemas/value"
+                }
+              }
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let valueField = try XCTUnwrap(field(named: "value", in: session))
+
+        XCTAssertEqual(valueField.renderBehavior, .hide)
+        XCTAssertEqual(valueField.conditionalState, .active)
+        XCTAssertFalse(valueField.isDisabled)
     }
 
     func testSchemaPropertiesNamedLikeRenderAnnotationsStillRenderAndValidate() throws {

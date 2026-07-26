@@ -2141,7 +2141,7 @@ public final class FormKitRenderer: FormKitRendering {
             return defaultValue
         }
 
-        if field.allowsNull {
+        if field.allowsNull, field.isRequired {
             return .null
         }
 
@@ -2453,10 +2453,13 @@ public final class FormKitRenderer: FormKitRendering {
 
         let referencePathTokens = localReferencePathTokens(from: rawReference)
         let referencePointer = JSONPointer(from: rawReference)
-        guard let resolvedSchema = rootSchema.value(at: referencePointer)?.object else {
+        guard let rawResolvedSchema = rootSchema.value(at: referencePointer)?.object else {
             reasons.append(.unresolvedReference(rawReference, location: pointer))
             return nil
         }
+        let resolvedSchema = removingRenderEngineAnnotations(
+            from: .object(rawResolvedSchema)
+        ).object ?? [:]
 
         var merged = resolvedSchema
         for (key, value) in schemaObject where key != "$ref" {

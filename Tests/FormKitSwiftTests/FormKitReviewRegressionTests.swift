@@ -3,6 +3,65 @@ import XCTest
 
 @MainActor
 final class FormKitReviewRegressionTests: XCTestCase {
+    func testNullableSeedingPreservesOptionalAbsence() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "optional": { "type": ["string", "null"] },
+                "required": { "type": ["string", "null"] },
+                "defaulted": {
+                  "type": ["string", "null"],
+                  "default": "fallback"
+                },
+                "explicit": { "type": ["string", "null"] }
+              },
+              "required": ["required"]
+            }
+            """,
+            instanceJSON: #"{"explicit":null}"#
+        )
+
+        var object = try Self.decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertNil(object["optional"])
+        XCTAssertTrue(object["required"] is NSNull)
+        XCTAssertEqual(object["defaulted"] as? String, "fallback")
+        XCTAssertTrue(object["explicit"] is NSNull)
+
+        session.setNullSelection(false, for: try XCTUnwrap(field(named: "required", in: session)))
+        object = try Self.decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(object["required"] as? String, "")
+    }
+
+    func testOptionalNullableEnumKeepsAbsenceDistinctFromNull() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "choice": {
+                  "type": ["string", "null"],
+                  "enum": ["A", null]
+                }
+              }
+            }
+            """,
+            instanceJSON: nil
+        )
+        let field = try XCTUnwrap(field(named: "choice", in: session))
+        let nullChoice = try XCTUnwrap(field.enumOptions.first { $0.value == .null })
+
+        XCTAssertNil(session.selectedEnumChoiceID(for: field))
+        XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)["choice"])
+
+        session.setSelectedEnumChoiceID(nullChoice.id, for: field)
+        XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["choice"] is NSNull)
+
+        session.setSelectedEnumChoiceID(nil, for: field)
+        XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)["choice"])
+    }
+
     func testMultipleFileUploadsReplaceInvalidNonStringValues() {
         for invalidValue in [FormKitJSONValue.null, .number(42)] {
             XCTAssertEqual(FormKitMultipleFileField.occupiedValueCount(in: [invalidValue]), 0)

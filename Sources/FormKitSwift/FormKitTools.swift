@@ -248,7 +248,11 @@ public extension FormKitSession {
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
                 }
 
-                setSelectedEnumChoiceID(nil, for: field)
+                if field.allowsNull {
+                    setNullSelection(true, for: field)
+                } else {
+                    setSelectedEnumChoiceID(nil, for: field)
+                }
                 return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
             }
 
