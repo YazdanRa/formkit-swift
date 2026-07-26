@@ -15,9 +15,9 @@ Missing, `null`, blank, and concrete values are distinct:
 - A missing optional property is **Not Set**.
 - An explicit JSON `null` is **No Value**.
 - Blank text remains blank for non-nullable fields so validation can reject it.
-- Empty text becomes `null` when the field allows `null`.
+- Empty text in a non-choice field becomes `null` when the field allows `null`.
 
-Form controls, session mutations, schema defaults, and generic tool edits follow this same contract.
+Schema-authored blank enum and `const` choices remain concrete values. Form controls, session mutations, schema defaults, and generic tool edits follow this same contract.
 
 ## Keep State in the Session
 

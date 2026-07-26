@@ -75,13 +75,14 @@ FormKitOptions(
             }
             return AnyView(
                 Stepper(
-                    context.field.title,
                     value: Binding(
                         get: { Int(context.session.stringValue(for: context.field)) ?? 0 },
                         set: { context.session.setStringValue(String($0), for: context.field) }
                     ),
-                    in: 0 ... 5
+                    in: 0 ... 5,
+                    label: { EmptyView() }
                 )
+                .accessibilityLabel(context.field.title)
             )
         },
         arraySection: { context in
