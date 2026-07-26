@@ -479,6 +479,10 @@ public func setFormMessage(_ message: String?) {
         switch field.scalarType {
         case .string, .email, .uri:
             return .string("")
+        case .integer:
+            return .integer(0)
+        case .number:
+            return .number(0)
         default:
             return nil
         }

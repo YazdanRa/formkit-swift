@@ -100,6 +100,58 @@ final class FormKitSessionMutationTests: XCTestCase {
         XCTAssertNil(session.fieldErrors[fieldID])
     }
 
+    func testNullableNumbersPreserveAbsenceAndNull() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {"type":"object","properties":{
+              "count":{"type":["integer","null"]},
+              "amount":{"type":["number","null"]},
+              "requiredCount":{"type":["integer","null"]},
+              "requiredAmount":{"type":["number","null"]},
+              "defaultedAmount":{"type":["number","null"],"default":2.5}
+            },"required":["requiredCount","requiredAmount"]}
+            """,
+            instanceJSON: nil
+        )
+        let countField = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "count" })
+        let amountField = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "amount" })
+        let requiredCount = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "requiredCount" })
+        let requiredAmount = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "requiredAmount" })
+        let defaultedAmount = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "defaultedAmount" })
+
+        typealias PrimitiveValue = FormKitFieldDescriptor.PrimitiveValue
+        let optionalFields = [countField, amountField]
+        let inputs = ["42", "3.5"]
+        let parsedValues: [PrimitiveValue] = [.integer(42), .number(3.5)]
+        let zeroValues: [PrimitiveValue] = [.integer(0), .number(0)]
+        for index in optionalFields.indices {
+            let field = optionalFields[index]
+            XCTAssertNil(session.primitiveValue(for: field))
+            session.setStringValue(inputs[index], for: field)
+            XCTAssertEqual(session.primitiveValue(for: field), parsedValues[index])
+            session.setStringValue("", for: field)
+            XCTAssertEqual(session.primitiveValue(for: field), .null)
+            session.unsetValue(for: field)
+            XCTAssertNil(session.primitiveValue(for: field))
+            session.setNullSelection(false, for: field)
+            XCTAssertEqual(session.primitiveValue(for: field), zeroValues[index])
+        }
+
+        let requiredFields = [requiredCount, requiredAmount]
+        for index in requiredFields.indices {
+            let field = requiredFields[index]
+            XCTAssertEqual(session.primitiveValue(for: field), .null)
+            session.unsetValue(for: field)
+            XCTAssertEqual(session.primitiveValue(for: field), .null)
+            session.setNullSelection(false, for: field)
+            XCTAssertEqual(session.primitiveValue(for: field), zeroValues[index])
+        }
+
+        session.setNullSelection(true, for: defaultedAmount)
+        session.setNullSelection(false, for: defaultedAmount)
+        XCTAssertEqual(session.primitiveValue(for: defaultedAmount), .number(2.5))
+    }
+
     private func makeSession(instanceJSON: String?) -> FormKitSession {
         FormKitRenderer().makeFormSession(
             schemaJSON: """

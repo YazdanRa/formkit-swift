@@ -314,9 +314,9 @@ private struct FormKitContainerView: View {
                 ?? FormKitComponentRegistry.fieldInput(for: componentContext)
             let usesStackedLabel = componentInput != nil
                 || (!field.isEnum && ![.boolean, .date, .dateTime].contains(field.scalarType))
-            let usesNullableTextStatePicker = field.allowsNull
+            let usesNullableScalarStatePicker = field.allowsNull
                 && !field.isEnum
-                && [.string, .email, .uri].contains(field.scalarType)
+                && [.string, .email, .uri, .integer, .number].contains(field.scalarType)
             VStack(alignment: .leading, spacing: options.style.fieldSpacing) {
                 if usesStackedLabel {
                     Text(field.title)
@@ -331,12 +331,12 @@ private struct FormKitContainerView: View {
                         .foregroundStyle(options.style.secondaryText)
                 }
 
-                if usesNullableTextStatePicker {
+                if usesNullableScalarStatePicker {
                     Picker(
                         options.labels.valueState,
                         selection: Binding(
                             get: { nullableValueSelection(for: field) },
-                            set: { setNullableTextSelection($0, for: field) }
+                            set: { setNullableScalarSelection($0, for: field) }
                         )
                     ) {
                         if !field.isRequired {
@@ -701,7 +701,7 @@ private struct FormKitContainerView: View {
 
     private func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
         switch session.primitiveValue(for: field) {
-        case .string:
+        case .string, .integer, .number:
             return .value
         case .null:
             return .null
@@ -712,7 +712,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func setNullableTextSelection(
+    private func setNullableScalarSelection(
         _ selection: NullableValueSelection,
         for field: FormKitFieldDescriptor
     ) {
