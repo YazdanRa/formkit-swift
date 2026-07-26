@@ -59,15 +59,27 @@ public enum FormKitJSONValue: Codable, Equatable, Sendable {
     }
 
     public var object: [String: FormKitJSONValue]? {
-        if case .object(let value) = self { value } else { nil }
+        if case .object(let value) = self {
+            value
+        } else {
+            nil
+        }
     }
 
     public var array: [FormKitJSONValue]? {
-        if case .array(let value) = self { value } else { nil }
+        if case .array(let value) = self {
+            value
+        } else {
+            nil
+        }
     }
 
     public var string: String? {
-        if case .string(let value) = self { value } else { nil }
+        if case .string(let value) = self {
+            value
+        } else {
+            nil
+        }
     }
 
     public var integer: Int? {
@@ -93,7 +105,11 @@ public enum FormKitJSONValue: Codable, Equatable, Sendable {
     }
 
     public var boolean: Bool? {
-        if case .boolean(let value) = self { value } else { nil }
+        if case .boolean(let value) = self {
+            value
+        } else {
+            nil
+        }
     }
 
     func value(at pointer: JSONPointer) -> FormKitJSONValue? {

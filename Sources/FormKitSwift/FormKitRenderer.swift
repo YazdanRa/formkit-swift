@@ -11,6 +11,14 @@ public protocol FormKitRendering {
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
         validationBehavior: FormKitValidationBehavior
     ) -> FormKitSession
+
+    func makeFormSession(
+        schemaJSON: String,
+        instanceJSON: String?,
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]?,
+        validationBehavior: FormKitValidationBehavior
+    ) -> FormKitSession
 }
 
 public enum FormKitValidationBehavior: Sendable, Equatable {
@@ -22,12 +30,28 @@ public extension FormKitRendering {
     func makeFormSession(
         schemaJSON: String,
         instanceJSON: String?,
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]?,
+        validationBehavior: FormKitValidationBehavior
+    ) -> FormKitSession {
+        makeFormSession(
+            schemaJSON: schemaJSON,
+            instanceJSON: instanceJSON,
+            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
+            validationBehavior: validationBehavior
+        )
+    }
+
+    func makeFormSession(
+        schemaJSON: String,
+        instanceJSON: String?,
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior? = nil
     ) -> FormKitSession {
         makeFormSession(
             schemaJSON: schemaJSON,
             instanceJSON: instanceJSON,
             defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
+            conditionalRenderBehaviorOverrides: nil,
             validationBehavior: .revalidateAfterFirstAttempt
         )
     }
@@ -37,9 +61,16 @@ public extension FormKitRendering {
 @MainActor
 public final class FormKitRenderer: FormKitRendering {
     private let defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior
+    private let conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]
 
-    public init(defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior = .hide) {
+    public init(
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior = .hide,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior] = [:]
+    ) {
         self.defaultConditionalRenderBehavior = defaultConditionalRenderBehavior
+        self.conditionalRenderBehaviorOverrides = Self.normalizedConditionalRenderBehaviorOverrides(
+            conditionalRenderBehaviorOverrides
+        )
     }
 
     public func makeFormSession(
@@ -48,24 +79,51 @@ public final class FormKitRenderer: FormKitRendering {
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior? = nil,
         validationBehavior: FormKitValidationBehavior = .revalidateAfterFirstAttempt
     ) -> FormKitSession {
-        if let defaultConditionalRenderBehavior,
-           defaultConditionalRenderBehavior != self.defaultConditionalRenderBehavior
+        makeFormSession(
+            schemaJSON: schemaJSON,
+            instanceJSON: instanceJSON,
+            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
+            conditionalRenderBehaviorOverrides: nil,
+            validationBehavior: validationBehavior
+        )
+    }
+
+    public func makeFormSession(
+        schemaJSON: String,
+        instanceJSON: String? = nil,
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior? = nil,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]? = nil,
+        validationBehavior: FormKitValidationBehavior = .revalidateAfterFirstAttempt
+    ) -> FormKitSession {
+        let effectiveDefault = defaultConditionalRenderBehavior
+            ?? self.defaultConditionalRenderBehavior
+        let effectiveOverrides = conditionalRenderBehaviorOverrides.map(
+            Self.normalizedConditionalRenderBehaviorOverrides
+        ) ?? self.conditionalRenderBehaviorOverrides
+        if effectiveDefault != self.defaultConditionalRenderBehavior
+            || effectiveOverrides != self.conditionalRenderBehaviorOverrides
         {
-            return FormKitRenderer(defaultConditionalRenderBehavior: defaultConditionalRenderBehavior)
+            return FormKitRenderer(
+                defaultConditionalRenderBehavior: effectiveDefault,
+                conditionalRenderBehaviorOverrides: effectiveOverrides
+            )
                 .makeFormSession(
                     schemaJSON: schemaJSON,
                     instanceJSON: instanceJSON,
                     defaultConditionalRenderBehavior: nil,
+                    conditionalRenderBehaviorOverrides: nil,
                     validationBehavior: validationBehavior
                 )
         }
 
         let schemaDecoder = JSONDecoder()
         let schemaJSONValue: FormKitJSONValue
+        let renderSchemaJSONValue: FormKitJSONValue
         let schemaPropertyOrderIndex: JSONSchemaPropertyOrderIndex
 
         do {
             schemaJSONValue = try schemaDecoder.decode(FormKitJSONValue.self, from: Data(schemaJSON.utf8))
+            renderSchemaJSONValue = removingRenderEngineAnnotations(from: schemaJSONValue)
             schemaPropertyOrderIndex = try JSONSchemaPropertyOrderIndex(schemaJSON: schemaJSON)
         } catch {
             let plan = FormKitRenderPlan(
@@ -92,7 +150,7 @@ public final class FormKitRenderer: FormKitRendering {
 
         let decodedInstance = decodeInstance(instanceJSON)
         let renderPlan = makeRenderPlan(
-            from: schemaJSONValue,
+            from: renderSchemaJSONValue,
             instance: decodedInstance.value,
             propertyOrderIndex: schemaPropertyOrderIndex
         )
@@ -109,10 +167,10 @@ public final class FormKitRenderer: FormKitRendering {
                 initialInstance: decodedInstance.value,
                 initialFieldValues: fieldValues,
                 validationBehavior: validationBehavior,
-                refreshesRenderPlanOnFieldEdit: schemaMayChangeRenderPlanAfterFieldEdit(schemaJSONValue),
-                renderPlanProvider: { [schemaJSONValue, schemaPropertyOrderIndex] instance in
+                refreshesRenderPlanOnFieldEdit: schemaMayChangeRenderPlanAfterFieldEdit(renderSchemaJSONValue),
+                renderPlanProvider: { [renderSchemaJSONValue, schemaPropertyOrderIndex] instance in
                     self.makeRenderPlan(
-                        from: schemaJSONValue,
+                        from: renderSchemaJSONValue,
                         instance: instance,
                         propertyOrderIndex: schemaPropertyOrderIndex
                     )
@@ -163,10 +221,10 @@ public final class FormKitRenderer: FormKitRendering {
             initialInstance: decodedInstance.value,
             initialFieldValues: fieldValues,
             validationBehavior: validationBehavior,
-            refreshesRenderPlanOnFieldEdit: schemaMayChangeRenderPlanAfterFieldEdit(schemaJSONValue),
-            renderPlanProvider: { [schemaJSONValue, schemaPropertyOrderIndex] instance in
+            refreshesRenderPlanOnFieldEdit: schemaMayChangeRenderPlanAfterFieldEdit(renderSchemaJSONValue),
+            renderPlanProvider: { [renderSchemaJSONValue, schemaPropertyOrderIndex] instance in
                 self.makeRenderPlan(
-                    from: schemaJSONValue,
+                    from: renderSchemaJSONValue,
                     instance: instance,
                     propertyOrderIndex: schemaPropertyOrderIndex
                 )
@@ -295,6 +353,39 @@ public final class FormKitRenderer: FormKitRendering {
         return false
     }
 
+    private func removingRenderEngineAnnotations(
+        from value: FormKitJSONValue,
+        preservesSchemaMemberNames: Bool = false
+    ) -> FormKitJSONValue {
+        switch value {
+        case .object(let object):
+            return .object(
+                object.reduce(into: [String: FormKitJSONValue]()) { result, element in
+                    let (key, value) = element
+                    guard preservesSchemaMemberNames || !Self.renderEngineAnnotationKeys.contains(key) else {
+                        return
+                    }
+                    if preservesSchemaMemberNames {
+                        result[key] = removingRenderEngineAnnotations(from: value)
+                    } else if Self.schemaMemberNameMapKeys.contains(key) {
+                        result[key] = removingRenderEngineAnnotations(
+                            from: value,
+                            preservesSchemaMemberNames: true
+                        )
+                    } else if Self.schemaValueKeys.contains(key) {
+                        result[key] = removingRenderEngineAnnotations(from: value)
+                    } else {
+                        result[key] = value
+                    }
+                }
+            )
+        case .array(let array):
+            return .array(array.map { removingRenderEngineAnnotations(from: $0) })
+        case .string, .integer, .number, .boolean, .null:
+            return value
+        }
+    }
+
     @discardableResult
     private func parseObjectSchema(
         schemaObject: [String: FormKitJSONValue],
@@ -355,7 +446,11 @@ public final class FormKitRenderer: FormKitRendering {
             ?? fallbackTitle
         let sectionDescription = resolvedSchema.object["description"]?.string?.trimmedForJSONSchemaForm()
             ?? fallbackDescription
-        let sectionRenderBehavior = resolvedRenderBehavior(from: resolvedSchema.object)
+        let sectionUIComponent = uiComponent(from: resolvedSchema.object)
+        let sectionRenderBehavior = resolvedRenderBehavior(
+            for: pointerTokens,
+            from: resolvedSchema.object
+        )
         let sectionConditionalState = conditionalRenderState(from: resolvedSchema.object)
 
         var sectionFieldIDs: [String] = []
@@ -483,6 +578,7 @@ public final class FormKitRenderer: FormKitRendering {
                 fieldIDs: sectionFieldIDs,
                 propertyOrder: propertyOrder,
                 ownerArrayRowID: ownerArrayRowID,
+                uiComponent: sectionUIComponent,
                 renderBehavior: sectionRenderBehavior,
                 conditionalState: sectionConditionalState,
                 arrayDescriptor: nil
@@ -609,6 +705,17 @@ public final class FormKitRenderer: FormKitRendering {
             pointerTokens: pointerTokens + ["items"],
             reasons: &reasons
         )
+        let itemScalarType: FormKitFieldDescriptor.ScalarType? = {
+            guard case .scalar(let primitiveType, _) = itemType else {
+                return nil
+            }
+            return scalarType(
+                from: primitiveType,
+                format: materializedItemSchema.object["format"]?.string?.trimmedForJSONSchemaForm(),
+                location: JSONPointer.pointerString(from: pointerTokens + ["items"]),
+                reasons: &reasons
+            )
+        }()
 
         guard itemType != .unsupported else {
             return false
@@ -636,7 +743,11 @@ public final class FormKitRenderer: FormKitRendering {
             ?? fallbackTitle
         let sectionDescription = schemaObject["description"]?.string?.trimmedForJSONSchemaForm()
             ?? fallbackDescription
-        let sectionRenderBehavior = resolvedRenderBehavior(from: schemaObject)
+        let sectionUIComponent = uiComponent(from: schemaObject)
+        let sectionRenderBehavior = resolvedRenderBehavior(
+            for: pointerTokens,
+            from: schemaObject
+        )
         let sectionConditionalState = conditionalRenderState(from: schemaObject)
         let itemTitle = itemDisplayTitle(
             arrayTitle: sectionTitle,
@@ -788,12 +899,16 @@ public final class FormKitRenderer: FormKitRendering {
                 fieldIDs: [],
                 propertyOrder: [],
                 ownerArrayRowID: ownerArrayRowID,
+                uiComponent: sectionUIComponent,
                 renderBehavior: sectionRenderBehavior,
                 conditionalState: sectionConditionalState,
                 arrayDescriptor: FormKitArraySectionDescriptor(
                     pointer: sectionPointer,
                     propertyKey: propertyKey,
                     itemKind: itemKind,
+                    itemScalarType: itemScalarType,
+                    itemHasValueConstraint: materializedItemSchema.object["enum"] != nil
+                        || materializedItemSchema.object["const"] != nil,
                     itemTitle: itemTitle,
                     minItems: minItems,
                     maxItems: maxItems,
@@ -954,6 +1069,7 @@ public final class FormKitRenderer: FormKitRendering {
                     effectiveSchema = mergeSchemaObjects(effectiveSchema, overlay, includeRequired: true)
                 } else if let inactiveOverlay = inactiveRenderableSchemaObject(
                     from: overlay,
+                    pointerTokens: pointerTokens,
                     within: conditionalBaseSchema
                 ) {
                     effectiveSchema = mergeInactiveSchemaObjects(effectiveSchema, inactiveOverlay)
@@ -1004,6 +1120,7 @@ public final class FormKitRenderer: FormKitRendering {
 
                 if let inactiveOverlay = inactiveRenderableSchemaObject(
                     from: overlay,
+                    pointerTokens: pointerTokens,
                     within: conditionalBaseSchema
                 ) {
                     effectiveSchema = mergeInactiveSchemaObjects(effectiveSchema, inactiveOverlay)
@@ -1018,6 +1135,7 @@ public final class FormKitRenderer: FormKitRendering {
                 rootSchema: rootSchema,
                 instanceValue: instanceValue,
                 pointerTokens: pointerTokens + ["anyOf"],
+                instancePointerTokens: pointerTokens,
                 schemaPathTokens: schemaPathTokens + ["anyOf"],
                 propertyOrderIndex: propertyOrderIndex,
                 reasons: &reasons
@@ -1041,6 +1159,7 @@ public final class FormKitRenderer: FormKitRendering {
                 rootSchema: rootSchema,
                 instanceValue: instanceValue,
                 pointerTokens: pointerTokens + ["oneOf"],
+                instancePointerTokens: pointerTokens,
                 schemaPathTokens: schemaPathTokens + ["oneOf"],
                 propertyOrderIndex: propertyOrderIndex,
                 reasons: &reasons
@@ -1066,6 +1185,7 @@ public final class FormKitRenderer: FormKitRendering {
         rootSchema: FormKitJSONValue,
         instanceValue: FormKitJSONValue?,
         pointerTokens: [String],
+        instancePointerTokens: [String],
         schemaPathTokens: [String],
         propertyOrderIndex: JSONSchemaPropertyOrderIndex,
         reasons: inout [FormKitUnsupportedReason]
@@ -1133,7 +1253,7 @@ public final class FormKitRenderer: FormKitRendering {
         let inactiveOverlays = candidates
             .filter { !selectedIndices.contains($0.index) }
             .compactMap {
-                inactiveRenderableSchemaObject(from: $0.overlay)
+                inactiveRenderableSchemaObject(from: $0.overlay, pointerTokens: instancePointerTokens)
             }
 
         return CompositeOverlayMaterialization(
@@ -1145,16 +1265,19 @@ public final class FormKitRenderer: FormKitRendering {
 
     private func inactiveRenderableSchemaObject(
         from schemaObject: MaterializedJSONSchemaObject,
+        pointerTokens: [String],
         within baseSchema: MaterializedJSONSchemaObject? = nil,
         inheritedBehavior: FormKitConditionalRenderBehavior? = nil
     ) -> MaterializedJSONSchemaObject? {
         let transformedObject = inactiveRenderableSchemaObject(
             from: schemaObject.object,
+            pointerTokens: pointerTokens,
             inheritedBehavior: inheritedBehavior
         )
 
         var mergedProperties = transformedObject?["properties"]?.object ?? [:]
         let overlayRenderBehavior = resolvedRenderBehavior(
+            for: pointerTokens,
             from: schemaObject.object,
             inheritedBehavior: inheritedBehavior
         )
@@ -1167,6 +1290,7 @@ public final class FormKitRenderer: FormKitRendering {
                 mergedProperties[key] = .object(
                     forceInactiveSchemaObject(
                         from: basePropertySchema,
+                        pointerTokens: pointerTokens + [key],
                         inheritedBehavior: overlayRenderBehavior
                     )
                 )
@@ -1199,9 +1323,11 @@ public final class FormKitRenderer: FormKitRendering {
 
     private func forceInactiveSchemaObject(
         from schemaObject: [String: FormKitJSONValue],
+        pointerTokens: [String],
         inheritedBehavior: FormKitConditionalRenderBehavior? = nil
     ) -> [String: FormKitJSONValue] {
         let renderBehavior = resolvedRenderBehavior(
+            for: pointerTokens,
             from: schemaObject,
             inheritedBehavior: inheritedBehavior
         )
@@ -1209,25 +1335,29 @@ public final class FormKitRenderer: FormKitRendering {
         var transformed = schemaObject
 
         if let properties = schemaObject["properties"]?.object {
-            transformed["properties"] = .object(
-                properties.compactMapValues { rawPropertyValue -> FormKitJSONValue? in
+            let transformedProperties = properties.reduce(into: [String: FormKitJSONValue]()) { result, element in
+                let (key, rawPropertyValue) = element
+                result[key] = {
                     guard let propertySchema = rawPropertyValue.object else {
                         return rawPropertyValue
                     }
                     return .object(
                         forceInactiveSchemaObject(
                             from: propertySchema,
+                            pointerTokens: pointerTokens + [key],
                             inheritedBehavior: renderBehavior
                         )
                     )
-                }
-            )
+                }()
+            }
+            transformed["properties"] = .object(transformedProperties)
         }
 
         if let itemsSchema = schemaObject["items"]?.object {
             transformed["items"] = .object(
                 forceInactiveSchemaObject(
                     from: itemsSchema,
+                    pointerTokens: pointerTokens + ["items"],
                     inheritedBehavior: renderBehavior
                 )
             )
@@ -1242,9 +1372,11 @@ public final class FormKitRenderer: FormKitRendering {
 
     private func inactiveRenderableSchemaObject(
         from schemaObject: [String: FormKitJSONValue],
+        pointerTokens: [String],
         inheritedBehavior: FormKitConditionalRenderBehavior? = nil
     ) -> [String: FormKitJSONValue]? {
         let renderBehavior = resolvedRenderBehavior(
+            for: pointerTokens,
             from: schemaObject,
             inheritedBehavior: inheritedBehavior
         )
@@ -1252,16 +1384,18 @@ public final class FormKitRenderer: FormKitRendering {
         var transformed = schemaObject
 
         if let properties = schemaObject["properties"]?.object {
-            let renderableProperties = properties.compactMapValues { rawPropertyValue -> FormKitJSONValue? in
+            let renderableProperties = properties.reduce(into: [String: FormKitJSONValue]()) { result, element in
+                let (key, rawPropertyValue) = element
                 guard let propertySchema = rawPropertyValue.object,
                       let inactiveProperty = inactiveRenderableSchemaObject(
                         from: propertySchema,
+                        pointerTokens: pointerTokens + [key],
                         inheritedBehavior: renderBehavior
                       )
                 else {
-                    return nil
+                    return
                 }
-                return .object(inactiveProperty)
+                result[key] = .object(inactiveProperty)
             }
 
             if renderableProperties.isEmpty {
@@ -1274,6 +1408,7 @@ public final class FormKitRenderer: FormKitRendering {
         if let itemsSchema = schemaObject["items"]?.object {
             if let inactiveItemsSchema = inactiveRenderableSchemaObject(
                 from: itemsSchema,
+                pointerTokens: pointerTokens + ["items"],
                 inheritedBehavior: renderBehavior
             ) {
                 transformed["items"] = .object(inactiveItemsSchema)
@@ -1363,16 +1498,19 @@ public final class FormKitRenderer: FormKitRendering {
                 return .null
             }
 
+            let declaredValues = schemaObject["enum"]?.array ?? schemaObject["const"].map { [$0] } ?? []
+            let rawDefaultValue = schemaObject["default"]
             if let defaultValue = primitiveValue(
-                from: schemaObject["default"],
+                from: rawDefaultValue,
                 scalarType: scalarType,
-                allowsNull: allowsNull
+                allowsNull: allowsNull,
+                normalizesEmptyText: !declaredValues.contains { $0 == rawDefaultValue }
             ) {
                 return jsonValue(from: defaultValue)
             }
 
             if let firstOption = enumOptions(
-                from: schemaObject["enum"]?.array ?? schemaObject["const"].map { [$0] },
+                from: declaredValues,
                 scalarType: scalarType,
                 location: JSONPointer.pointerString(from: pointerTokens),
                 reasons: &reasons
@@ -1827,7 +1965,7 @@ public final class FormKitRenderer: FormKitRendering {
                 )
             )
             return nil
-        case .scalar(let primitiveType, let allowsNull):
+        case .scalar(let primitiveType, let declaredAllowsNull):
             let fieldScalarType = scalarType(
                 from: primitiveType,
                 format: schemaObject["format"]?.string?.trimmedForJSONSchemaForm(),
@@ -1839,6 +1977,9 @@ public final class FormKitRenderer: FormKitRendering {
                 return nil
             }
 
+            let allowsNull = declaredAllowsNull
+                && (schemaObject["enum"]?.array.map { $0.contains(.null) } ?? true)
+                && (schemaObject["const"].map { $0 == .null } ?? true)
             let enumOptions = enumOptions(
                 from: schemaObject["enum"]?.array ?? schemaObject["const"].map { [$0] },
                 scalarType: fieldScalarType,
@@ -1849,7 +1990,10 @@ public final class FormKitRenderer: FormKitRendering {
             let defaultValue = primitiveValue(
                 from: schemaObject["default"],
                 scalarType: fieldScalarType,
-                allowsNull: allowsNull
+                allowsNull: allowsNull,
+                normalizesEmptyText: !enumOptions.contains {
+                    jsonValue(from: $0.value) == schemaObject["default"]
+                }
             )
 
             return FormKitFieldDescriptor(
@@ -1864,21 +2008,33 @@ public final class FormKitRenderer: FormKitRendering {
                 isRequired: isRequired,
                 allowsNull: allowsNull,
                 defaultValue: defaultValue,
-                renderBehavior: resolvedRenderBehavior(from: schemaObject),
+                uiComponent: uiComponent(from: schemaObject),
+                renderBehavior: resolvedRenderBehavior(for: pointerTokens, from: schemaObject),
                 conditionalState: conditionalRenderState(from: schemaObject),
                 accessibilityIdentifier: accessibilityIdentifier(for: pointer)
             )
         }
     }
 
+    private func uiComponent(from schemaObject: [String: FormKitJSONValue]) -> FormKitUIComponent? {
+        guard let value = schemaObject[Self.uiComponentKey]?.string else {
+            return nil
+        }
+        let component = FormKitUIComponent(rawValue: value)
+        return component.rawValue.isEmpty ? nil : component
+    }
+
     private func resolvedRenderBehavior(
+        for pointerTokens: [String],
         from schemaObject: [String: FormKitJSONValue],
         inheritedBehavior: FormKitConditionalRenderBehavior? = nil
     ) -> FormKitConditionalRenderBehavior {
+        if let override = renderBehaviorOverride(for: pointerTokens) {
+            return override
+        }
+
         if let rawValue = (
-            schemaObject[Self.renderBehaviorAnnotationKey]?.string
-                ?? schemaObject[Self.legacyRenderBehaviorAnnotationKey]?.string
-                ?? schemaObject[Self.internalResolvedRenderBehaviorKey]?.string
+            schemaObject[Self.internalResolvedRenderBehaviorKey]?.string
         )?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
            let behavior = FormKitConditionalRenderBehavior(rawValue: rawValue)
         {
@@ -1886,6 +2042,71 @@ public final class FormKitRenderer: FormKitRendering {
         }
 
         return inheritedBehavior ?? defaultConditionalRenderBehavior
+    }
+
+    private func renderBehaviorOverride(
+        for pointerTokens: [String]
+    ) -> FormKitConditionalRenderBehavior? {
+        let pointer = JSONPointer.pointerString(from: pointerTokens)
+        if let exactOverride = conditionalRenderBehaviorOverrides[pointer] {
+            return exactOverride
+        }
+
+        return conditionalRenderBehaviorOverrides
+            .filter { $0.key.contains("*") }
+            .sorted { lhs, rhs in
+                if lhs.key.count == rhs.key.count {
+                    return lhs.key < rhs.key
+                }
+                return lhs.key.count > rhs.key.count
+            }
+            .first { wildcardPointer($0.key, matches: pointer) }?
+            .value
+    }
+
+    private func wildcardPointer(_ pattern: String, matches pointer: String) -> Bool {
+        let patternTokens = renderPointerTokens(from: pattern)
+        let pointerTokens = renderPointerTokens(from: pointer)
+        guard patternTokens.count == pointerTokens.count else {
+            return false
+        }
+        return zip(patternTokens, pointerTokens).allSatisfy { patternToken, pointerToken in
+            patternToken == "*" || patternToken == pointerToken
+        }
+    }
+
+    private func renderPointerTokens(from pointer: String) -> [String] {
+        let normalized = Self.normalizedRenderBehaviorOverridePointer(pointer) ?? "#"
+        guard normalized.hasPrefix("#/") else {
+            return []
+        }
+        return normalized.dropFirst(2).split(separator: "/", omittingEmptySubsequences: false).map(String.init)
+    }
+
+    private static func normalizedConditionalRenderBehaviorOverrides(
+        _ overrides: [String: FormKitConditionalRenderBehavior]
+    ) -> [String: FormKitConditionalRenderBehavior] {
+        overrides.reduce(into: [String: FormKitConditionalRenderBehavior]()) { result, element in
+            let (pointer, behavior) = element
+            guard let normalizedPointer = normalizedRenderBehaviorOverridePointer(pointer) else {
+                return
+            }
+            result[normalizedPointer] = behavior
+        }
+    }
+
+    private static func normalizedRenderBehaviorOverridePointer(_ pointer: String) -> String? {
+        let trimmed = pointer.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return "#"
+        }
+        if trimmed == "#" || trimmed.hasPrefix("#/") {
+            return trimmed
+        }
+        if trimmed.hasPrefix("/") {
+            return "#\(trimmed)"
+        }
+        return trimmed
     }
 
     private func conditionalRenderState(
@@ -1918,12 +2139,19 @@ public final class FormKitRenderer: FormKitRendering {
             return primitiveValue(
                 from: instanceValue,
                 scalarType: field.scalarType,
-                allowsNull: field.allowsNull
+                allowsNull: field.allowsNull,
+                normalizesEmptyText: !field.enumOptions.contains {
+                    jsonValue(from: $0.value) == instanceValue
+                }
             )
         }
 
         if let defaultValue = field.defaultValue {
             return defaultValue
+        }
+
+        if field.allowsNull, field.isRequired {
+            return .null
         }
 
         if field.enumOptions.isEmpty == false && field.isRequired {
@@ -2153,7 +2381,8 @@ public final class FormKitRenderer: FormKitRendering {
     private func primitiveValue(
         from jsonValue: FormKitJSONValue?,
         scalarType: FormKitFieldDescriptor.ScalarType,
-        allowsNull: Bool
+        allowsNull: Bool,
+        normalizesEmptyText: Bool = true
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
         guard let jsonValue else {
             return nil
@@ -2163,6 +2392,12 @@ public final class FormKitRenderer: FormKitRendering {
         case .null:
             return allowsNull ? .null : nil
         case .string(let value):
+            if allowsNull,
+               normalizesEmptyText,
+               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            {
+                return .null
+            }
             switch scalarType {
             case .string, .email, .uri, .date, .dateTime:
                 return .string(value)
@@ -2234,10 +2469,13 @@ public final class FormKitRenderer: FormKitRendering {
 
         let referencePathTokens = localReferencePathTokens(from: rawReference)
         let referencePointer = JSONPointer(from: rawReference)
-        guard let resolvedSchema = rootSchema.value(at: referencePointer)?.object else {
+        guard let rawResolvedSchema = rootSchema.value(at: referencePointer)?.object else {
             reasons.append(.unresolvedReference(rawReference, location: pointer))
             return nil
         }
+        let resolvedSchema = removingRenderEngineAnnotations(
+            from: .object(rawResolvedSchema)
+        ).object ?? [:]
 
         var merged = resolvedSchema
         for (key, value) in schemaObject where key != "$ref" {
@@ -2756,14 +2994,42 @@ public final class FormKitRenderer: FormKitRendering {
         "else",
         "if",
         "oneOf",
-        "then",
-        "x-conditions"
+        "then"
     ]
 
-    private static let renderBehaviorAnnotationKey = "x-render-behavior"
-    private static let legacyRenderBehaviorAnnotationKey = "xRenderBehavior"
     private static let internalResolvedRenderBehaviorKey = "x-formkit-render-behavior"
     private static let internalConditionalStateKey = "x-formkit-conditional-state"
+    private static let uiComponentKey = "x-formkit-ui-component"
+    private static let renderEngineAnnotationKeys: Set<String> = [
+        internalResolvedRenderBehaviorKey,
+        internalConditionalStateKey
+    ]
+    private static let schemaMemberNameMapKeys: Set<String> = [
+        "$defs",
+        "dependencies",
+        "definitions",
+        "dependentSchemas",
+        "patternProperties",
+        "properties"
+    ]
+    private static let schemaValueKeys: Set<String> = [
+        "additionalItems",
+        "additionalProperties",
+        "allOf",
+        "anyOf",
+        "contains",
+        "contentSchema",
+        "else",
+        "if",
+        "items",
+        "not",
+        "oneOf",
+        "prefixItems",
+        "propertyNames",
+        "then",
+        "unevaluatedItems",
+        "unevaluatedProperties"
+    ]
     private static let instanceDependentRenderPlanKeywords: Set<String> = [
         "dependentRequired",
         "dependentSchemas",
@@ -2812,6 +3078,7 @@ public struct FormKitRenderPlan: Sendable, Equatable {
         public let fieldIDs: [String]
         public let propertyOrder: [String]
         public let ownerArrayRowID: String?
+        public let uiComponent: FormKitUIComponent?
         public let renderBehavior: FormKitConditionalRenderBehavior
         public let conditionalState: FormKitConditionalRenderState
         public let arrayDescriptor: FormKitArraySectionDescriptor?
@@ -2873,6 +3140,8 @@ public struct FormKitArraySectionDescriptor: Sendable, Equatable {
     public let pointer: String
     public let propertyKey: String?
     public let itemKind: ItemKind
+    public let itemScalarType: FormKitFieldDescriptor.ScalarType?
+    public let itemHasValueConstraint: Bool
     public let itemTitle: String
     public let minItems: Int
     public let maxItems: Int?
@@ -2958,6 +3227,7 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
     public let isRequired: Bool
     public let allowsNull: Bool
     public let defaultValue: PrimitiveValue?
+    public let uiComponent: FormKitUIComponent?
     public let renderBehavior: FormKitConditionalRenderBehavior
     public let conditionalState: FormKitConditionalRenderState
     public let accessibilityIdentifier: String

@@ -4,12 +4,28 @@ struct FormKitOwnedSessionConfiguration: Equatable {
     let schemaJSON: String
     let instanceJSON: String?
     let defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior
+    let conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]
     let validationBehavior: FormKitValidationBehavior
+
+    init(
+        schemaJSON: String,
+        instanceJSON: String?,
+        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior,
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior] = [:],
+        validationBehavior: FormKitValidationBehavior
+    ) {
+        self.schemaJSON = schemaJSON
+        self.instanceJSON = instanceJSON
+        self.defaultConditionalRenderBehavior = defaultConditionalRenderBehavior
+        self.conditionalRenderBehaviorOverrides = conditionalRenderBehaviorOverrides
+        self.validationBehavior = validationBehavior
+    }
 
     @MainActor
     func makeSession() -> FormKitSession {
         FormKitRenderer(
-            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior
+            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
+            conditionalRenderBehaviorOverrides: conditionalRenderBehaviorOverrides
         ).makeFormSession(
             schemaJSON: schemaJSON,
             instanceJSON: instanceJSON,
@@ -40,6 +56,7 @@ public struct FormKitView: View {
             schemaJSON: schemaJSON,
             instanceJSON: instanceJSON,
             defaultConditionalRenderBehavior: options.defaultConditionalRenderBehavior,
+            conditionalRenderBehaviorOverrides: options.conditionalRenderBehaviorOverrides,
             validationBehavior: options.validationBehavior
         )
 
@@ -190,52 +207,75 @@ private struct FormKitContainerView: View {
     ) -> some View {
         let canAddMore = descriptor.maxItems.map { descriptor.rows.count < $0 } ?? true
         let arrayErrors = session.errorMessages(for: section)
+        let componentContext = FormKitArraySectionComponentContext(
+            session: session,
+            section: section,
+            descriptor: descriptor,
+            errors: arrayErrors,
+            isEditingLocked: isEditingLocked,
+            style: options.style,
+            labels: options.labels,
+            uploadHandler: options.uploadHandler
+        )
 
-        Section {
-            if descriptor.rows.isEmpty {
-                Text(options.labels.noItems)
-                    .font(.caption)
-                    .foregroundStyle(options.style.secondaryText)
-                    .accessibilityIdentifier("\(section.id)_empty_state")
-            }
+        if let customArraySection = options.components.arraySection?(componentContext) {
+            customArraySection
+        } else if let registeredArraySection = FormKitComponentRegistry.arraySection(for: componentContext) {
+            registeredArraySection
+        } else {
+            Section {
+                if descriptor.rows.isEmpty {
+                    Text(options.labels.noItems)
+                        .font(.caption)
+                        .foregroundStyle(options.style.secondaryText)
+                        .accessibilityIdentifier("\(section.id)_empty_state")
+                }
 
-            ForEach(descriptor.rows) { row in
-                arrayRowView(row, in: section, descriptor: descriptor, renderIndex: renderIndex)
-            }
+                ForEach(descriptor.rows) { row in
+                    arrayRowView(row, in: section, descriptor: descriptor, renderIndex: renderIndex)
+                }
 
-            if options.mode == .editable {
-                Button {
-                    session.appendArrayRow(to: section)
-                    focusFirstField(in: section)
-                } label: {
-                    Label("\(options.labels.addItemPrefix) \(descriptor.itemTitle)", systemImage: "plus.circle.fill")
+                if options.mode == .editable {
+                    Button {
+                        session.appendArrayRow(to: section)
+                        focusFirstField(in: section)
+                    } label: {
+                        Label(
+                            "\(options.labels.addItemPrefix) \(descriptor.itemTitle)",
+                            systemImage: "plus.circle.fill"
+                        )
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    }
+                    .disabled(!canAddMore || section.isDisabled || isEditingLocked)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .accessibilityIdentifier("\(section.id)_add_button")
                 }
-                .disabled(!canAddMore || section.isDisabled || isEditingLocked)
-                .accessibilityIdentifier("\(section.id)_add_button")
-            }
 
-            if !arrayErrors.isEmpty {
-                FormKitMessageRow(message: arrayErrors.joined(separator: "\n"), color: options.style.destructive)
-                    .accessibilityIdentifier("\(section.id)_error")
-            }
-        } header: {
-            if let title = sectionHeaderTitle(for: section) {
-                sectionHeader(section, title: title)
-            }
-        } footer: {
-            VStack(alignment: .leading, spacing: 4) {
-                if let description = section.description, !description.isEmpty {
-                    Text(description)
+                if !arrayErrors.isEmpty {
+                    FormKitMessageRow(message: arrayErrors.joined(separator: "\n"), color: options.style.destructive)
+                        .accessibilityIdentifier("\(section.id)_error")
                 }
-                if descriptor.minItems > 0 {
-                    Text("\(options.labels.minimumItemsPrefix) \(descriptor.minItems)")
+            } header: {
+                if let title = sectionHeaderTitle(for: section) {
+                    sectionHeader(section, title: title)
                 }
-                if let maxItems = descriptor.maxItems {
-                    Text("\(options.labels.maximumItemsPrefix) \(maxItems)")
+            } footer: {
+                VStack(alignment: .leading, spacing: 4) {
+                    if let description = section.description, !description.isEmpty {
+                        Text(description)
+                    }
+                    if descriptor.minItems > 0 {
+                        Text("\(options.labels.minimumItemsPrefix) \(descriptor.minItems)")
+                    }
+                    if let maxItems = descriptor.maxItems {
+                        Text("\(options.labels.maximumItemsPrefix) \(maxItems)")
+                    }
                 }
             }
+            .accessibilityIdentifier(section.id)
         }
-        .accessibilityIdentifier(section.id)
     }
 
     @ViewBuilder
@@ -258,43 +298,70 @@ private struct FormKitContainerView: View {
         let errors = session.errorMessages(for: field)
         let state = options.fieldState(field)
         let locked = isEditingLocked || state == .locked
+        let componentContext = FormKitFieldComponentContext(
+            session: session,
+            field: field,
+            errors: errors,
+            state: state,
+            isEditingLocked: locked,
+            style: options.style,
+            uploadHandler: options.uploadHandler
+        )
 
         if let customField = options.components.field {
-            customField(
-                FormKitFieldComponentContext(
-                    session: session,
-                    field: field,
-                    errors: errors,
-                    state: state,
-                    isEditingLocked: locked
-                )
-            )
+            customField(componentContext)
         } else {
+            let componentInput = options.components.fieldInput?(componentContext)
+                ?? FormKitComponentRegistry.fieldInput(for: componentContext)
+            let usesStackedLabel = componentInput != nil
+                || (!field.isEnum && ![.boolean, .date, .dateTime].contains(field.scalarType))
             VStack(alignment: .leading, spacing: options.style.fieldSpacing) {
+                if usesStackedLabel {
+                    Text(field.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(options.style.secondaryText)
+                        .accessibilityHidden(componentInput == nil)
+                }
+
                 if let description = field.description, !description.isEmpty {
                     Text(description)
                         .font(.caption)
                         .foregroundStyle(options.style.secondaryText)
                 }
 
-                if field.allowsNull {
-                    Picker(
-                        options.labels.valueState,
-                        selection: Binding(
-                            get: { session.isNullSelected(for: field) ? 1 : 0 },
-                            set: { session.setNullSelection($0 == 1, for: field) }
-                        )
-                    ) {
-                        Text(options.labels.value).tag(0)
-                        Text(options.labels.noValue).tag(1)
-                    }
-                    .pickerStyle(.segmented)
-                    .disabled(locked || field.isDisabled)
-                    .accessibilityIdentifier("\(fieldIdentifier(for: field))_null_picker")
-                }
-
-                if !session.isNullSelected(for: field) {
-                    fieldInput(field, renderIndex: renderIndex, locked: locked)
+                if usesStackedLabel {
+                    resolvedFieldInput(
+                        componentInput,
+                        field: field,
+                        renderIndex: renderIndex,
+                        locked: locked
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: options.style.cornerRadius, style: .continuous)
+                            .fill(
+                                locked || field.isDisabled
+                                    ? options.style.disabledFieldBackground
+                                    : options.style.fieldBackground
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: options.style.cornerRadius, style: .continuous)
+                            .stroke(
+                                borderColor(for: field, state: state, hasErrors: !errors.isEmpty),
+                                lineWidth: 1.5
+                            )
+                    )
+                } else {
+                    resolvedFieldInput(
+                        componentInput,
+                        field: field,
+                        renderIndex: renderIndex,
+                        locked: locked
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 }
 
                 if !errors.isEmpty {
@@ -303,20 +370,26 @@ private struct FormKitContainerView: View {
                         .accessibilityIdentifier("\(fieldIdentifier(for: field))_error")
                 }
             }
-            .padding(8)
-            .background(
-                RoundedRectangle(cornerRadius: options.style.cornerRadius, style: .continuous)
-                    .fill(options.style.fieldBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: options.style.cornerRadius, style: .continuous)
-                    .stroke(borderColor(for: state, hasErrors: !errors.isEmpty), lineWidth: 1.5)
-            )
+            .padding(.vertical, 4)
             .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
             .id(field.id)
             .disabled(field.isDisabled || locked)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(fieldIdentifier(for: field))
+        }
+    }
+
+    @ViewBuilder
+    private func resolvedFieldInput(
+        _ componentInput: AnyView?,
+        field: FormKitFieldDescriptor,
+        renderIndex: FormKitRenderIndex,
+        locked: Bool
+    ) -> some View {
+        if let componentInput {
+            componentInput
+        } else {
+            fieldInput(field, renderIndex: renderIndex, locked: locked)
         }
     }
 
@@ -342,46 +415,58 @@ private struct FormKitContainerView: View {
                 }
             }
             .disabled(locked)
+            .frame(maxWidth: .infinity, alignment: .trailing)
             .accessibilityIdentifier("\(fieldIdentifier(for: field))_picker")
         } else {
             switch field.scalarType {
             case .boolean:
-                Toggle(
-                    field.title,
-                    isOn: Binding(
-                        get: { session.booleanValue(for: field) },
-                        set: { session.setBooleanValue($0, for: field) }
+                if field.allowsNull {
+                    Picker(
+                        field.title,
+                        selection: Binding(
+                            get: { nullableBooleanSelection(for: field) },
+                            set: { selection in
+                                switch selection {
+                                case .absent:
+                                    session.unsetValue(for: field)
+                                case .null:
+                                    session.setNullSelection(true, for: field)
+                                case .boolean(let value):
+                                    session.setBooleanValue(value, for: field)
+                                }
+                            }
+                        )
+                    ) {
+                        if !field.isRequired {
+                            Text(options.labels.notSet).tag(NullableBooleanSelection.absent)
+                        }
+                        Text(options.labels.noValue).tag(NullableBooleanSelection.null)
+                        Text("Off", bundle: .module).tag(NullableBooleanSelection.boolean(false))
+                        Text("On", bundle: .module).tag(NullableBooleanSelection.boolean(true))
+                    }
+                    .pickerStyle(.menu)
+                    .disabled(locked)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .accessibilityIdentifier("\(fieldIdentifier(for: field))_picker")
+                } else {
+                    Toggle(
+                        field.title,
+                        isOn: Binding(
+                            get: { session.booleanValue(for: field) },
+                            set: { session.setBooleanValue($0, for: field) }
+                        )
                     )
-                )
-                .toggleStyle(.switch)
-                .disabled(locked)
-                .accessibilityIdentifier("\(fieldIdentifier(for: field))_toggle")
+                    .toggleStyle(.switch)
+                    .disabled(locked)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .accessibilityIdentifier("\(fieldIdentifier(for: field))_toggle")
+                }
 
             case .date:
-                DatePicker(
-                    field.title,
-                    selection: Binding(
-                        get: { session.dateValue(for: field) },
-                        set: { session.setDateValue($0, for: field) }
-                    ),
-                    displayedComponents: .date
-                )
-                .datePickerStyle(.compact)
-                .disabled(locked)
-                .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_picker")
+                dateInput(field, displayedComponents: .date, locked: locked)
 
             case .dateTime:
-                DatePicker(
-                    field.title,
-                    selection: Binding(
-                        get: { session.dateValue(for: field) },
-                        set: { session.setDateValue($0, for: field) }
-                    ),
-                    displayedComponents: [.date, .hourAndMinute]
-                )
-                .datePickerStyle(.compact)
-                .disabled(locked)
-                .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_picker")
+                dateInput(field, displayedComponents: [.date, .hourAndMinute], locked: locked)
 
             default:
                 FormKitDebouncedTextInputField(
@@ -399,6 +484,70 @@ private struct FormKitContainerView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func dateInput(
+        _ field: FormKitFieldDescriptor,
+        displayedComponents: DatePickerComponents,
+        locked: Bool
+    ) -> some View {
+        if field.allowsNull {
+            VStack(alignment: .trailing, spacing: 8) {
+                Picker(
+                    field.title,
+                    selection: Binding(
+                        get: { nullableValueSelection(for: field) },
+                        set: { selection in
+                            switch selection {
+                            case .absent:
+                                session.unsetValue(for: field)
+                            case .null:
+                                session.setNullSelection(true, for: field)
+                            case .value:
+                                session.setDateValue(session.dateValue(for: field), for: field)
+                            }
+                        }
+                    )
+                ) {
+                    if !field.isRequired {
+                        Text(options.labels.notSet).tag(NullableValueSelection.absent)
+                    }
+                    Text(options.labels.noValue).tag(NullableValueSelection.null)
+                    Text(options.labels.value).tag(NullableValueSelection.value)
+                }
+                .pickerStyle(.menu)
+                .disabled(locked)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_state_picker")
+
+                if nullableValueSelection(for: field) == .value {
+                    datePicker(field, displayedComponents: displayedComponents, locked: locked)
+                        .labelsHidden()
+                }
+            }
+        } else {
+            datePicker(field, displayedComponents: displayedComponents, locked: locked)
+        }
+    }
+
+    private func datePicker(
+        _ field: FormKitFieldDescriptor,
+        displayedComponents: DatePickerComponents,
+        locked: Bool
+    ) -> some View {
+        DatePicker(
+            field.title,
+            selection: Binding(
+                get: { session.dateValue(for: field) },
+                set: { session.setDateValue($0, for: field) }
+            ),
+            displayedComponents: displayedComponents
+        )
+        .datePickerStyle(.compact)
+        .disabled(locked)
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_picker")
     }
 
     private func arrayRowView(
@@ -435,7 +584,12 @@ private struct FormKitContainerView: View {
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(12)
+        .background(
+            .background,
+            in: RoundedRectangle(cornerRadius: options.style.cornerRadius + 4, style: .continuous)
+        )
+        .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -475,9 +629,16 @@ private struct FormKitContainerView: View {
         return section.title
     }
 
-    private func borderColor(for state: FormKitFieldVisualState, hasErrors: Bool) -> Color {
+    private func borderColor(
+        for field: FormKitFieldDescriptor,
+        state: FormKitFieldVisualState,
+        hasErrors: Bool
+    ) -> Color {
         if hasErrors {
             return options.style.destructive
+        }
+        if focusedFieldID == field.id {
+            return options.style.accent
         }
         switch state {
         case .changed:
@@ -485,7 +646,7 @@ private struct FormKitContainerView: View {
         case .locked:
             return options.style.secondaryText
         case .normal:
-            return .clear
+            return options.style.secondaryText.opacity(0.25)
         }
     }
 
@@ -500,13 +661,55 @@ private struct FormKitContainerView: View {
         case .number:
             return "0.0"
         default:
-            return field.title
+            return ""
+        }
+    }
+
+    private func nullableBooleanSelection(for field: FormKitFieldDescriptor) -> NullableBooleanSelection {
+        switch session.primitiveValue(for: field) {
+        case .boolean(let value):
+            return .boolean(value)
+        case .null:
+            return .null
+        case nil:
+            return .absent
+        default:
+            return field.isRequired ? .null : .absent
+        }
+    }
+
+    private func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
+        if session.isConcreteValuePending(for: field) {
+            return .value
+        }
+
+        switch session.primitiveValue(for: field) {
+        case .string, .integer, .number:
+            return .value
+        case .null:
+            return .null
+        case nil:
+            return .absent
+        default:
+            return field.isRequired ? .null : .absent
         }
     }
 
     private func fieldIdentifier(for field: FormKitFieldDescriptor) -> String {
         FormKitAccessibility.fieldIdentifier(for: field)
     }
+}
+
+private enum NullableBooleanSelection: Hashable {
+    case absent
+    case null
+    case boolean(Bool)
+}
+
+private enum NullableValueSelection: Hashable {
+    case absent
+    case null
+    case value
 }
 
 private struct FormKitMessageRow: View {

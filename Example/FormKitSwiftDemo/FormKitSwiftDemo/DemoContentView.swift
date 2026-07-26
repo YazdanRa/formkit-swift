@@ -172,3 +172,7 @@ struct DemoContentView: View {
         pointer.hasPrefix("#") ? String(pointer.dropFirst()) : pointer
     }
 }
+
+#Preview {
+    DemoContentView()
+}

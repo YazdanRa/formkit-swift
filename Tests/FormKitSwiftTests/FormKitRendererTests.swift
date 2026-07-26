@@ -522,6 +522,77 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(jsonObject["priority"] as? String, "Standard")
     }
 
+    func testEmptyTextUsesNullOrBlankByNullability() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "nullable": { "type": ["string", "null"] },
+                "defaulted": { "type": ["string", "null"], "default": "" },
+                "optional": { "type": "string" },
+                "required": { "type": "string" }
+              },
+              "required": ["required"]
+            }
+            """,
+            instanceJSON: #"{"nullable":" \t","required":"value"}"#,
+            validationBehavior: .onDemandOnly
+        )
+        let nullableField = tryUnwrapField("nullable", in: session)
+        let optionalField = tryUnwrapField("optional", in: session)
+        let requiredField = tryUnwrapField("required", in: session)
+
+        var object = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertTrue(object["nullable"] is NSNull)
+        XCTAssertTrue(object["defaulted"] is NSNull)
+
+        session.setStringValue("", for: optionalField)
+        session.setStringValue(" \t", for: requiredField)
+        session.setStringValue("", for: nullableField)
+
+        object = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(object["optional"] as? String, "")
+        XCTAssertEqual(object["required"] as? String, " \t")
+        XCTAssertTrue(object["nullable"] is NSNull)
+        XCTAssertFalse(session.validate())
+        XCTAssertEqual(session.errorMessages(for: requiredField), ["This field is required."])
+
+        session.setNullSelection(true, for: requiredField)
+        object = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(object["required"] as? String, " \t")
+
+        session.setStringValue("value", for: nullableField)
+        session.setStringValue(" \n", for: nullableField)
+        XCTAssertTrue(try decodeJSONObject(session.currentInstanceJSON)["nullable"] is NSNull)
+    }
+
+    func testEnumConstraintDeterminesEffectiveNullability() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "concrete": {
+                  "type": ["string", "null"],
+                  "enum": ["A"]
+                },
+                "nullable": {
+                  "type": ["string", "null"],
+                  "enum": ["A", null]
+                }
+              }
+            }
+            """
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let concreteField = tryUnwrapField("concrete", in: session)
+        let nullableField = tryUnwrapField("nullable", in: session)
+
+        XCTAssertFalse(concreteField.allowsNull)
+        XCTAssertTrue(nullableField.allowsNull)
+        XCTAssertEqual(nullableField.enumOptions.map(\.value), [.string("A"), .null])
+    }
+
     func testStaticFieldEditDoesNotPublishRenderPlanWhenPlanIsUnchanged() throws {
         let session = FormKitRenderer().makeFormSession(schemaJSON: supportedSchema, instanceJSON: nil)
         let nameField = tryUnwrapField("fullName", in: session)
@@ -551,6 +622,7 @@ final class FormKitRendererTests: XCTestCase {
             isRequired: false,
             allowsNull: false,
             defaultValue: nil,
+            uiComponent: nil,
             renderBehavior: .hide,
             conditionalState: .active,
             accessibilityIdentifier: "json_schema_field_name"
@@ -568,6 +640,7 @@ final class FormKitRendererTests: XCTestCase {
             fieldIDs: [field.id],
             propertyOrder: [field.propertyKey],
             ownerArrayRowID: nil,
+            uiComponent: nil,
             renderBehavior: .hide,
             conditionalState: .active,
             arrayDescriptor: nil
@@ -982,8 +1055,7 @@ final class FormKitRendererTests: XCTestCase {
                 "properties": {
                   "advancedCode": {
                     "type": "string",
-                    "title": "Advanced Code",
-                    "x-render-behavior": "disable"
+                    "title": "Advanced Code"
                   }
                 },
                 "required": ["advancedCode"]
@@ -991,7 +1063,11 @@ final class FormKitRendererTests: XCTestCase {
             }
             """
 
-        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: nil,
+            conditionalRenderBehaviorOverrides: ["#/advancedCode": .disable]
+        )
         let modeField = tryUnwrapField("mode", in: session)
         let advancedCodeField = tryUnwrapField("advancedCode", in: session)
 
@@ -1033,15 +1109,18 @@ final class FormKitRendererTests: XCTestCase {
                 "properties": {
                   "advancedNotes": {
                     "type": "string",
-                    "title": "Advanced Notes",
-                    "x-render-behavior": "ignore"
+                    "title": "Advanced Notes"
                   }
                 }
               }
             }
             """
 
-        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: nil,
+            conditionalRenderBehaviorOverrides: ["/advancedNotes": .ignore]
+        )
         let advancedNotesField = tryUnwrapField("advancedNotes", in: session)
 
         XCTAssertFalse(advancedNotesField.isDisabled)
@@ -1050,6 +1129,358 @@ final class FormKitRendererTests: XCTestCase {
         session.setStringValue("Carry across branches", for: advancedNotesField)
         XCTAssertTrue(session.currentInstanceJSON.contains("\"advancedNotes\" : \"Carry across branches\""))
         XCTAssertTrue(session.validate())
+    }
+
+    func testSchemaRenderBehaviorAnnotationsAreIgnored() throws {
+        let schema =
+            """
+            {
+              "title": "Ignored Schema Annotation",
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "title": "Mode",
+                  "enum": ["basic", "advanced"],
+                  "default": "basic"
+                }
+              },
+              "required": ["mode"],
+              "if": {
+                "properties": {
+                  "mode": { "const": "advanced" }
+                },
+                "required": ["mode"]
+              },
+              "then": {
+                "properties": {
+                  "advancedCode": {
+                    "type": "string",
+                    "title": "Advanced Code",
+                    "x-render-behavior": "disable"
+                  }
+                },
+                "required": ["advancedCode"]
+              }
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+
+        XCTAssertNil(field(named: "advancedCode", in: session))
+    }
+
+    func testSchemaFormKitPrefixedRenderAnnotationsAreIgnored() throws {
+        let schema =
+            """
+            {
+              "title": "Ignored FormKit Annotation",
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "title": "Mode",
+                  "enum": ["basic", "advanced"],
+                  "default": "basic"
+                }
+              },
+              "required": ["mode"],
+              "if": {
+                "properties": {
+                  "mode": { "const": "advanced" }
+                },
+                "required": ["mode"]
+              },
+              "then": {
+                "properties": {
+                  "advancedCode": {
+                    "type": "string",
+                    "title": "Advanced Code",
+                    "x-formkit-render-behavior": "disable"
+                  }
+                },
+                "required": ["advancedCode"]
+              }
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+
+        XCTAssertNil(field(named: "advancedCode", in: session))
+    }
+
+    func testConditionalConstPreservesAnnotationNamedInstanceData() {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "selection": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "object",
+                      "properties": {
+                        "x-formkit-render-behavior": { "type": "string" },
+                        "x-formkit-conditional-state": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              "if": {
+                "properties": {
+                  "selection": {
+                    "const": {
+                      "details": {
+                        "x-formkit-render-behavior": "disable",
+                        "x-formkit-conditional-state": "inactive"
+                      }
+                    }
+                  }
+                },
+                "required": ["selection"]
+              },
+              "then": {
+                "properties": {
+                  "matched": {
+                    "type": "string",
+                    "title": "Matched"
+                  }
+                }
+              }
+            }
+            """
+        let instance =
+            """
+            {
+              "selection": {
+                "details": {
+                  "x-formkit-render-behavior": "disable",
+                  "x-formkit-conditional-state": "inactive"
+                }
+              }
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: instance
+        )
+
+        XCTAssertNotNil(field(named: "matched", in: session))
+    }
+
+    func testLocalReferenceTargetsIgnoreRenderAnnotations() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "x-local-schemas": {
+                "value": {
+                  "type": "string",
+                  "x-formkit-render-behavior": "disable",
+                  "x-formkit-conditional-state": "inactive"
+                }
+              },
+              "properties": {
+                "value": {
+                  "$ref": "#/x-local-schemas/value"
+                }
+              }
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let valueField = try XCTUnwrap(field(named: "value", in: session))
+
+        XCTAssertEqual(valueField.renderBehavior, .hide)
+        XCTAssertEqual(valueField.conditionalState, .active)
+        XCTAssertFalse(valueField.isDisabled)
+    }
+
+    func testSchemaPropertiesNamedLikeRenderAnnotationsStillRenderAndValidate() throws {
+        let schema =
+            """
+            {
+              "title": "Annotation Named Fields",
+              "type": "object",
+              "properties": {
+                "x-render-behavior": {
+                  "type": "string",
+                  "title": "Render Behavior"
+                },
+                "x-conditions": {
+                  "type": "string",
+                  "title": "Conditions"
+                }
+              },
+              "required": ["x-render-behavior", "x-conditions"]
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let renderBehaviorField = tryUnwrapField("x-render-behavior", in: session)
+        let conditionsField = tryUnwrapField("x-conditions", in: session)
+
+        XCTAssertEqual(renderBehaviorField.pointer, "#/x-render-behavior")
+        XCTAssertEqual(conditionsField.pointer, "#/x-conditions")
+        XCTAssertFalse(session.validate())
+
+        session.setStringValue("disable", for: renderBehaviorField)
+        session.setStringValue("Bug", for: conditionsField)
+
+        XCTAssertTrue(session.validate())
+        let object = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(object["x-render-behavior"] as? String, "disable")
+        XCTAssertEqual(object["x-conditions"] as? String, "Bug")
+    }
+
+    func testRendererInitializerConditionalRenderBehaviorOverridesApplyToSessions() throws {
+        let schema =
+            """
+            {
+              "title": "Initializer Overrides",
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "title": "Mode",
+                  "enum": ["basic", "advanced"],
+                  "default": "basic"
+                }
+              },
+              "required": ["mode"],
+              "if": {
+                "properties": {
+                  "mode": { "const": "advanced" }
+                },
+                "required": ["mode"]
+              },
+              "then": {
+                "properties": {
+                  "advancedCode": {
+                    "type": "string",
+                    "title": "Advanced Code"
+                  }
+                },
+                "required": ["advancedCode"]
+              }
+            }
+            """
+
+        let session = FormKitRenderer(
+            conditionalRenderBehaviorOverrides: ["#/advancedCode": .disable]
+        ).makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let advancedCodeField = tryUnwrapField("advancedCode", in: session)
+
+        XCTAssertTrue(advancedCodeField.isDisabled)
+        XCTAssertFalse(advancedCodeField.shouldSerialize)
+    }
+
+    func testProtocolConditionalRenderBehaviorOverridesApplyToSessions() throws {
+        let schema =
+            """
+            {
+              "title": "Protocol Overrides",
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "title": "Mode",
+                  "enum": ["basic", "advanced"],
+                  "default": "basic"
+                }
+              },
+              "required": ["mode"],
+              "if": {
+                "properties": {
+                  "mode": { "const": "advanced" }
+                },
+                "required": ["mode"]
+              },
+              "then": {
+                "properties": {
+                  "advancedNotes": {
+                    "type": "string",
+                    "title": "Advanced Notes"
+                  }
+                }
+              }
+            }
+            """
+
+        let renderer: any FormKitRendering = FormKitRenderer()
+        let session = renderer.makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: nil,
+            defaultConditionalRenderBehavior: nil,
+            conditionalRenderBehaviorOverrides: ["#/advancedNotes": .ignore],
+            validationBehavior: .revalidateAfterFirstAttempt
+        )
+        let advancedNotesField = tryUnwrapField("advancedNotes", in: session)
+
+        XCTAssertTrue(advancedNotesField.isConditionallyInactive)
+        XCTAssertFalse(advancedNotesField.isDisabled)
+        XCTAssertTrue(advancedNotesField.shouldSerialize)
+    }
+
+    func testConditionalRenderBehaviorOverridesSupportArrayRowWildcards() throws {
+        let schema =
+            """
+            {
+              "title": "Entries",
+              "type": "object",
+              "properties": {
+                "entries": {
+                  "title": "Entries",
+                  "type": "array",
+                  "items": {
+                    "title": "Entry",
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "title": "Kind",
+                        "type": "string",
+                        "enum": ["basic", "advanced"]
+                      }
+                    },
+                    "required": ["kind"],
+                    "if": {
+                      "properties": {
+                        "kind": { "const": "advanced" }
+                      },
+                      "required": ["kind"]
+                    },
+                    "then": {
+                      "properties": {
+                        "notes": {
+                          "title": "Notes",
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """
+        let instance =
+            """
+            {
+              "entries": [
+                { "kind": "basic" },
+                { "kind": "basic" }
+              ]
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: instance,
+            conditionalRenderBehaviorOverrides: ["#/entries/*/notes": .ignore]
+        )
+        let notesFields = session.renderPlan.fields.filter { $0.propertyKey == "notes" }
+
+        XCTAssertEqual(notesFields.map(\.pointer), ["#/entries/0/notes", "#/entries/1/notes"])
+        XCTAssertTrue(notesFields.allSatisfy(\.isConditionallyInactive))
+        XCTAssertTrue(notesFields.allSatisfy(\.shouldSerialize))
     }
 
     func testConditionalDisableBehaviorOnArraySectionBlocksEditsWhileInactive() throws {
@@ -1077,7 +1508,6 @@ final class FormKitRendererTests: XCTestCase {
                   "crew": {
                     "type": "array",
                     "title": "Crew",
-                    "x-render-behavior": "disable",
                     "items": {
                       "type": "string",
                       "title": "Crew Member"
@@ -1088,7 +1518,11 @@ final class FormKitRendererTests: XCTestCase {
             }
             """
 
-        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: nil,
+            conditionalRenderBehaviorOverrides: ["#/crew": .disable]
+        )
         let modeField = tryUnwrapField("mode", in: session)
         let disabledCrewSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.title == "Crew" }))
 

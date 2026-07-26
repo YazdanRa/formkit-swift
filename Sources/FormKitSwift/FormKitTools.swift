@@ -242,6 +242,15 @@ public extension FormKitSession {
     ) -> ToolEditApplicationOutcome {
         switch edit.operation {
         case .clear:
+            if field.allowsNull {
+                guard primitiveValue(for: field) != .null else {
+                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
+                }
+
+                clearValue(for: field)
+                return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
+            }
+
             if field.isEnum {
                 let hadValue = selectedEnumChoiceID(for: field) != nil
                 guard hadValue else {
@@ -252,7 +261,7 @@ public extension FormKitSession {
                 return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
             }
 
-            let hadValue = primitiveValue(for: field) != nil
+            let hadValue = primitiveValue(for: field).map(hasConcreteToolValue) == true
             guard hadValue else {
                 return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
             }
@@ -276,7 +285,7 @@ public extension FormKitSession {
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "invalid_choice", message: "The supplied value is not a valid option for this field."))
                 }
                 setSelectedEnumChoiceID(choice.id, for: field)
-                return .applied(FormKitToolEdit(pointer: publicPointer, operation: .set, value: toolValue(from: choice.value)))
+                return appliedSetEdit(for: field, pointer: publicPointer)
             }
 
             switch field.scalarType {
@@ -285,19 +294,22 @@ public extension FormKitSession {
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "This field requires a string value."))
                 }
                 setStringValue(text, for: field)
-                return .applied(FormKitToolEdit(pointer: publicPointer, operation: .set, value: .string(text)))
+                return appliedSetEdit(for: field, pointer: publicPointer)
 
             case .integer, .number:
                 switch value {
                 case .integer(let number):
                     setStringValue(String(number), for: field)
-                    return .applied(FormKitToolEdit(pointer: publicPointer, operation: .set, value: .integer(number)))
+                    return appliedSetEdit(for: field, pointer: publicPointer)
                 case .number(let number):
-                    setStringValue(number.rounded(.towardZero) == number ? String(Int(number)) : String(number), for: field)
-                    return .applied(FormKitToolEdit(pointer: publicPointer, operation: .set, value: .number(number)))
+                    let text = number.rounded(.towardZero) == number
+                        ? String(Int(number))
+                        : String(number)
+                    setStringValue(text, for: field)
+                    return appliedSetEdit(for: field, pointer: publicPointer)
                 case .string(let text):
                     setStringValue(text, for: field)
-                    return .applied(FormKitToolEdit(pointer: publicPointer, operation: .set, value: .string(text)))
+                    return appliedSetEdit(for: field, pointer: publicPointer)
                 default:
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "This field requires a numeric value."))
                 }
@@ -307,9 +319,22 @@ public extension FormKitSession {
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "This field requires a boolean value."))
                 }
                 setBooleanValue(boolValue, for: field)
-                return .applied(FormKitToolEdit(pointer: publicPointer, operation: .set, value: .boolean(boolValue)))
+                return appliedSetEdit(for: field, pointer: publicPointer)
             }
         }
+    }
+
+    private func appliedSetEdit(
+        for field: FormKitFieldDescriptor,
+        pointer: String
+    ) -> ToolEditApplicationOutcome {
+        .applied(
+            FormKitToolEdit(
+                pointer: pointer,
+                operation: .set,
+                value: toolValue(for: field)
+            )
+        )
     }
 
     private func field(forToolPointer pointer: String) -> FormKitFieldDescriptor? {
@@ -323,12 +348,18 @@ public extension FormKitSession {
         guard let primitive = primitiveValue(for: field) else {
             return nil
         }
-        if case .string(let text) = primitive,
-           text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        {
-            return nil
-        }
         return toolValue(from: primitive)
+    }
+
+    private func hasConcreteToolValue(_ primitive: FormKitFieldDescriptor.PrimitiveValue) -> Bool {
+        switch primitive {
+        case .null:
+            return false
+        case .string(let text):
+            return !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        default:
+            return true
+        }
     }
 
     private func toolValue(from primitive: FormKitFieldDescriptor.PrimitiveValue) -> FormKitJSONValue {
@@ -365,7 +396,15 @@ public extension FormKitSession {
         currentValues: [String: FormKitJSONValue]
     ) -> String {
         let missingRequiredTitles = fields.compactMap { field -> String? in
-            guard field.isRequired, currentValues[field.pointer] == nil else {
+            guard field.isRequired else {
+                return nil
+            }
+            if case .string(let value) = currentValues[field.pointer],
+               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            {
+                return field.title
+            }
+            guard currentValues[field.pointer] == nil else {
                 return nil
             }
             return field.title
