@@ -267,6 +267,13 @@ final class FormKitReviewRegressionTests: XCTestCase {
                 "priority": {
                   "type": ["string", "null"],
                   "enum": ["low", "high", null]
+                },
+                "details": {
+                  "type": ["string", "null"]
+                },
+                "category": {
+                  "type": ["string", "null"],
+                  "enum": ["one", "two", null]
                 }
               }
             }
@@ -275,17 +282,24 @@ final class FormKitReviewRegressionTests: XCTestCase {
         )
         let edits = [
             FormKitToolEdit(pointer: "/note", operation: .clear),
-            FormKitToolEdit(pointer: "/priority", operation: .clear)
+            FormKitToolEdit(pointer: "/priority", operation: .clear),
+            FormKitToolEdit(pointer: "/details", operation: .clear),
+            FormKitToolEdit(pointer: "/category", operation: .clear)
         ]
 
         let firstResult = session.applyToolEdits(edits)
         let secondResult = session.applyToolEdits(edits)
 
-        XCTAssertEqual(firstResult.revision, 2)
-        XCTAssertEqual(firstResult.appliedEdits.map(\.pointer), ["/note", "/priority"])
-        XCTAssertEqual(secondResult.revision, 2)
+        XCTAssertEqual(firstResult.revision, 4)
+        XCTAssertEqual(firstResult.appliedEdits.map(\.pointer), ["/note", "/priority", "/details", "/category"])
+        XCTAssertEqual(firstResult.context.currentValues["/details"], .null)
+        XCTAssertEqual(firstResult.context.currentValues["/category"], .null)
+        XCTAssertEqual(secondResult.revision, 4)
         XCTAssertTrue(secondResult.appliedEdits.isEmpty)
-        XCTAssertEqual(secondResult.rejectedEdits.map(\.reason), ["no_change", "no_change"])
+        XCTAssertEqual(
+            secondResult.rejectedEdits.map(\.reason),
+            ["no_change", "no_change", "no_change", "no_change"]
+        )
     }
 
     func testRenderedFieldIdentifiersUseFullPointer() {
