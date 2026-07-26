@@ -159,6 +159,7 @@ public struct FormKitArraySectionComponentContext {
     public let errors: [String]
     public let isEditingLocked: Bool
     public let style: FormKitStyle
+    public let labels: FormKitLabels
     public let uploadHandler: FormKitUploadHandler?
 }
 

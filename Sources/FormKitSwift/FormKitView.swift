@@ -214,6 +214,7 @@ private struct FormKitContainerView: View {
             errors: arrayErrors,
             isEditingLocked: isEditingLocked,
             style: options.style,
+            labels: options.labels,
             uploadHandler: options.uploadHandler
         )
 

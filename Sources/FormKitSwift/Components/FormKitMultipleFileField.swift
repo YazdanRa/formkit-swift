@@ -8,6 +8,7 @@ struct FormKitMultipleFileField: View {
     let errors: [String]
     let isEditingLocked: Bool
     let style: FormKitStyle
+    let labels: FormKitLabels
     let uploadHandler: FormKitUploadHandler?
     @State private var isImporterPresented = false
     @State private var isUploading = false
@@ -21,6 +22,7 @@ struct FormKitMultipleFileField: View {
         errors = context.errors
         isEditingLocked = context.isEditingLocked
         style = context.style
+        labels = context.labels
         uploadHandler = context.uploadHandler
     }
 
@@ -102,10 +104,10 @@ struct FormKitMultipleFileField: View {
                     Text(description)
                 }
                 if descriptor.minItems > 0 {
-                    Text("Minimum items: \(descriptor.minItems)", bundle: .module)
+                    Text("\(labels.minimumItemsPrefix) \(descriptor.minItems)")
                 }
                 if let maxItems = descriptor.maxItems {
-                    Text("Maximum items: \(maxItems)", bundle: .module)
+                    Text("\(labels.maximumItemsPrefix) \(maxItems)")
                 }
             }
         }

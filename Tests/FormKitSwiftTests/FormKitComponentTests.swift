@@ -279,7 +279,8 @@ final class FormKitComponentTests: XCTestCase {
 
     private func arrayComponentContext(
         for section: FormKitRenderPlan.SectionDescriptor,
-        session: FormKitSession
+        session: FormKitSession,
+        labels: FormKitLabels = .init()
     ) -> FormKitArraySectionComponentContext {
         FormKitArraySectionComponentContext(
             session: session,
@@ -288,6 +289,7 @@ final class FormKitComponentTests: XCTestCase {
             errors: [],
             isEditingLocked: false,
             style: .init(),
+            labels: labels,
             uploadHandler: nil
         )
     }
@@ -381,4 +383,17 @@ final class FormKitComponentTests: XCTestCase {
           }
         }
         """
+}
+
+extension FormKitComponentTests {
+    func testMultipleFileComponentReceivesConfiguredLabels() throws {
+        let session = FormKitRenderer().makeFormSession(schemaJSON: Self.multipleFileSchema, instanceJSON: nil)
+        let section = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.title == "Attachments" }))
+        let labels = FormKitLabels(minimumItemsPrefix: "At least", maximumItemsPrefix: "At most")
+        let component = FormKitMultipleFileField(
+            context: arrayComponentContext(for: section, session: session, labels: labels)
+        )
+
+        XCTAssertEqual(component.labels, labels)
+    }
 }
