@@ -29,6 +29,14 @@ final class FormKitReviewRegressionTests: XCTestCase {
         XCTAssertEqual(object["defaulted"] as? String, "fallback")
         XCTAssertTrue(object["explicit"] is NSNull)
 
+        let optionalField = try XCTUnwrap(field(named: "optional", in: session))
+        session.setStringValue("", for: optionalField)
+        XCTAssertEqual(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"] as? String, "")
+        session.setNullSelection(true, for: optionalField)
+        XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"] is NSNull)
+        session.unsetValue(for: optionalField)
+        XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"])
+
         session.setNullSelection(false, for: try XCTUnwrap(field(named: "required", in: session)))
         object = try Self.decodeJSONObject(session.currentInstanceJSON)
         XCTAssertEqual(object["required"] as? String, "")
@@ -100,6 +108,49 @@ final class FormKitReviewRegressionTests: XCTestCase {
 
         session.setNullSelection(true, for: requiredField)
         XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["required"] is NSNull)
+    }
+
+    func testOptionalNullableDatesCanReturnToAbsence() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "birthday": { "type": ["string", "null"], "format": "date" },
+                "appointment": { "type": ["string", "null"], "format": "date-time" },
+                "requiredDate": { "type": ["string", "null"], "format": "date" }
+              },
+              "required": ["requiredDate"]
+            }
+            """,
+            instanceJSON: nil
+        )
+        let fields = try ["birthday", "appointment"].map {
+            try XCTUnwrap(field(named: $0, in: session))
+        }
+
+        for field in fields {
+            XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)[field.propertyKey])
+
+            session.setDateValue(Date(timeIntervalSince1970: 0), for: field)
+            XCTAssertNotNil(try Self.decodeJSONObject(session.currentInstanceJSON)[field.propertyKey] as? String)
+
+            session.setNullSelection(true, for: field)
+            XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)[field.propertyKey] is NSNull)
+
+            session.unsetValue(for: field)
+            XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)[field.propertyKey])
+        }
+
+        let requiredField = try XCTUnwrap(field(named: "requiredDate", in: session))
+        XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["requiredDate"] is NSNull)
+
+        session.setDateValue(Date(timeIntervalSince1970: 0), for: requiredField)
+        session.unsetValue(for: requiredField)
+        XCTAssertNotNil(try Self.decodeJSONObject(session.currentInstanceJSON)["requiredDate"] as? String)
+
+        session.setNullSelection(true, for: requiredField)
+        XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["requiredDate"] is NSNull)
     }
 
     func testMultipleFileUploadsReplaceInvalidNonStringValues() {

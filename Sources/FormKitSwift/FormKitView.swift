@@ -335,12 +335,15 @@ private struct FormKitContainerView: View {
                     Picker(
                         options.labels.valueState,
                         selection: Binding(
-                            get: { session.isNullSelected(for: field) ? 1 : 0 },
-                            set: { session.setNullSelection($0 == 1, for: field) }
+                            get: { nullableValueSelection(for: field) },
+                            set: { setNullableTextSelection($0, for: field) }
                         )
                     ) {
-                        Text(options.labels.value).tag(0)
-                        Text(options.labels.noValue).tag(1)
+                        if !field.isRequired {
+                            Text(options.labels.notSet).tag(NullableValueSelection.absent)
+                        }
+                        Text(options.labels.noValue).tag(NullableValueSelection.null)
+                        Text(options.labels.value).tag(NullableValueSelection.value)
                     }
                     .pickerStyle(.segmented)
                     .disabled(locked || field.isDisabled)
@@ -510,50 +513,62 @@ private struct FormKitContainerView: View {
         displayedComponents: DatePickerComponents,
         locked: Bool
     ) -> some View {
-        if field.allowsNull, session.isNullSelected(for: field) {
-            LabeledContent(field.title) {
-                Button {
-                    session.setDateValue(session.dateValue(for: field), for: field)
-                } label: {
-                    Label {
-                        Text("Set Date", bundle: .module)
-                    } icon: {
-                        Image(systemName: "calendar.badge.plus")
-                    }
-                }
-                .accessibilityLabel(String(localized: "Set \(field.title)", bundle: .module))
-            }
-            .disabled(locked)
-            .accessibilityIdentifier("\(fieldIdentifier(for: field))_set_date_button")
-        } else {
-            HStack {
-                DatePicker(
+        if field.allowsNull {
+            VStack(alignment: .trailing, spacing: 8) {
+                Picker(
                     field.title,
                     selection: Binding(
-                        get: { session.dateValue(for: field) },
-                        set: { session.setDateValue($0, for: field) }
-                    ),
-                    displayedComponents: displayedComponents
-                )
-                .datePickerStyle(.compact)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_picker")
-
-                if field.allowsNull {
-                    Button {
-                        session.setNullSelection(true, for: field)
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                            .frame(width: 44, height: 44)
+                        get: { nullableValueSelection(for: field) },
+                        set: { selection in
+                            switch selection {
+                            case .absent:
+                                session.unsetValue(for: field)
+                            case .null:
+                                session.setNullSelection(true, for: field)
+                            case .value:
+                                session.setDateValue(session.dateValue(for: field), for: field)
+                            }
+                        }
+                    )
+                ) {
+                    if !field.isRequired {
+                        Text(options.labels.notSet).tag(NullableValueSelection.absent)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(String(localized: "Clear \(field.title)", bundle: .module))
-                    .accessibilityIdentifier("\(fieldIdentifier(for: field))_clear_date_button")
+                    Text(options.labels.noValue).tag(NullableValueSelection.null)
+                    Text(options.labels.value).tag(NullableValueSelection.value)
+                }
+                .pickerStyle(.menu)
+                .disabled(locked)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_state_picker")
+
+                if nullableValueSelection(for: field) == .value {
+                    datePicker(field, displayedComponents: displayedComponents, locked: locked)
+                        .labelsHidden()
                 }
             }
-            .disabled(locked)
+        } else {
+            datePicker(field, displayedComponents: displayedComponents, locked: locked)
         }
+    }
+
+    private func datePicker(
+        _ field: FormKitFieldDescriptor,
+        displayedComponents: DatePickerComponents,
+        locked: Bool
+    ) -> some View {
+        DatePicker(
+            field.title,
+            selection: Binding(
+                get: { session.dateValue(for: field) },
+                set: { session.setDateValue($0, for: field) }
+            ),
+            displayedComponents: displayedComponents
+        )
+        .datePickerStyle(.compact)
+        .disabled(locked)
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_picker")
     }
 
     private func arrayRowView(
@@ -684,6 +699,33 @@ private struct FormKitContainerView: View {
         }
     }
 
+    private func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
+        switch session.primitiveValue(for: field) {
+        case .string:
+            return .value
+        case .null:
+            return .null
+        case nil:
+            return .absent
+        default:
+            return field.isRequired ? .null : .absent
+        }
+    }
+
+    private func setNullableTextSelection(
+        _ selection: NullableValueSelection,
+        for field: FormKitFieldDescriptor
+    ) {
+        switch selection {
+        case .absent:
+            session.unsetValue(for: field)
+        case .null:
+            session.setNullSelection(true, for: field)
+        case .value:
+            session.setNullSelection(false, for: field)
+        }
+    }
+
     private func fieldIdentifier(for field: FormKitFieldDescriptor) -> String {
         FormKitAccessibility.fieldIdentifier(for: field)
     }
@@ -693,6 +735,12 @@ private enum NullableBooleanSelection: Hashable {
     case absent
     case null
     case boolean(Bool)
+}
+
+private enum NullableValueSelection: Hashable {
+    case absent
+    case null
+    case value
 }
 
 private struct FormKitMessageRow: View {
