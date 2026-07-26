@@ -442,20 +442,27 @@ private struct FormKitContainerView: View {
                     Picker(
                         field.title,
                         selection: Binding(
-                            get: { nullableBooleanValue(for: field) },
-                            set: { value in
-                                if let value {
-                                    session.setBooleanValue(value, for: field)
-                                } else {
+                            get: { nullableBooleanSelection(for: field) },
+                            set: { selection in
+                                switch selection {
+                                case .absent:
+                                    session.unsetValue(for: field)
+                                case .null:
                                     session.setNullSelection(true, for: field)
+                                case .boolean(let value):
+                                    session.setBooleanValue(value, for: field)
                                 }
                             }
                         )
                     ) {
-                        Text(options.labels.notSet).tag(Bool?.none)
-                        Text("Off", bundle: .module).tag(Bool?.some(false))
-                        Text("On", bundle: .module).tag(Bool?.some(true))
+                        if !field.isRequired {
+                            Text(options.labels.notSet).tag(NullableBooleanSelection.absent)
+                        }
+                        Text(options.labels.noValue).tag(NullableBooleanSelection.null)
+                        Text("Off", bundle: .module).tag(NullableBooleanSelection.boolean(false))
+                        Text("On", bundle: .module).tag(NullableBooleanSelection.boolean(true))
                     }
+                    .pickerStyle(.menu)
                     .disabled(locked)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .accessibilityIdentifier("\(fieldIdentifier(for: field))_picker")
@@ -664,16 +671,28 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func nullableBooleanValue(for field: FormKitFieldDescriptor) -> Bool? {
-        guard case .boolean(let value) = session.primitiveValue(for: field) else {
-            return nil
+    private func nullableBooleanSelection(for field: FormKitFieldDescriptor) -> NullableBooleanSelection {
+        switch session.primitiveValue(for: field) {
+        case .boolean(let value):
+            return .boolean(value)
+        case .null:
+            return .null
+        case nil:
+            return .absent
+        default:
+            return field.isRequired ? .null : .absent
         }
-        return value
     }
 
     private func fieldIdentifier(for field: FormKitFieldDescriptor) -> String {
         FormKitAccessibility.fieldIdentifier(for: field)
     }
+}
+
+private enum NullableBooleanSelection: Hashable {
+    case absent
+    case null
+    case boolean(Bool)
 }
 
 private struct FormKitMessageRow: View {

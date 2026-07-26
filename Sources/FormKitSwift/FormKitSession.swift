@@ -441,6 +441,15 @@ public func setFormMessage(_ message: String?) {
         handleFieldEdit(for: field)
     }
 
+    func unsetValue(for field: FormKitFieldDescriptor) {
+        guard field.isInteractive, !field.isRequired else {
+            return
+        }
+
+        setPrimitiveValue(nil, for: field)
+        handleFieldEdit(for: field)
+    }
+
     fileprivate func handleFieldEdit(for field: FormKitFieldDescriptor) {
         revision += 1
         fieldErrors[field.id] = nil

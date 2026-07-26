@@ -62,6 +62,46 @@ final class FormKitReviewRegressionTests: XCTestCase {
         XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)["choice"])
     }
 
+    func testOptionalNullableBooleanCanReturnToAbsence() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "optional": { "type": ["boolean", "null"] },
+                "required": { "type": ["boolean", "null"] }
+              },
+              "required": ["required"]
+            }
+            """,
+            instanceJSON: nil
+        )
+        let optionalField = try XCTUnwrap(field(named: "optional", in: session))
+        let requiredField = try XCTUnwrap(field(named: "required", in: session))
+
+        var object = try Self.decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertNil(object["optional"])
+        XCTAssertTrue(object["required"] is NSNull)
+
+        session.setBooleanValue(true, for: optionalField)
+        XCTAssertEqual(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"] as? Bool, true)
+
+        session.setNullSelection(true, for: optionalField)
+        XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"] is NSNull)
+
+        session.setBooleanValue(false, for: optionalField)
+        session.unsetValue(for: optionalField)
+        XCTAssertNil(try Self.decodeJSONObject(session.currentInstanceJSON)["optional"])
+
+        session.setBooleanValue(false, for: requiredField)
+        session.unsetValue(for: requiredField)
+        object = try Self.decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(object["required"] as? Bool, false)
+
+        session.setNullSelection(true, for: requiredField)
+        XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["required"] is NSNull)
+    }
+
     func testMultipleFileUploadsReplaceInvalidNonStringValues() {
         for invalidValue in [FormKitJSONValue.null, .number(42)] {
             XCTAssertEqual(FormKitMultipleFileField.occupiedValueCount(in: [invalidValue]), 0)
