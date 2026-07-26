@@ -73,7 +73,7 @@ jobs:
         run: scripts/make-docs.sh .build/docc-site "${{ github.event.repository.name }}"
 
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: .build/docc-site
 
