@@ -28,10 +28,10 @@ struct FormKitMultipleFileField: View {
         Section {
             if currentFiles.isEmpty {
                 FormKitUploadEmptyState(
-                    title: String(localized: "No files selected", bundle: #bundle),
+                    title: String(localized: "No files selected", bundle: .module),
                     subtitle: uploadHandler == nil
-                        ? String(localized: "An upload handler is required.", bundle: #bundle)
-                        : String(localized: "Choose files to upload.", bundle: #bundle),
+                        ? String(localized: "An upload handler is required.", bundle: .module)
+                        : String(localized: "Choose files to upload.", bundle: .module),
                     systemImage: "doc.on.doc"
                 )
             } else {
@@ -46,8 +46,8 @@ struct FormKitMultipleFileField: View {
             } label: {
                 FormKitUploadActionRow(
                     title: isUploading
-                        ? String(localized: "Uploading", bundle: #bundle)
-                        : String(localized: "Choose Files", bundle: #bundle),
+                        ? String(localized: "Uploading", bundle: .module)
+                        : String(localized: "Choose Files", bundle: .module),
                     systemImage: "doc.badge.plus",
                     tint: canUploadMore ? style.accent : style.secondaryText,
                     isBusy: isUploading
@@ -62,7 +62,7 @@ struct FormKitMultipleFileField: View {
                     isClearConfirmationPresented = true
                 } label: {
                     FormKitUploadActionRow(
-                        title: String(localized: "Clear All", bundle: #bundle),
+                        title: String(localized: "Clear All", bundle: .module),
                         systemImage: "trash",
                         tint: style.destructive
                     )
@@ -73,7 +73,7 @@ struct FormKitMultipleFileField: View {
 
             if uploadHandler == nil {
                 FormKitUploadStatusText(
-                    message: String(localized: "Upload unavailable", bundle: #bundle),
+                    message: String(localized: "Upload unavailable", bundle: .module),
                     color: style.secondaryText,
                     systemImage: "exclamationmark.circle"
                 )
@@ -102,25 +102,25 @@ struct FormKitMultipleFileField: View {
                     Text(description)
                 }
                 if descriptor.minItems > 0 {
-                    Text("Minimum items: \(descriptor.minItems)", bundle: #bundle)
+                    Text("Minimum items: \(descriptor.minItems)", bundle: .module)
                 }
                 if let maxItems = descriptor.maxItems {
-                    Text("Maximum items: \(maxItems)", bundle: #bundle)
+                    Text("Maximum items: \(maxItems)", bundle: .module)
                 }
             }
         }
         .accessibilityIdentifier(section.id)
         .confirmationDialog(
-            String(localized: "Clear all files?", bundle: #bundle),
+            String(localized: "Clear all files?", bundle: .module),
             isPresented: $isClearConfirmationPresented,
             titleVisibility: .visible
         ) {
-            Button(String(localized: "Clear All", bundle: #bundle), role: .destructive) {
+            Button(String(localized: "Clear All", bundle: .module), role: .destructive) {
                 session.setArrayValue([], for: section)
             }
-            Button(String(localized: "Cancel", bundle: #bundle), role: .cancel) {}
+            Button(String(localized: "Cancel", bundle: .module), role: .cancel) {}
         } message: {
-            Text("This removes all uploaded file URLs from this field.", bundle: #bundle)
+            Text("This removes all uploaded file URLs from this field.", bundle: .module)
         }
         .fileImporter(
             isPresented: $isImporterPresented,
@@ -136,8 +136,15 @@ struct FormKitMultipleFileField: View {
 
     private var currentFiles: [(offset: Int, element: String)] {
         currentValues.enumerated().compactMap { index, value in
-            value.string.map { (index, $0) }
+            guard let string = value.string, !string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                return nil
+            }
+            return (index, string)
         }
+    }
+
+    private var occupiedValueCount: Int {
+        Self.occupiedValueCount(in: currentValues)
     }
 
     private var canUploadMore: Bool {
@@ -145,7 +152,7 @@ struct FormKitMultipleFileField: View {
             return false
         }
         if let maxItems = descriptor.maxItems {
-            return currentValues.count < maxItems
+            return occupiedValueCount < maxItems
         }
         return true
     }
@@ -160,18 +167,21 @@ struct FormKitMultipleFileField: View {
 
     private var uploadActionHint: String {
         if isUploading {
-            return String(localized: "Files are uploading.", bundle: #bundle)
+            return String(localized: "Files are uploading.", bundle: .module)
         }
         if uploadHandler == nil {
-            return String(localized: "Upload unavailable because no upload handler is configured.", bundle: #bundle)
+            return String(
+                localized: "Upload unavailable because no upload handler is configured.",
+                bundle: .module
+            )
         }
         if isEditingLocked || section.isDisabled {
-            return String(localized: "This field is not editable.", bundle: #bundle)
+            return String(localized: "This field is not editable.", bundle: .module)
         }
-        if let maxItems = descriptor.maxItems, currentValues.count >= maxItems {
-            return String(localized: "Maximum number of files reached.", bundle: #bundle)
+        if let maxItems = descriptor.maxItems, occupiedValueCount >= maxItems {
+            return String(localized: "Maximum number of files reached.", bundle: .module)
         }
-        return String(localized: "Opens the file picker.", bundle: #bundle)
+        return String(localized: "Opens the file picker.", bundle: .module)
     }
 
     private func fileRow(urlString: String, index: Int) -> some View {
@@ -180,7 +190,7 @@ struct FormKitMultipleFileField: View {
             subtitle: urlString,
             systemImage: formKitUploadSymbolName(for: urlString),
             accent: style.accent,
-            removeLabel: String(localized: "Remove file", bundle: #bundle),
+            removeLabel: String(localized: "Remove file", bundle: .module),
             removeAction: canRemoveURL ? { removeURL(at: index) } : nil
         )
     }
@@ -194,13 +204,13 @@ struct FormKitMultipleFileField: View {
 
     private func handleImportResult(_ result: Result<[URL], Error>) {
         guard let uploadHandler else {
-            uploadError = String(localized: "Upload unavailable.", bundle: #bundle)
+            uploadError = String(localized: "Upload unavailable.", bundle: .module)
             return
         }
 
         switch result {
         case .success(let urls):
-            let remainingSlots = descriptor.maxItems.map { max(0, $0 - currentValues.count) } ?? urls.count
+            let remainingSlots = descriptor.maxItems.map { max(0, $0 - occupiedValueCount) } ?? urls.count
             let selectedURLs = Array(urls.prefix(remainingSlots))
             guard !selectedURLs.isEmpty else {
                 return
@@ -237,11 +247,12 @@ struct FormKitMultipleFileField: View {
                     items: urls.map(FormKitUploadItem.init(fileURL:))
                 )
             )
-            let remainingSlots = descriptor.maxItems.map { max(0, $0 - originalValues.count) }
+            let occupiedValueCount = Self.occupiedValueCount(in: originalValues)
+            let remainingSlots = descriptor.maxItems.map { max(0, $0 - occupiedValueCount) }
                 ?? assets.count
-            let uploadedURLs = assets.lazy.map(\.url).filter { !$0.isEmpty }.prefix(remainingSlots)
+            let uploadedURLs = assets.lazy.compactMap(\.url.formKitNonEmpty).prefix(remainingSlots)
             guard !uploadedURLs.isEmpty else {
-                uploadError = String(localized: "Upload did not return any URLs.", bundle: #bundle)
+                uploadError = String(localized: "Upload did not return any URLs.", bundle: .module)
                 return
             }
             guard session.renderPlan.sections.contains(section),
@@ -249,12 +260,16 @@ struct FormKitMultipleFileField: View {
             else {
                 uploadError = String(
                     localized: "The form changed before the files finished uploading.",
-                    bundle: #bundle
+                    bundle: .module
                 )
                 return
             }
             session.setArrayValue(
-                originalValues + uploadedURLs.map(FormKitJSONValue.string),
+                Self.replacingVacancies(
+                    in: originalValues,
+                    with: Array(uploadedURLs.map(FormKitJSONValue.string)),
+                    maxItems: descriptor.maxItems
+                ),
                 for: section
             )
             uploadError = nil
@@ -274,6 +289,24 @@ struct FormKitMultipleFileField: View {
 
     private func displayName(for urlString: String) -> String {
         URL(string: urlString)?.lastPathComponent.formKitNonEmpty ?? urlString
+    }
+
+    static func replacingVacancies(
+        in values: [FormKitJSONValue],
+        with uploads: [FormKitJSONValue],
+        maxItems: Int?
+    ) -> [FormKitJSONValue] {
+        var result = values.filter { !Self.isVacant($0) }
+        result.append(contentsOf: uploads)
+        return maxItems.map { Array(result.prefix($0)) } ?? result
+    }
+
+    static func occupiedValueCount(in values: [FormKitJSONValue]) -> Int {
+        values.filter { !Self.isVacant($0) }.count
+    }
+
+    private static func isVacant(_ value: FormKitJSONValue) -> Bool {
+        value.string?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
     }
 }
 

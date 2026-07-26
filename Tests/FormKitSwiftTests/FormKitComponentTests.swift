@@ -153,6 +153,96 @@ final class FormKitComponentTests: XCTestCase {
         XCTAssertNil(session.arrayValue(for: section))
     }
 
+    func testMultipleFileUploadsReplaceMinimumItemPlaceholdersAtMaximumCapacity() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "attachments": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "x-formkit-ui-component": "multiple-file-field",
+                  "items": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+            """
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let section = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "attachments" }))
+        let placeholders = try XCTUnwrap(session.arrayValue(for: section))
+
+        XCTAssertEqual(placeholders, [.string(""), .string("")])
+        XCTAssertEqual(FormKitMultipleFileField.occupiedValueCount(in: placeholders), 0)
+
+        let uploadedValues = FormKitMultipleFileField.replacingVacancies(
+            in: placeholders,
+            with: [
+                .string("https://example.com/a.pdf"),
+                .string("https://example.com/b.pdf")
+            ],
+            maxItems: 2
+        )
+        session.setArrayValue(uploadedValues, for: section)
+
+        let jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(
+            jsonObject["attachments"] as? [String],
+            ["https://example.com/a.pdf", "https://example.com/b.pdf"]
+        )
+        XCTAssertEqual(
+            FormKitMultipleFileField.replacingVacancies(
+                in: [.string(""), .string("https://example.com/existing.pdf")],
+                with: [.string("https://example.com/new.pdf")],
+                maxItems: 2
+            ),
+            [
+                .string("https://example.com/existing.pdf"),
+                .string("https://example.com/new.pdf")
+            ]
+        )
+    }
+
+    func testClearingOptionalFileComponentsRemovesTheirProperties() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "format": "uri",
+                  "x-formkit-ui-component": "file-field"
+                },
+                "signature": {
+                  "type": "string",
+                  "format": "uri",
+                  "x-formkit-ui-component": "signature-pad"
+                }
+              }
+            }
+            """
+        let instance =
+            """
+            {
+              "file": "https://example.com/file.pdf",
+              "signature": "https://example.com/signature.png"
+            }
+            """
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: instance)
+
+        session.clearValue(for: tryUnwrapField("file", in: session))
+        session.clearValue(for: tryUnwrapField("signature", in: session))
+
+        let jsonObject = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertNil(jsonObject["file"])
+        XCTAssertNil(jsonObject["signature"])
+    }
+
     private func fieldComponent(
         for field: FormKitFieldDescriptor,
         session: FormKitSession

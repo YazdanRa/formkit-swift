@@ -24,10 +24,10 @@ struct FormKitFileField: View {
         VStack(alignment: .leading, spacing: 8) {
             if currentURL.isEmpty {
                 FormKitUploadEmptyState(
-                    title: String(localized: "No file selected", bundle: #bundle),
+                    title: String(localized: "No file selected", bundle: .module),
                     subtitle: uploadHandler == nil
-                        ? String(localized: "An upload handler is required.", bundle: #bundle)
-                        : String(localized: "Choose a file to upload.", bundle: #bundle),
+                        ? String(localized: "An upload handler is required.", bundle: .module)
+                        : String(localized: "Choose a file to upload.", bundle: .module),
                     systemImage: "doc"
                 )
             } else {
@@ -51,7 +51,7 @@ struct FormKitFileField: View {
 
             if uploadHandler == nil {
                 FormKitUploadStatusText(
-                    message: String(localized: "Upload unavailable", bundle: #bundle),
+                    message: String(localized: "Upload unavailable", bundle: .module),
                     color: style.secondaryText,
                     systemImage: "exclamationmark.circle"
                 )
@@ -83,24 +83,27 @@ struct FormKitFileField: View {
 
     private var uploadActionTitle: String {
         if isUploading {
-            return String(localized: "Uploading", bundle: #bundle)
+            return String(localized: "Uploading", bundle: .module)
         }
         return currentURL.isEmpty
-            ? String(localized: "Choose File", bundle: #bundle)
-            : String(localized: "Replace File", bundle: #bundle)
+            ? String(localized: "Choose File", bundle: .module)
+            : String(localized: "Replace File", bundle: .module)
     }
 
     private var uploadActionHint: String {
         if isUploading {
-            return String(localized: "The file is uploading.", bundle: #bundle)
+            return String(localized: "The file is uploading.", bundle: .module)
         }
         if uploadHandler == nil {
-            return String(localized: "Upload unavailable because no upload handler is configured.", bundle: #bundle)
+            return String(
+                localized: "Upload unavailable because no upload handler is configured.",
+                bundle: .module
+            )
         }
         if isEditingLocked || field.isDisabled {
-            return String(localized: "This field is not editable.", bundle: #bundle)
+            return String(localized: "This field is not editable.", bundle: .module)
         }
-        return String(localized: "Opens the file picker.", bundle: #bundle)
+        return String(localized: "Opens the file picker.", bundle: .module)
     }
 
     private func fileRow(urlString: String) -> some View {
@@ -109,8 +112,8 @@ struct FormKitFileField: View {
             subtitle: urlString,
             systemImage: formKitUploadSymbolName(for: urlString),
             accent: style.accent,
-            removeLabel: String(localized: "Remove file", bundle: #bundle),
-            removeAction: canRemoveValue ? { session.setStringValue("", for: field) } : nil
+            removeLabel: String(localized: "Remove file", bundle: .module),
+            removeAction: canRemoveValue ? { session.clearValue(for: field) } : nil
         )
     }
 
@@ -120,7 +123,7 @@ struct FormKitFileField: View {
 
     private func handleImportResult(_ result: Result<[URL], Error>) {
         guard let uploadHandler else {
-            uploadError = String(localized: "Upload unavailable.", bundle: #bundle)
+            uploadError = String(localized: "Upload unavailable.", bundle: .module)
             return
         }
 
@@ -158,14 +161,17 @@ struct FormKitFileField: View {
                     items: [FormKitUploadItem(fileURL: url)]
                 )
             )
-            guard let uploadedURL = assets.first?.url, !uploadedURL.isEmpty else {
-                uploadError = String(localized: "Upload did not return a URL.", bundle: #bundle)
+            guard let uploadedURL = assets.first?.url.formKitNonEmpty else {
+                uploadError = String(localized: "Upload did not return a URL.", bundle: .module)
                 return
             }
             guard session.renderPlan.fields.contains(field),
                   session.primitiveValue(for: field) == originalValue
             else {
-                uploadError = String(localized: "The form changed before the file finished uploading.", bundle: #bundle)
+                uploadError = String(
+                    localized: "The form changed before the file finished uploading.",
+                    bundle: .module
+                )
                 return
             }
             session.setStringValue(uploadedURL, for: field)

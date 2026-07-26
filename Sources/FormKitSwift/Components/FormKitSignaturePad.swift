@@ -40,7 +40,7 @@ struct FormKitSignaturePad: View {
                     clearDraft()
                 } label: {
                     FormKitUploadActionRow(
-                        title: String(localized: "Clear Draft", bundle: #bundle),
+                        title: String(localized: "Clear Draft", bundle: .module),
                         systemImage: "eraser",
                         tint: canClearDraft ? style.destructive : style.secondaryText
                     )
@@ -55,8 +55,8 @@ struct FormKitSignaturePad: View {
                 } label: {
                     FormKitUploadActionRow(
                         title: isUploading
-                            ? String(localized: "Saving", bundle: #bundle)
-                            : String(localized: "Save Signature", bundle: #bundle),
+                            ? String(localized: "Saving", bundle: .module)
+                            : String(localized: "Save Signature", bundle: .module),
                         systemImage: "signature",
                         tint: canUploadSignature ? style.accent : style.secondaryText,
                         isBusy: isUploading
@@ -69,7 +69,7 @@ struct FormKitSignaturePad: View {
 
             if uploadHandler == nil {
                 FormKitUploadStatusText(
-                    message: String(localized: "Upload unavailable", bundle: #bundle),
+                    message: String(localized: "Upload unavailable", bundle: .module),
                     color: style.secondaryText,
                     systemImage: "exclamationmark.circle"
                 )
@@ -103,38 +103,38 @@ struct FormKitSignaturePad: View {
 
     private var saveSignatureHint: String {
         if uploadHandler == nil {
-            return String(localized: "Upload unavailable because no upload handler is configured.", bundle: #bundle)
+            return String(localized: "Upload unavailable because no upload handler is configured.", bundle: .module)
         }
         if strokes.isEmpty {
-            return String(localized: "Draw a signature before saving.", bundle: #bundle)
+            return String(localized: "Draw a signature before saving.", bundle: .module)
         }
         if isUploading {
-            return String(localized: "Signature is saving.", bundle: #bundle)
+            return String(localized: "Signature is saving.", bundle: .module)
         }
         if isEditingLocked || field.isDisabled {
-            return String(localized: "This field is not editable.", bundle: #bundle)
+            return String(localized: "This field is not editable.", bundle: .module)
         }
-        return String(localized: "Uploads the drawn signature and stores the returned URL.", bundle: #bundle)
+        return String(localized: "Uploads the drawn signature and stores the returned URL.", bundle: .module)
     }
 
     private var signatureAccessibilityValue: String {
         if !strokes.isEmpty {
-            return String(localized: "Unsaved signature drawing", bundle: #bundle)
+            return String(localized: "Unsaved signature drawing", bundle: .module)
         }
         if !currentURL.isEmpty {
-            return String(localized: "Saved signature", bundle: #bundle)
+            return String(localized: "Saved signature", bundle: .module)
         }
-        return String(localized: "Empty", bundle: #bundle)
+        return String(localized: "Empty", bundle: .module)
     }
 
     private var existingSignatureRow: some View {
         FormKitUploadRow(
-            title: String(localized: "Saved signature", bundle: #bundle),
+            title: String(localized: "Saved signature", bundle: .module),
             subtitle: currentURL,
             systemImage: "signature",
             accent: style.accent,
-            removeLabel: String(localized: "Remove signature", bundle: #bundle),
-            removeAction: canRemoveValue ? { session.setStringValue("", for: field) } : nil
+            removeLabel: String(localized: "Remove signature", bundle: .module),
+            removeAction: canRemoveValue ? { session.clearValue(for: field) } : nil
         )
     }
 
@@ -152,7 +152,7 @@ struct FormKitSignaturePad: View {
                         .padding(.bottom, 34)
                 }
                 if strokes.isEmpty && activeStroke.points.isEmpty {
-                    Text("Sign here", bundle: #bundle)
+                    Text("Sign here", bundle: .module)
                         .font(.callout)
                         .foregroundStyle(.tertiary)
                 }
@@ -184,9 +184,9 @@ struct FormKitSignaturePad: View {
                 .stroke(.separator.opacity(0.7), lineWidth: 1)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "Signature drawing area", bundle: #bundle))
+        .accessibilityLabel(String(localized: "Signature drawing area", bundle: .module))
         .accessibilityValue(signatureAccessibilityValue)
-        .accessibilityHint(String(localized: "Draw a signature, then save it.", bundle: #bundle))
+        .accessibilityHint(String(localized: "Draw a signature, then save it.", bundle: .module))
         .accessibilityAddTraits(.allowsDirectInteraction)
     }
 
@@ -210,7 +210,7 @@ struct FormKitSignaturePad: View {
 
     private func uploadSignature() async {
         guard let uploadHandler else {
-            uploadError = String(localized: "Upload unavailable.", bundle: #bundle)
+            uploadError = String(localized: "Upload unavailable.", bundle: .module)
             return
         }
 
@@ -219,7 +219,7 @@ struct FormKitSignaturePad: View {
         let originalValue = session.primitiveValue(for: field)
 
         guard let pngData = pngData() else {
-            uploadError = String(localized: "Signature image could not be created.", bundle: #bundle)
+            uploadError = String(localized: "Signature image could not be created.", bundle: .module)
             return
         }
 
@@ -239,8 +239,8 @@ struct FormKitSignaturePad: View {
                     ]
                 )
             )
-            guard let uploadedURL = assets.first?.url, !uploadedURL.isEmpty else {
-                uploadError = String(localized: "Upload did not return a URL.", bundle: #bundle)
+            guard let uploadedURL = assets.first?.url.formKitNonEmpty else {
+                uploadError = String(localized: "Upload did not return a URL.", bundle: .module)
                 return
             }
             guard session.renderPlan.fields.contains(field),
@@ -248,7 +248,7 @@ struct FormKitSignaturePad: View {
             else {
                 uploadError = String(
                     localized: "The form changed before the signature finished saving.",
-                    bundle: #bundle
+                    bundle: .module
                 )
                 return
             }

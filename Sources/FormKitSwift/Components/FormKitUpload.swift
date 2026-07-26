@@ -78,6 +78,7 @@ extension FormKitUploadItem {
 
 extension String {
     var formKitNonEmpty: String? {
-        isEmpty ? nil : self
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

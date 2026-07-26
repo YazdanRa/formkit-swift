@@ -243,7 +243,7 @@ public extension FormKitSession {
         switch edit.operation {
         case .clear:
             if field.isEnum {
-                let hadValue = selectedEnumChoiceID(for: field) != nil
+                let hadValue = selectedEnumChoiceID(for: field) != nil && primitiveValue(for: field) != .null
                 guard hadValue else {
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
                 }
@@ -252,7 +252,7 @@ public extension FormKitSession {
                 return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
             }
 
-            let hadValue = primitiveValue(for: field) != nil
+            let hadValue = primitiveValue(for: field).map { $0 != .null } == true
             guard hadValue else {
                 return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
             }

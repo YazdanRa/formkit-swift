@@ -365,13 +365,18 @@ public final class FormKitRenderer: FormKitRendering {
                     guard preservesSchemaMemberNames || !Self.renderEngineAnnotationKeys.contains(key) else {
                         return
                     }
-                    let childPreservesSchemaMemberNames = preservesSchemaMemberNames
-                        ? false
-                        : Self.schemaMemberNameMapKeys.contains(key)
-                    result[key] = removingRenderEngineAnnotations(
-                        from: value,
-                        preservesSchemaMemberNames: childPreservesSchemaMemberNames
-                    )
+                    if preservesSchemaMemberNames {
+                        result[key] = removingRenderEngineAnnotations(from: value)
+                    } else if Self.schemaMemberNameMapKeys.contains(key) {
+                        result[key] = removingRenderEngineAnnotations(
+                            from: value,
+                            preservesSchemaMemberNames: true
+                        )
+                    } else if Self.schemaValueKeys.contains(key) {
+                        result[key] = removingRenderEngineAnnotations(from: value)
+                    } else {
+                        result[key] = value
+                    }
                 }
             )
         case .array(let array):
@@ -2982,10 +2987,29 @@ public final class FormKitRenderer: FormKitRendering {
     ]
     private static let schemaMemberNameMapKeys: Set<String> = [
         "$defs",
+        "dependencies",
         "definitions",
         "dependentSchemas",
         "patternProperties",
         "properties"
+    ]
+    private static let schemaValueKeys: Set<String> = [
+        "additionalItems",
+        "additionalProperties",
+        "allOf",
+        "anyOf",
+        "contains",
+        "contentSchema",
+        "else",
+        "if",
+        "items",
+        "not",
+        "oneOf",
+        "prefixItems",
+        "propertyNames",
+        "then",
+        "unevaluatedItems",
+        "unevaluatedProperties"
     ]
     private static let instanceDependentRenderPlanKeywords: Set<String> = [
         "dependentRequired",

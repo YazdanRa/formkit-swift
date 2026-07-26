@@ -16,7 +16,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/ajevans99/swift-json-schema.git", from: "0.13.1"),
+        .package(url: "https://github.com/ajevans99/swift-json-schema.git", "0.11.2"..<"0.13.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.5.0")
     ],
     targets: [

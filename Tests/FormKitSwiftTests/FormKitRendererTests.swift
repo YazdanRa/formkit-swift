@@ -1188,6 +1188,68 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertNil(field(named: "advancedCode", in: session))
     }
 
+    func testConditionalConstPreservesAnnotationNamedInstanceData() {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "selection": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "object",
+                      "properties": {
+                        "x-formkit-render-behavior": { "type": "string" },
+                        "x-formkit-conditional-state": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              "if": {
+                "properties": {
+                  "selection": {
+                    "const": {
+                      "details": {
+                        "x-formkit-render-behavior": "disable",
+                        "x-formkit-conditional-state": "inactive"
+                      }
+                    }
+                  }
+                },
+                "required": ["selection"]
+              },
+              "then": {
+                "properties": {
+                  "matched": {
+                    "type": "string",
+                    "title": "Matched"
+                  }
+                }
+              }
+            }
+            """
+        let instance =
+            """
+            {
+              "selection": {
+                "details": {
+                  "x-formkit-render-behavior": "disable",
+                  "x-formkit-conditional-state": "inactive"
+                }
+              }
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: instance
+        )
+
+        XCTAssertNotNil(field(named: "matched", in: session))
+    }
+
     func testSchemaPropertiesNamedLikeRenderAnnotationsStillRenderAndValidate() throws {
         let schema =
             """

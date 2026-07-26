@@ -434,8 +434,8 @@ private struct FormKitContainerView: View {
                         )
                     ) {
                         Text(options.labels.notSet).tag(Bool?.none)
-                        Text("Off", bundle: #bundle).tag(Bool?.some(false))
-                        Text("On", bundle: #bundle).tag(Bool?.some(true))
+                        Text("Off", bundle: .module).tag(Bool?.some(false))
+                        Text("On", bundle: .module).tag(Bool?.some(true))
                     }
                     .disabled(locked)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -490,12 +490,12 @@ private struct FormKitContainerView: View {
                     session.setDateValue(session.dateValue(for: field), for: field)
                 } label: {
                     Label {
-                        Text("Set Date", bundle: #bundle)
+                        Text("Set Date", bundle: .module)
                     } icon: {
                         Image(systemName: "calendar.badge.plus")
                     }
                 }
-                .accessibilityLabel(String(localized: "Set \(field.title)", bundle: #bundle))
+                .accessibilityLabel(String(localized: "Set \(field.title)", bundle: .module))
             }
             .disabled(locked)
             .accessibilityIdentifier("\(fieldIdentifier(for: field))_set_date_button")
@@ -522,7 +522,7 @@ private struct FormKitContainerView: View {
                             .frame(width: 44, height: 44)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(String(localized: "Clear \(field.title)", bundle: #bundle))
+                    .accessibilityLabel(String(localized: "Clear \(field.title)", bundle: .module))
                     .accessibilityIdentifier("\(fieldIdentifier(for: field))_clear_date_button")
                 }
             }

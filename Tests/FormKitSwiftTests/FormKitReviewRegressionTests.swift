@@ -3,6 +3,11 @@ import XCTest
 
 @MainActor
 final class FormKitReviewRegressionTests: XCTestCase {
+    func testUploadURLsAreTrimmedAndBlankURLsAreRejected() {
+        XCTAssertEqual("  https://example.com/file.pdf \n".formKitNonEmpty, "https://example.com/file.pdf")
+        XCTAssertNil(" \n\t".formKitNonEmpty)
+    }
+
     func testLegacyRendererConformanceUsesNewOverrideOverload() {
         let renderer: any FormKitRendering = LegacyFormKitRenderer()
 
@@ -84,6 +89,39 @@ final class FormKitReviewRegressionTests: XCTestCase {
         XCTAssertEqual(result.appliedEdits.map(\.pointer), ["/enabled"])
         let object = try Self.decodeJSONObject(session.currentInstanceJSON)
         XCTAssertNil(object["enabled"])
+    }
+
+    func testToolClearIsIdempotentForNullableFields() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "note": {
+                  "type": ["string", "null"]
+                },
+                "priority": {
+                  "type": ["string", "null"],
+                  "enum": ["low", "high", null]
+                }
+              }
+            }
+            """,
+            instanceJSON: #"{"note":"Review","priority":"high"}"#
+        )
+        let edits = [
+            FormKitToolEdit(pointer: "/note", operation: .clear),
+            FormKitToolEdit(pointer: "/priority", operation: .clear)
+        ]
+
+        let firstResult = session.applyToolEdits(edits)
+        let secondResult = session.applyToolEdits(edits)
+
+        XCTAssertEqual(firstResult.revision, 2)
+        XCTAssertEqual(firstResult.appliedEdits.map(\.pointer), ["/note", "/priority"])
+        XCTAssertEqual(secondResult.revision, 2)
+        XCTAssertTrue(secondResult.appliedEdits.isEmpty)
+        XCTAssertEqual(secondResult.rejectedEdits.map(\.reason), ["no_change", "no_change"])
     }
 
     func testRenderedFieldIdentifiersUseFullPointer() {
