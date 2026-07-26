@@ -306,7 +306,7 @@ struct FormKitMultipleFileField: View {
     }
 
     private static func isVacant(_ value: FormKitJSONValue) -> Bool {
-        value.string?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
+        value.string.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? true
     }
 }
 

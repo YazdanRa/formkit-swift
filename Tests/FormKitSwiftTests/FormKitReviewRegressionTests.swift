@@ -3,6 +3,20 @@ import XCTest
 
 @MainActor
 final class FormKitReviewRegressionTests: XCTestCase {
+    func testMultipleFileUploadsReplaceInvalidNonStringValues() {
+        for invalidValue in [FormKitJSONValue.null, .number(42)] {
+            XCTAssertEqual(FormKitMultipleFileField.occupiedValueCount(in: [invalidValue]), 0)
+            XCTAssertEqual(
+                FormKitMultipleFileField.replacingVacancies(
+                    in: [invalidValue],
+                    with: [.string("https://example.com/replacement.pdf")],
+                    maxItems: 1
+                ),
+                [.string("https://example.com/replacement.pdf")]
+            )
+        }
+    }
+
     func testUploadURLsAreTrimmedAndBlankURLsAreRejected() {
         XCTAssertEqual("  https://example.com/file.pdf \n".formKitNonEmpty, "https://example.com/file.pdf")
         XCTAssertNil(" \n\t".formKitNonEmpty)
