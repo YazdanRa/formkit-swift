@@ -3159,7 +3159,20 @@ public final class FormKitRenderer: FormKitRendering {
         components.minute = timeComponents.minute
         components.second = timeComponents.second
         components.nanosecond = timeComponents.nanosecond
-        return utcCalendar.date(from: components)
+
+        guard let sameDateUTC = utcCalendar.date(from: components) else {
+            return nil
+        }
+
+        let candidates = [-1, 0, 1]
+            .compactMap { utcCalendar.date(byAdding: .day, value: $0, to: sameDateUTC) }
+        let localDateCandidates = candidates.filter {
+                localCalendar.dateComponents([.year, .month, .day], from: $0) == dateComponents
+            }
+        return (localDateCandidates.isEmpty ? candidates : localDateCandidates)
+            .min {
+                abs($0.timeIntervalSince(referenceDate)) < abs($1.timeIntervalSince(referenceDate))
+            }
     }
 }
 

@@ -249,6 +249,57 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(FormKitRenderer.timeFormatter.string(from: parsedDate), "16:00:00Z")
     }
 
+    func testParsedTimeAnchorsToActualLocalDayAcrossDSTTransition() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let referenceDate = try XCTUnwrap(
+            calendar.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 19))
+        )
+        let parsedDate = try XCTUnwrap(
+            FormKitRenderer.reanchoredTime(
+                from: "03:00:00Z",
+                referenceDate: referenceDate,
+                timeZone: timeZone
+            )
+        )
+
+        XCTAssertEqual(calendar.component(.day, from: parsedDate), 1)
+        XCTAssertEqual(calendar.component(.hour, from: parsedDate), 19)
+        XCTAssertEqual(FormKitRenderer.timeFormatter.string(from: parsedDate), "03:00:00Z")
+    }
+
+    func testParsedTimeUsesNearestAnchorAtDSTDayBoundaries() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let springReference = try XCTUnwrap(
+            calendar.date(from: DateComponents(year: 2026, month: 3, day: 8, hour: 12))
+        )
+        let springGap = try XCTUnwrap(
+            FormKitRenderer.reanchoredTime(
+                from: "07:00:00Z",
+                referenceDate: springReference,
+                timeZone: timeZone
+            )
+        )
+        let fallReference = try XCTUnwrap(
+            calendar.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 22))
+        )
+        let fallOverlap = try XCTUnwrap(
+            FormKitRenderer.reanchoredTime(
+                from: "07:00:00Z",
+                referenceDate: fallReference,
+                timeZone: timeZone
+            )
+        )
+
+        XCTAssertEqual(FormKitRenderer.timeFormatter.string(from: springGap), "07:00:00Z")
+        XCTAssertEqual(abs(springGap.timeIntervalSince(springReference)), 12 * 60 * 60)
+        XCTAssertEqual(calendar.component(.day, from: fallOverlap), 1)
+        XCTAssertEqual(calendar.component(.hour, from: fallOverlap), 23)
+    }
+
     func testRendererPreservesDeclaredPropertyOrder() throws {
         let schema =
             """
