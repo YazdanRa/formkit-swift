@@ -32,6 +32,10 @@ final class FormKitViewTests: XCTestCase {
                   "type": "string",
                   "format": "uri",
                   "x-formkit-ui-component": "file-field"
+                },
+                "fallback": {
+                  "type": "string",
+                  "x-formkit-ui-component": "rating"
                 }
               }
             }
@@ -45,6 +49,7 @@ final class FormKitViewTests: XCTestCase {
         let choice = try XCTUnwrap(field("choice"))
         let enabled = try XCTUnwrap(field("enabled"))
         let file = try XCTUnwrap(field("file"))
+        let fallback = try XCTUnwrap(field("fallback"))
         let focusableFieldIDs = FormKitFocusSupport.resolvedComponents(
             session: session,
             options: .init()
@@ -57,6 +62,10 @@ final class FormKitViewTests: XCTestCase {
         XCTAssertNil(FormKitFocusSupport.normalizedFieldID(choice.id, focusableFieldIDs: focusableFieldIDs))
         XCTAssertNil(FormKitFocusSupport.normalizedFieldID(enabled.id, focusableFieldIDs: focusableFieldIDs))
         XCTAssertNil(FormKitFocusSupport.normalizedFieldID(file.id, focusableFieldIDs: focusableFieldIDs))
+        XCTAssertEqual(
+            FormKitFocusSupport.normalizedFieldID(fallback.id, focusableFieldIDs: focusableFieldIDs),
+            fallback.id
+        )
         XCTAssertNil(FormKitFocusSupport.normalizedFieldID("#/missing", focusableFieldIDs: focusableFieldIDs))
         XCTAssertNil(FormKitFocusSupport.normalizedFieldID(nil, focusableFieldIDs: focusableFieldIDs))
 
@@ -86,7 +95,13 @@ final class FormKitViewTests: XCTestCase {
             """,
             instanceJSON: nil
         )
-        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
+        let renderIndex = FormKitRenderIndex(
+            renderPlan: session.renderPlan,
+            focusableFieldIDs: FormKitFocusSupport.resolvedComponents(
+                session: session,
+                options: .init()
+            ).focusableFieldIDs
+        )
         let name = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "name" })
         let count = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "count" })
 
@@ -175,6 +190,39 @@ final class FormKitViewTests: XCTestCase {
             sectionIDs: []
         ))?.id, city.id)
         XCTAssertNil(renderIndex.nextFocusableFieldID(after: city.id))
+    }
+
+    func testFocusEligibilityTracksDynamicStateAndOverrides() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: #"{"type":"object","properties":{"name":{"type":"string"}}}"#,
+            instanceJSON: nil
+        )
+        let name = try XCTUnwrap(session.renderPlan.fields.first)
+
+        XCTAssertTrue(
+            FormKitFocusSupport.resolvedComponents(session: session, options: .init())
+                .focusableFieldIDs.contains(name.id)
+        )
+
+        XCTAssertFalse(
+            FormKitFocusSupport.resolvedComponents(
+                session: session,
+                options: .init(fieldState: { _ in .locked })
+            )
+                .focusableFieldIDs.contains(name.id)
+        )
+
+        XCTAssertFalse(
+            FormKitFocusSupport.resolvedComponents(
+                session: session,
+                options: .init(
+                    components: FormKitComponents(
+                        fieldInput: { _ in AnyView(Text("Custom")) }
+                    )
+                )
+            )
+                .focusableFieldIDs.contains(name.id)
+        )
     }
 
     func testArraySectionOverridesExcludeUnmountedDescendantsFromFocusResolution() throws {

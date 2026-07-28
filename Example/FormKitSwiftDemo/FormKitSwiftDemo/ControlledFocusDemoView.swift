@@ -84,14 +84,20 @@ struct ControlledFocusDemoView: View {
           "type": "array",
           "title": "Notes",
           "items": { "type": "string", "title": "Note" }
-        }
-      }
+        },
+        "mode": { "type": "string" },
+        "extra": { "type": "string" }
+      },
+      "if": { "properties": { "mode": { "const": "detailed" } } },
+      "then": { "required": ["extra"] }
     }
     """
 
     private static let arrayInstance = """
     {
-      "notes": ["First", "Second"]
+      "notes": ["First", "Second"],
+      "mode": "detailed",
+      "extra": "Visible"
     }
     """
 }

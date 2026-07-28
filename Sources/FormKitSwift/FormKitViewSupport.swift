@@ -44,7 +44,7 @@ enum FormKitFocusSupport {
             }
         }
         let fieldStates = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, options.fieldState($0)) })
-        let fieldInputs: [String: AnyView] = if options.components.field == nil, let fieldInput = options.components.fieldInput {
+        let fieldInputs: [String: AnyView] = if options.components.field == nil {
             fields.reduce(into: [:]) { result, field in
                 let state = fieldStates[field.id] ?? .normal
                 let context = FormKitFieldComponentContext(
@@ -56,7 +56,9 @@ enum FormKitFocusSupport {
                     style: options.style,
                     uploadHandler: options.uploadHandler
                 )
-                if let input = fieldInput(context) {
+                if let input = options.components.fieldInput?(context)
+                    ?? FormKitComponentRegistry.fieldInput(for: context)
+                {
                     result[field.id] = input
                 }
             }
@@ -173,7 +175,6 @@ extension FormKitFieldDescriptor {
         isVisible
             && isInteractive
             && !isEnum
-            && uiComponent == nil
             && scalarType.isTextInput
     }
 }

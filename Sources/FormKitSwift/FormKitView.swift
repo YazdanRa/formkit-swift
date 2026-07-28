@@ -153,16 +153,17 @@ private struct FormKitContainerView: View {
             }
             externalFocusedFieldID.wrappedValue = normalizedFieldID
         }
-        .onChange(of: session.renderPlan) { _, _ in
+        .onChange(of: components.focusableFieldIDs) { _, focusableFieldIDs in
             if let externalFocusedFieldID {
                 synchronizeFocusFromHost(
                     externalFocusedFieldID.wrappedValue,
-                    focusableFieldIDs: components.focusableFieldIDs
+                    focusableFieldIDs: focusableFieldIDs
                 )
             } else if FormKitFocusSupport.normalizedFieldID(
                 focusedFieldID,
-                focusableFieldIDs: components.focusableFieldIDs
+                focusableFieldIDs: focusableFieldIDs
             ) != focusedFieldID {
+                commitFocusedTextDraft()
                 focusedFieldID = nil
             }
         }
@@ -715,7 +716,10 @@ private extension FormKitContainerView {
                     commitFocusedTextDraft()
                     focusedFieldID = nil
                     DispatchQueue.main.async {
-                        session.removeArrayRow(row, from: section)
+                        guard let currentSection = session.renderPlan.sections.first(where: { $0.id == section.id }) else {
+                            return
+                        }
+                        session.removeArrayRow(row, from: currentSection)
                     }
                 } label: {
                     Label(options.labels.remove, systemImage: "trash")
