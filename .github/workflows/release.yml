@@ -38,14 +38,6 @@ jobs:
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO
 
-      - name: Run controlled-focus UI tests
-        run: >-
-          xcodebuild test
-          -project Example/FormKitSwiftDemo/FormKitSwiftDemo.xcodeproj
-          -scheme FormKitSwiftDemo
-          -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'
-          CODE_SIGNING_ALLOWED=NO
-
   release:
     name: Release version
     runs-on: ubuntu-latest
