@@ -7,18 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1B5F9869C0830DF9D01FB478 /* ControlledFocusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A9F180633733506391117 /* ControlledFocusUITests.swift */; };
+		4312386199F6F243B59FC66E /* ControlledFocusDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0C4CEBE2AD09D4FB592A3A /* ControlledFocusDemoView.swift */; };
 		4A10DB2D7A6819A1BFC6D258 /* DemoContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 758A1BC341341C4E3B8DBDEA /* DemoContentView.swift */; };
 		991FDE561C96A64DBB2BAEEB /* DemoSchemas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15F4C9601E92F8A4086731F /* DemoSchemas.swift */; };
 		AFDE6FDD8B453844AB213B8B /* FormKitSwiftDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278DEF029F4DBB5E7BBC7035 /* FormKitSwiftDemoApp.swift */; };
 		D4766808DF71C020E8A9044B /* FormKitSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C4D29C58BE60E273A17F4A22 /* FormKitSwift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		593E24626F003DD8F3E2CF0E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 213C605F6F77A700CE444BB4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DCCEE370FD5E5FC28398A762;
+			remoteInfo = FormKitSwiftDemo;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		04AB8C5008A9C47D58CE7475 /* FormKitSwiftDemo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FormKitSwiftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1043E178794005202B65E98D /* formkit-swift */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "formkit-swift"; path = ../..; sourceTree = SOURCE_ROOT; };
 		278DEF029F4DBB5E7BBC7035 /* FormKitSwiftDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormKitSwiftDemoApp.swift; sourceTree = "<group>"; };
+		53FBC1EC5EF2145466EA80FD /* FormKitSwiftDemoUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FormKitSwiftDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		758A1BC341341C4E3B8DBDEA /* DemoContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoContentView.swift; sourceTree = "<group>"; };
+		E13A9F180633733506391117 /* ControlledFocusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlledFocusUITests.swift; sourceTree = "<group>"; };
 		F15F4C9601E92F8A4086731F /* DemoSchemas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoSchemas.swift; sourceTree = "<group>"; };
+		FC0C4CEBE2AD09D4FB592A3A /* ControlledFocusDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlledFocusDemoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,9 +48,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		45457E555275CE032BFB01A1 /* FormKitSwiftDemoUITests */ = {
+			isa = PBXGroup;
+			children = (
+				E13A9F180633733506391117 /* ControlledFocusUITests.swift */,
+			);
+			path = FormKitSwiftDemoUITests;
+			sourceTree = "<group>";
+		};
 		4A6690A285365F4F1F00C7C4 /* FormKitSwiftDemo */ = {
 			isa = PBXGroup;
 			children = (
+				FC0C4CEBE2AD09D4FB592A3A /* ControlledFocusDemoView.swift */,
 				758A1BC341341C4E3B8DBDEA /* DemoContentView.swift */,
 				F15F4C9601E92F8A4086731F /* DemoSchemas.swift */,
 				278DEF029F4DBB5E7BBC7035 /* FormKitSwiftDemoApp.swift */,
@@ -47,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				4A6690A285365F4F1F00C7C4 /* FormKitSwiftDemo */,
+				45457E555275CE032BFB01A1 /* FormKitSwiftDemoUITests */,
 				86D1CD8D12F4EDD393739B77 /* Packages */,
 				7023E8BD339BC86AB467561A /* Products */,
 			);
@@ -56,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				04AB8C5008A9C47D58CE7475 /* FormKitSwiftDemo.app */,
+				53FBC1EC5EF2145466EA80FD /* FormKitSwiftDemoUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -71,6 +97,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		446C56C5231542ACC7A97005 /* FormKitSwiftDemoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CDBDF4284E5F0DB790241355 /* Build configuration list for PBXNativeTarget "FormKitSwiftDemoUITests" */;
+			buildPhases = (
+				04AFEFF1EA1D2800906A7387 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EFC2532FA6143FA45A826044 /* PBXTargetDependency */,
+			);
+			name = FormKitSwiftDemoUITests;
+			packageProductDependencies = (
+			);
+			productName = FormKitSwiftDemoUITests;
+			productReference = 53FBC1EC5EF2145466EA80FD /* FormKitSwiftDemoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		DCCEE370FD5E5FC28398A762 /* FormKitSwiftDemo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = FAB26B95A082D51A5E7D4393 /* Build configuration list for PBXNativeTarget "FormKitSwiftDemo" */;
@@ -99,6 +143,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					446C56C5231542ACC7A97005 = {
+						DevelopmentTeam = "";
+						TestTargetID = DCCEE370FD5E5FC28398A762;
+					};
 					DCCEE370FD5E5FC28398A762 = {
 						DevelopmentTeam = "";
 					};
@@ -122,15 +170,25 @@
 			projectRoot = "";
 			targets = (
 				DCCEE370FD5E5FC28398A762 /* FormKitSwiftDemo */,
+				446C56C5231542ACC7A97005 /* FormKitSwiftDemoUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		04AFEFF1EA1D2800906A7387 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1B5F9869C0830DF9D01FB478 /* ControlledFocusUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FA7D13FD0605060A54E1CCF6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4312386199F6F243B59FC66E /* ControlledFocusDemoView.swift in Sources */,
 				4A10DB2D7A6819A1BFC6D258 /* DemoContentView.swift in Sources */,
 				991FDE561C96A64DBB2BAEEB /* DemoSchemas.swift in Sources */,
 				AFDE6FDD8B453844AB213B8B /* FormKitSwiftDemoApp.swift in Sources */,
@@ -139,7 +197,34 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		EFC2532FA6143FA45A826044 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DCCEE370FD5E5FC28398A762 /* FormKitSwiftDemo */;
+			targetProxy = 593E24626F003DD8F3E2CF0E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		2CE6EC5A5231C281C8E54FB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.formkitswift.demo.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FormKitSwiftDemo;
+			};
+			name = Debug;
+		};
 		310F196EAA03502884429433 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -285,6 +370,25 @@
 			};
 			name = Debug;
 		};
+		A9D103B87C1AAA195259BFC6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.formkitswift.demo.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FormKitSwiftDemo;
+			};
+			name = Release;
+		};
 		CB3D9CBB456B2F908E0F2921 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -319,6 +423,15 @@
 			buildConfigurations = (
 				83CBD1DFF6247C40887305CD /* Debug */,
 				44261CC9E7AE77D8F888A389 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CDBDF4284E5F0DB790241355 /* Build configuration list for PBXNativeTarget "FormKitSwiftDemoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2CE6EC5A5231C281C8E54FB6 /* Debug */,
+				A9D103B87C1AAA195259BFC6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

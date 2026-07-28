@@ -6,7 +6,7 @@ Add FormKitSwift to a SwiftPM package:
 dependencies: [
     .package(
         url: "https://github.com/YazdanRa/formkit-swift.git",
-        from: "1.0.0"
+        from: "1.2.0"
     )
 ]
 ```
@@ -46,6 +46,38 @@ struct EditorView: View {
 ```
 
 Read `session.currentInstanceJSON` to persist the current value and call `session.validate()` before submission.
+
+### Coordinate Focus And Host State
+
+Pass a binding when the host needs to dismiss a stock text field or protect the active field from an external workflow:
+
+```swift
+@State private var focusedFieldID: String?
+
+FormKitView(
+    session: session,
+    focusedFieldID: $focusedFieldID
+)
+```
+
+Binding values are ``FormKitFieldDescriptor/id`` values. Setting the binding to `nil` commits and dismisses the active stock text field. FormKit updates the binding as focus moves through stock text inputs. Custom inputs own their own focus behavior.
+
+Observe ``FormKitSession/revision`` when the host needs to reconcile FormKit edits with undo history or persistence. A revision is a mutation signal, not proof that serialized data changed, so compare canonical JSON snapshots:
+
+```swift
+@State private var lastInstanceJSON = session.currentInstanceJSON
+
+FormKitView(session: session)
+    .onChange(of: session.revision) { _, _ in
+        let currentInstanceJSON = session.currentInstanceJSON
+        guard currentInstanceJSON != lastInstanceJSON else { return }
+        defer { lastInstanceJSON = currentInstanceJSON }
+
+        persist(currentInstanceJSON)
+    }
+```
+
+When the host applies its own tool edits or replaces the session for undo/redo, update the retained baseline as part of that same logical operation to avoid recording it twice.
 
 ## Let the View Own the Session
 

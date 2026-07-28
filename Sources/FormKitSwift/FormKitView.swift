@@ -37,6 +37,7 @@ struct FormKitOwnedSessionConfiguration: Equatable {
 
 public struct FormKitView: View {
     private let injectedSession: FormKitSession?
+    private let externalFocusedFieldID: Binding<String?>?
     private let ownedSessionConfiguration: FormKitOwnedSessionConfiguration?
     private let options: FormKitOptions
     @State private var ownedSession: FormKitSession?
@@ -44,6 +45,20 @@ public struct FormKitView: View {
 
     public init(session: FormKitSession, options: FormKitOptions = .init()) {
         injectedSession = session
+        externalFocusedFieldID = nil
+        ownedSessionConfiguration = nil
+        self.options = options
+        _ownedSession = State(initialValue: nil)
+        _activeOwnedSessionConfiguration = State(initialValue: nil)
+    }
+
+    public init(
+        session: FormKitSession,
+        focusedFieldID: Binding<String?>,
+        options: FormKitOptions = .init()
+    ) {
+        injectedSession = session
+        externalFocusedFieldID = focusedFieldID
         ownedSessionConfiguration = nil
         self.options = options
         _ownedSession = State(initialValue: nil)
@@ -61,6 +76,7 @@ public struct FormKitView: View {
         )
 
         injectedSession = nil
+        externalFocusedFieldID = nil
         ownedSessionConfiguration = configuration
         self.options = options
         _ownedSession = State(initialValue: configuration.makeSession())
@@ -69,9 +85,13 @@ public struct FormKitView: View {
 
     public var body: some View {
         if let session = injectedSession {
-            FormKitContainerView(session: session, options: options)
+            FormKitContainerView(
+                session: session,
+                externalFocusedFieldID: externalFocusedFieldID,
+                options: options
+            )
         } else if let session = ownedSession {
-            FormKitContainerView(session: session, options: options)
+            FormKitContainerView(session: session, externalFocusedFieldID: nil, options: options)
                 .onChange(of: ownedSessionConfiguration) { _, newConfiguration in
                     guard let newConfiguration,
                           activeOwnedSessionConfiguration != newConfiguration
@@ -88,8 +108,10 @@ public struct FormKitView: View {
 
 private struct FormKitContainerView: View {
     @Bindable var session: FormKitSession
+    let externalFocusedFieldID: Binding<String?>?
     let options: FormKitOptions
     @FocusState private var focusedFieldID: String?
+    @State private var pendingTextDrafts: [String: String] = [:]
 
     private var isEditingLocked: Bool {
         options.mode == .readOnly
@@ -105,7 +127,67 @@ private struct FormKitContainerView: View {
             }
         }
         .scrollDismissesKeyboard(.immediately)
+        .onAppear {
+            synchronizeFocusFromHost(externalFocusedFieldID?.wrappedValue)
+        }
+        .onChange(of: externalFocusedFieldID?.wrappedValue) { _, newValue in
+            synchronizeFocusFromHost(newValue)
+        }
+        .onChange(of: focusedFieldID) { _, newValue in
+            let normalizedFieldID = FormKitFocusSupport.normalizedFieldID(
+                newValue,
+                in: session.renderPlan,
+                isEditingLocked: isEditingLocked
+            )
+            guard normalizedFieldID == newValue else {
+                focusedFieldID = normalizedFieldID
+                return
+            }
+            guard let externalFocusedFieldID,
+                  externalFocusedFieldID.wrappedValue != normalizedFieldID
+            else {
+                return
+            }
+            externalFocusedFieldID.wrappedValue = normalizedFieldID
+        }
+        .onChange(of: session.renderPlan) { _, _ in
+            if let externalFocusedFieldID {
+                synchronizeFocusFromHost(externalFocusedFieldID.wrappedValue)
+            } else if FormKitFocusSupport.normalizedFieldID(
+                focusedFieldID,
+                in: session.renderPlan,
+                isEditingLocked: isEditingLocked
+            ) != focusedFieldID {
+                focusedFieldID = nil
+            }
+        }
+        .onChange(of: isEditingLocked) { _, isEditingLocked in
+            if isEditingLocked {
+                commitFocusedTextDraft()
+                focusedFieldID = nil
+            }
+        }
         .accessibilityIdentifier("formkit_form")
+    }
+
+    private func synchronizeFocusFromHost(_ requestedFieldID: String?) {
+        guard let externalFocusedFieldID else {
+            return
+        }
+
+        let normalizedFieldID = FormKitFocusSupport.normalizedFieldID(
+            requestedFieldID,
+            in: session.renderPlan,
+            isEditingLocked: isEditingLocked
+        )
+
+        if focusedFieldID != normalizedFieldID {
+            commitFocusedTextDraft()
+            focusedFieldID = normalizedFieldID
+        }
+        if externalFocusedFieldID.wrappedValue != normalizedFieldID {
+            externalFocusedFieldID.wrappedValue = normalizedFieldID
+        }
     }
 
     @ViewBuilder
@@ -277,9 +359,11 @@ private struct FormKitContainerView: View {
             .accessibilityIdentifier(section.id)
         }
     }
+}
 
+private extension FormKitContainerView {
     @ViewBuilder
-    private func sectionHeader(
+    func sectionHeader(
         _ section: FormKitRenderPlan.SectionDescriptor,
         title: String
     ) -> some View {
@@ -291,7 +375,7 @@ private struct FormKitContainerView: View {
     }
 
     @ViewBuilder
-    private func fieldCard(
+    func fieldCard(
         _ field: FormKitFieldDescriptor,
         renderIndex: FormKitRenderIndex
     ) -> some View {
@@ -376,11 +460,12 @@ private struct FormKitContainerView: View {
             .disabled(field.isDisabled || locked)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(fieldIdentifier(for: field))
+            .accessibilityValue(state.formKitAccessibilityValue)
         }
     }
 
     @ViewBuilder
-    private func resolvedFieldInput(
+    func resolvedFieldInput(
         _ componentInput: AnyView?,
         field: FormKitFieldDescriptor,
         renderIndex: FormKitRenderIndex,
@@ -394,7 +479,7 @@ private struct FormKitContainerView: View {
     }
 
     @ViewBuilder
-    private func fieldInput(
+    func fieldInput(
         _ field: FormKitFieldDescriptor,
         renderIndex: FormKitRenderIndex,
         locked: Bool
@@ -478,8 +563,15 @@ private struct FormKitContainerView: View {
                     submitLabel: renderIndex.nextFocusableFieldID(after: field.id) == nil ? .done : .next,
                     nextFocusableFieldID: renderIndex.nextFocusableFieldID(after: field.id),
                     focusedFieldID: $focusedFieldID,
-                    isEditingLocked: locked
+                    inputTraits: FormKitTextInputTraits(scalarType: field.scalarType),
+                    isEditingLocked: locked,
+                    onDraftChange: { draft in
+                        pendingTextDrafts[field.id] = draft
+                    }
                 ) { updatedText in
+                    guard pendingTextDrafts.removeValue(forKey: field.id) != nil else {
+                        return
+                    }
                     session.setStringValue(updatedText, for: field)
                 }
             }
@@ -487,7 +579,7 @@ private struct FormKitContainerView: View {
     }
 
     @ViewBuilder
-    private func dateInput(
+    func dateInput(
         _ field: FormKitFieldDescriptor,
         displayedComponents: DatePickerComponents,
         locked: Bool
@@ -531,7 +623,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func datePicker(
+    func datePicker(
         _ field: FormKitFieldDescriptor,
         displayedComponents: DatePickerComponents,
         locked: Bool
@@ -549,8 +641,10 @@ private struct FormKitContainerView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
         .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_picker")
     }
+}
 
-    private func arrayRowView(
+private extension FormKitContainerView {
+    func arrayRowView(
         _ row: FormKitArrayRowDescriptor,
         in section: FormKitRenderPlan.SectionDescriptor,
         descriptor: FormKitArraySectionDescriptor,
@@ -596,11 +690,14 @@ private struct FormKitContainerView: View {
             if options.mode == .editable,
                descriptor.rows.count > descriptor.minItems,
                !section.isDisabled,
-               !isEditingLocked
+                !isEditingLocked
             {
                 Button(role: .destructive) {
-                    session.removeArrayRow(row, from: section)
+                    commitFocusedTextDraft()
                     focusedFieldID = nil
+                    DispatchQueue.main.async {
+                        session.removeArrayRow(row, from: section)
+                    }
                 } label: {
                     Label(options.labels.remove, systemImage: "trash")
                 }
@@ -609,7 +706,7 @@ private struct FormKitContainerView: View {
         .accessibilityIdentifier("\(section.id)_row_\(row.index)")
     }
 
-    private func focusFirstField(in section: FormKitRenderPlan.SectionDescriptor) {
+    func focusFirstField(in section: FormKitRenderPlan.SectionDescriptor) {
         let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
         guard let arrayDescriptor = renderIndex.section(section.id)?.arrayDescriptor,
               let row = arrayDescriptor.rows.last
@@ -617,19 +714,30 @@ private struct FormKitContainerView: View {
             return
         }
 
-        if let field = renderIndex.firstVisibleField(in: row) {
+        if let field = renderIndex.firstFocusableField(in: row) {
             focusedFieldID = field.id
         }
     }
 
-    private func sectionHeaderTitle(for section: FormKitRenderPlan.SectionDescriptor) -> String? {
+    func commitFocusedTextDraft() {
+        guard let focusedFieldID,
+              let draft = pendingTextDrafts.removeValue(forKey: focusedFieldID),
+              let field = session.renderPlan.fields.first(where: { $0.id == focusedFieldID })
+        else {
+            return
+        }
+
+        session.setStringValue(draft, for: field)
+    }
+
+    func sectionHeaderTitle(for section: FormKitRenderPlan.SectionDescriptor) -> String? {
         if section.pointer == "#", section.title == session.renderPlan.title {
             return nil
         }
         return section.title
     }
 
-    private func borderColor(
+    func borderColor(
         for field: FormKitFieldDescriptor,
         state: FormKitFieldVisualState,
         hasErrors: Bool
@@ -650,7 +758,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func fieldPrompt(for field: FormKitFieldDescriptor) -> String {
+    func fieldPrompt(for field: FormKitFieldDescriptor) -> String {
         switch field.scalarType {
         case .email:
             return "name@example.com"
@@ -665,7 +773,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func nullableBooleanSelection(for field: FormKitFieldDescriptor) -> NullableBooleanSelection {
+    func nullableBooleanSelection(for field: FormKitFieldDescriptor) -> NullableBooleanSelection {
         switch session.primitiveValue(for: field) {
         case .boolean(let value):
             return .boolean(value)
@@ -678,7 +786,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
+    func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
         if session.isConcreteValuePending(for: field) {
             return .value
         }
@@ -695,7 +803,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func fieldIdentifier(for field: FormKitFieldDescriptor) -> String {
+    func fieldIdentifier(for field: FormKitFieldDescriptor) -> String {
         FormKitAccessibility.fieldIdentifier(for: field)
     }
 }
@@ -738,7 +846,9 @@ private struct FormKitDebouncedTextInputField: View {
     let submitLabel: SubmitLabel
     let nextFocusableFieldID: String?
     let focusedFieldID: FocusState<String?>.Binding
+    let inputTraits: FormKitTextInputTraits
     let isEditingLocked: Bool
+    let onDraftChange: (String?) -> Void
     let onCommit: (String) -> Void
 
     @State private var draftText: String
@@ -752,7 +862,9 @@ private struct FormKitDebouncedTextInputField: View {
         submitLabel: SubmitLabel,
         nextFocusableFieldID: String?,
         focusedFieldID: FocusState<String?>.Binding,
+        inputTraits: FormKitTextInputTraits,
         isEditingLocked: Bool,
+        onDraftChange: @escaping (String?) -> Void,
         onCommit: @escaping (String) -> Void
     ) {
         self.fieldID = fieldID
@@ -763,14 +875,29 @@ private struct FormKitDebouncedTextInputField: View {
         self.submitLabel = submitLabel
         self.nextFocusableFieldID = nextFocusableFieldID
         self.focusedFieldID = focusedFieldID
+        self.inputTraits = inputTraits
         self.isEditingLocked = isEditingLocked
+        self.onDraftChange = onDraftChange
         self.onCommit = onCommit
         _draftText = State(initialValue: canonicalText)
     }
 
     var body: some View {
-        TextField(prompt, text: $draftText, axis: .vertical)
-            .lineLimit(1...)
+        textField
+            .formKitTextInputTraits(inputTraits)
+    }
+
+    private var textField: some View {
+        TextField(
+            prompt,
+            text: Binding(
+                get: { draftText },
+                set: { newValue in
+                    draftText = newValue
+                    onDraftChange(newValue == canonicalText ? nil : newValue)
+                }
+            )
+        )
             .submitLabel(submitLabel)
             .focused(focusedFieldID, equals: fieldID)
             .disabled(isEditingLocked)
@@ -779,6 +906,7 @@ private struct FormKitDebouncedTextInputField: View {
                     return
                 }
                 draftText = newValue
+                onDraftChange(nil)
             }
             .onChange(of: focusedFieldID.wrappedValue) { _, newValue in
                 if newValue != fieldID {

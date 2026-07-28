@@ -4,7 +4,13 @@ import SwiftUI
 struct FormKitSwiftDemoApp: App {
     var body: some Scene {
         WindowGroup {
-            DemoContentView()
+            if ProcessInfo.processInfo.arguments.contains("-UITEST_CONTROLLED_FOCUS") {
+                ControlledFocusDemoView()
+            } else if ProcessInfo.processInfo.arguments.contains("-UITEST_ROW_REMOVAL") {
+                ControlledFocusDemoView(showsArray: true)
+            } else {
+                DemoContentView()
+            }
         }
     }
 }

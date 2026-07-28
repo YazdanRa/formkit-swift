@@ -67,19 +67,7 @@ struct FormKitRenderIndex {
         self.displayBlocksBySectionID = displayBlocksBySectionID
         self.visibleChildSectionsByParentKey = visibleChildSectionsByParentKey
         orderedFocusableFieldIDs = renderPlan.fieldOrder.compactMap { fieldID in
-            guard let field = fieldsByID[fieldID],
-                  field.isVisible,
-                  field.isInteractive
-            else {
-                return nil
-            }
-
-            switch field.scalarType {
-            case .string, .email, .uri, .integer, .number:
-                return field.id
-            case .date, .dateTime, .boolean:
-                return nil
-            }
+            fieldsByID[fieldID]?.supportsStockTextInputFocus == true ? fieldID : nil
         }
 
         if let rootSection = renderPlan.sections.first(where: {
@@ -131,6 +119,10 @@ struct FormKitRenderIndex {
 
     func firstVisibleField(in row: FormKitArrayRowDescriptor) -> FormKitFieldDescriptor? {
         row.fieldIDs.compactMap { field($0) }.first(where: \.isVisible)
+    }
+
+    func firstFocusableField(in row: FormKitArrayRowDescriptor) -> FormKitFieldDescriptor? {
+        row.fieldIDs.compactMap { field($0) }.first(where: \.supportsStockTextInputFocus)
     }
 
     func nextFocusableFieldID(after fieldID: String) -> String? {
