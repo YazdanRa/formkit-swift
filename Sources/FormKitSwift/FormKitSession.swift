@@ -252,8 +252,7 @@ public func dateValue(for field: FormKitFieldDescriptor) -> Date {
             case .date:
                 return FormKitRenderer.dateFormatter.date(from: rawValue) ?? fallbackDate(for: field)
             case .time:
-                return FormKitRenderer.timeFormatter.date(from: rawValue)
-                    ?? FormKitRenderer.timeFractionalFormatter.date(from: rawValue)
+                return FormKitRenderer.reanchoredTime(from: rawValue)
                     ?? fallbackDate(for: field)
             case .dateTime:
                 return FormKitRenderer.dateTimeFormatter.date(from: rawValue)
@@ -974,8 +973,7 @@ public func setFormMessage(_ message: String?) {
             case .date:
                 return FormKitRenderer.dateFormatter.date(from: text) ?? .now
             case .time:
-                return FormKitRenderer.timeFormatter.date(from: text)
-                    ?? FormKitRenderer.timeFractionalFormatter.date(from: text)
+                return FormKitRenderer.reanchoredTime(from: text)
                     ?? .now
             case .dateTime:
                 return FormKitRenderer.dateTimeFormatter.date(from: text)
