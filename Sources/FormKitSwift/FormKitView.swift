@@ -37,6 +37,7 @@ struct FormKitOwnedSessionConfiguration: Equatable {
 
 public struct FormKitView: View {
     private let injectedSession: FormKitSession?
+    private let externalFocusedFieldID: Binding<String?>?
     private let ownedSessionConfiguration: FormKitOwnedSessionConfiguration?
     private let options: FormKitOptions
     @State private var ownedSession: FormKitSession?
@@ -44,6 +45,20 @@ public struct FormKitView: View {
 
     public init(session: FormKitSession, options: FormKitOptions = .init()) {
         injectedSession = session
+        externalFocusedFieldID = nil
+        ownedSessionConfiguration = nil
+        self.options = options
+        _ownedSession = State(initialValue: nil)
+        _activeOwnedSessionConfiguration = State(initialValue: nil)
+    }
+
+    public init(
+        session: FormKitSession,
+        focusedFieldID: Binding<String?>,
+        options: FormKitOptions = .init()
+    ) {
+        injectedSession = session
+        externalFocusedFieldID = focusedFieldID
         ownedSessionConfiguration = nil
         self.options = options
         _ownedSession = State(initialValue: nil)
@@ -61,6 +76,7 @@ public struct FormKitView: View {
         )
 
         injectedSession = nil
+        externalFocusedFieldID = nil
         ownedSessionConfiguration = configuration
         self.options = options
         _ownedSession = State(initialValue: configuration.makeSession())
@@ -69,9 +85,13 @@ public struct FormKitView: View {
 
     public var body: some View {
         if let session = injectedSession {
-            FormKitContainerView(session: session, options: options)
+            FormKitContainerView(
+                session: session,
+                externalFocusedFieldID: externalFocusedFieldID,
+                options: options
+            )
         } else if let session = ownedSession {
-            FormKitContainerView(session: session, options: options)
+            FormKitContainerView(session: session, externalFocusedFieldID: nil, options: options)
                 .onChange(of: ownedSessionConfiguration) { _, newConfiguration in
                     guard let newConfiguration,
                           activeOwnedSessionConfiguration != newConfiguration
@@ -88,24 +108,133 @@ public struct FormKitView: View {
 
 private struct FormKitContainerView: View {
     @Bindable var session: FormKitSession
+    let externalFocusedFieldID: Binding<String?>?
     let options: FormKitOptions
     @FocusState private var focusedFieldID: String?
+    @State private var pendingTextDrafts: [String: String] = [:]
+    @State private var pendingArraySectionFocusID: String?
 
-    private var isEditingLocked: Bool {
-        options.mode == .readOnly
-    }
+    private var isEditingLocked: Bool { options.mode == .readOnly }
 
     var body: some View {
-        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
+        let components = FormKitFocusSupport.resolvedComponents(session: session, options: options)
+        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan,
+                                             focusableFieldIDs: components.focusableFieldIDs)
 
         Form {
             statusSection
             ForEach(renderIndex.visibleRootBlocks) { block in
-                renderDisplayBlock(block, renderIndex: renderIndex)
+                renderDisplayBlock(block, renderIndex: renderIndex, components: components)
             }
         }
         .scrollDismissesKeyboard(.immediately)
+        #if os(iOS) || os(visionOS)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                if let focusedFieldID,
+                   let field = renderIndex.field(focusedFieldID),
+                   FormKitTextInputTraits(scalarType: field.scalarType).supportsVerticalExpansion
+                {
+                    Spacer()
+                    Button {
+                        advanceFocus(after: focusedFieldID)
+                    } label: {
+                        Text(
+                            renderIndex.nextFocusableFieldID(after: focusedFieldID) == nil
+                                ? String(localized: "Done", bundle: .module)
+                                : String(localized: "Next", bundle: .module)
+                        )
+                    }
+                    .accessibilityIdentifier("formkit_keyboard_submit")
+                }
+            }
+        }
+        #endif
+        .onAppear {
+            synchronizeFocusFromHost(
+                externalFocusedFieldID?.wrappedValue,
+                focusableFieldIDs: components.focusableFieldIDs
+            )
+        }
+        .onChange(of: externalFocusedFieldID?.wrappedValue) { _, newValue in
+            synchronizeFocusFromHost(newValue, focusableFieldIDs: components.focusableFieldIDs)
+        }
+        .onChange(of: focusedFieldID) { _, newValue in
+            let normalizedFieldID = FormKitFocusSupport.normalizedFieldID(
+                newValue,
+                focusableFieldIDs: components.focusableFieldIDs
+            )
+            guard normalizedFieldID == newValue else {
+                focusedFieldID = normalizedFieldID
+                return
+            }
+            guard let externalFocusedFieldID,
+                  externalFocusedFieldID.wrappedValue != normalizedFieldID
+            else {
+                return
+            }
+            externalFocusedFieldID.wrappedValue = normalizedFieldID
+        }
+        .onChange(of: components.focusableFieldIDs) { _, focusableFieldIDs in
+            if let externalFocusedFieldID {
+                synchronizeFocusFromHost(
+                    externalFocusedFieldID.wrappedValue,
+                    focusableFieldIDs: focusableFieldIDs
+                )
+            } else if FormKitFocusSupport.normalizedFieldID(
+                focusedFieldID,
+                focusableFieldIDs: focusableFieldIDs
+            ) != focusedFieldID {
+                commitFocusedTextDraft()
+                focusedFieldID = nil
+            }
+        }
+        .task(id: session.revision) {
+            guard let sectionID = pendingArraySectionFocusID else {
+                return
+            }
+            pendingArraySectionFocusID = nil
+            focusFirstField(in: sectionID, renderIndex: renderIndex)
+        }
+        .onChange(of: isEditingLocked) { _, isEditingLocked in
+            if isEditingLocked {
+                commitFocusedTextDraft()
+                focusedFieldID = nil
+            }
+        }
         .accessibilityIdentifier("formkit_form")
+    }
+
+    private func synchronizeFocusFromHost(
+        _ requestedFieldID: String?,
+        focusableFieldIDs: Set<String>
+    ) {
+        guard let externalFocusedFieldID else {
+            return
+        }
+
+        var currentFocusableFieldIDs = focusableFieldIDs
+        if requestedFieldID != nil,
+           focusedFieldID != requestedFieldID,
+           commitFocusedTextDraft()
+        {
+            currentFocusableFieldIDs = FormKitFocusSupport.resolvedComponents(
+                session: session,
+                options: options
+            ).focusableFieldIDs
+        }
+        let normalizedFieldID = FormKitFocusSupport.normalizedFieldID(
+            requestedFieldID,
+            focusableFieldIDs: currentFocusableFieldIDs
+        )
+
+        if focusedFieldID != normalizedFieldID {
+            commitFocusedTextDraft()
+            focusedFieldID = normalizedFieldID
+        }
+        if externalFocusedFieldID.wrappedValue != normalizedFieldID {
+            externalFocusedFieldID.wrappedValue = normalizedFieldID
+        }
     }
 
     @ViewBuilder
@@ -146,14 +275,20 @@ private struct FormKitContainerView: View {
     @ViewBuilder
     private func renderDisplayBlock(
         _ block: FormKitRenderIndex.DisplayBlock,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         switch block.kind {
         case let .section(sectionID):
             if let section = renderIndex.section(sectionID),
                let arrayDescriptor = section.arrayDescriptor
             {
-                arraySection(section, descriptor: arrayDescriptor, renderIndex: renderIndex)
+                arraySection(
+                    section,
+                    descriptor: arrayDescriptor,
+                    renderIndex: renderIndex,
+                    components: components
+                )
             }
 
         case let .fieldGroup(sectionID, fieldIDs):
@@ -163,7 +298,8 @@ private struct FormKitContainerView: View {
                     fieldIDs: fieldIDs,
                     showHeader: block.showSectionHeader,
                     showFooter: block.showSectionFooter,
-                    renderIndex: renderIndex
+                    renderIndex: renderIndex,
+                    components: components
                 )
             }
         }
@@ -174,7 +310,8 @@ private struct FormKitContainerView: View {
         fieldIDs: [String],
         showHeader: Bool,
         showFooter: Bool,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         let visibleFields: [FormKitFieldDescriptor] = fieldIDs.compactMap { fieldID in
             guard let field = renderIndex.field(fieldID), field.isVisible else {
@@ -185,7 +322,7 @@ private struct FormKitContainerView: View {
 
         return Section {
             ForEach(visibleFields, id: \.id) { field in
-                fieldCard(field, renderIndex: renderIndex)
+                fieldCard(field, renderIndex: renderIndex, components: components)
             }
         } header: {
             if showHeader, let title = sectionHeaderTitle(for: section) {
@@ -203,25 +340,14 @@ private struct FormKitContainerView: View {
     private func arraySection(
         _ section: FormKitRenderPlan.SectionDescriptor,
         descriptor: FormKitArraySectionDescriptor,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         let canAddMore = descriptor.maxItems.map { descriptor.rows.count < $0 } ?? true
         let arrayErrors = session.errorMessages(for: section)
-        let componentContext = FormKitArraySectionComponentContext(
-            session: session,
-            section: section,
-            descriptor: descriptor,
-            errors: arrayErrors,
-            isEditingLocked: isEditingLocked,
-            style: options.style,
-            labels: options.labels,
-            uploadHandler: options.uploadHandler
-        )
 
-        if let customArraySection = options.components.arraySection?(componentContext) {
+        if let customArraySection = components.arraySections[section.id] {
             customArraySection
-        } else if let registeredArraySection = FormKitComponentRegistry.arraySection(for: componentContext) {
-            registeredArraySection
         } else {
             Section {
                 if descriptor.rows.isEmpty {
@@ -232,13 +358,19 @@ private struct FormKitContainerView: View {
                 }
 
                 ForEach(descriptor.rows) { row in
-                    arrayRowView(row, in: section, descriptor: descriptor, renderIndex: renderIndex)
+                    arrayRowView(
+                        row,
+                        in: section,
+                        descriptor: descriptor,
+                        renderIndex: renderIndex,
+                        components: components
+                    )
                 }
 
                 if options.mode == .editable {
                     Button {
+                        pendingArraySectionFocusID = section.id
                         session.appendArrayRow(to: section)
-                        focusFirstField(in: section)
                     } label: {
                         Label(
                             "\(options.labels.addItemPrefix) \(descriptor.itemTitle)",
@@ -277,9 +409,11 @@ private struct FormKitContainerView: View {
             .accessibilityIdentifier(section.id)
         }
     }
+}
 
+private extension FormKitContainerView {
     @ViewBuilder
-    private func sectionHeader(
+    func sectionHeader(
         _ section: FormKitRenderPlan.SectionDescriptor,
         title: String
     ) -> some View {
@@ -291,12 +425,13 @@ private struct FormKitContainerView: View {
     }
 
     @ViewBuilder
-    private func fieldCard(
+    func fieldCard(
         _ field: FormKitFieldDescriptor,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         let errors = session.errorMessages(for: field)
-        let state = options.fieldState(field)
+        let state = components.fieldStates[field.id] ?? options.fieldState(field)
         let locked = isEditingLocked || state == .locked
         let componentContext = FormKitFieldComponentContext(
             session: session,
@@ -311,7 +446,7 @@ private struct FormKitContainerView: View {
         if let customField = options.components.field {
             customField(componentContext)
         } else {
-            let componentInput = options.components.fieldInput?(componentContext)
+            let componentInput = components.fieldInputs[field.id]
                 ?? FormKitComponentRegistry.fieldInput(for: componentContext)
             let usesStackedLabel = componentInput != nil
                 || (!field.isEnum && ![.boolean, .date, .dateTime].contains(field.scalarType))
@@ -376,11 +511,12 @@ private struct FormKitContainerView: View {
             .disabled(field.isDisabled || locked)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier(fieldIdentifier(for: field))
+            .accessibilityValue(state.formKitAccessibilityValue)
         }
     }
 
     @ViewBuilder
-    private func resolvedFieldInput(
+    func resolvedFieldInput(
         _ componentInput: AnyView?,
         field: FormKitFieldDescriptor,
         renderIndex: FormKitRenderIndex,
@@ -394,7 +530,7 @@ private struct FormKitContainerView: View {
     }
 
     @ViewBuilder
-    private func fieldInput(
+    func fieldInput(
         _ field: FormKitFieldDescriptor,
         renderIndex: FormKitRenderIndex,
         locked: Bool
@@ -476,10 +612,19 @@ private struct FormKitContainerView: View {
                     prompt: fieldPrompt(for: field),
                     canonicalText: session.stringValue(for: field),
                     submitLabel: renderIndex.nextFocusableFieldID(after: field.id) == nil ? .done : .next,
-                    nextFocusableFieldID: renderIndex.nextFocusableFieldID(after: field.id),
                     focusedFieldID: $focusedFieldID,
-                    isEditingLocked: locked
+                    inputTraits: FormKitTextInputTraits(scalarType: field.scalarType),
+                    isEditingLocked: locked,
+                    onDraftChange: { draft in
+                        pendingTextDrafts[field.id] = draft
+                    },
+                    onSubmit: {
+                        advanceFocus(after: field.id)
+                    }
                 ) { updatedText in
+                    guard pendingTextDrafts.removeValue(forKey: field.id) != nil else {
+                        return
+                    }
                     session.setStringValue(updatedText, for: field)
                 }
             }
@@ -487,7 +632,7 @@ private struct FormKitContainerView: View {
     }
 
     @ViewBuilder
-    private func dateInput(
+    func dateInput(
         _ field: FormKitFieldDescriptor,
         displayedComponents: DatePickerComponents,
         locked: Bool
@@ -531,7 +676,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func datePicker(
+    func datePicker(
         _ field: FormKitFieldDescriptor,
         displayedComponents: DatePickerComponents,
         locked: Bool
@@ -549,12 +694,15 @@ private struct FormKitContainerView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
         .accessibilityIdentifier("\(fieldIdentifier(for: field))_date_picker")
     }
+}
 
-    private func arrayRowView(
+private extension FormKitContainerView {
+    func arrayRowView(
         _ row: FormKitArrayRowDescriptor,
         in section: FormKitRenderPlan.SectionDescriptor,
         descriptor: FormKitArraySectionDescriptor,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             if descriptor.itemKind == .object {
@@ -563,7 +711,7 @@ private struct FormKitContainerView: View {
             }
 
             if let field = renderIndex.firstVisibleField(in: row) {
-                fieldCard(field, renderIndex: renderIndex)
+                fieldCard(field, renderIndex: renderIndex, components: components)
             }
 
             ForEach(renderIndex.visibleSections(in: row), id: \.id) { nestedSection in
@@ -579,7 +727,7 @@ private struct FormKitContainerView: View {
                             .foregroundStyle(options.style.secondaryText)
                     }
                     ForEach(renderIndex.visibleFields(in: nestedSection), id: \.id) { field in
-                        fieldCard(field, renderIndex: renderIndex)
+                        fieldCard(field, renderIndex: renderIndex, components: components)
                     }
                 }
             }
@@ -596,11 +744,17 @@ private struct FormKitContainerView: View {
             if options.mode == .editable,
                descriptor.rows.count > descriptor.minItems,
                !section.isDisabled,
-               !isEditingLocked
+                !isEditingLocked
             {
                 Button(role: .destructive) {
-                    session.removeArrayRow(row, from: section)
+                    commitFocusedTextDraft()
                     focusedFieldID = nil
+                    DispatchQueue.main.async {
+                        guard let currentSection = session.renderPlan.sections.first(where: { $0.id == section.id }) else {
+                            return
+                        }
+                        session.removeArrayRow(row, from: currentSection)
+                    }
                 } label: {
                     Label(options.labels.remove, systemImage: "trash")
                 }
@@ -609,27 +763,46 @@ private struct FormKitContainerView: View {
         .accessibilityIdentifier("\(section.id)_row_\(row.index)")
     }
 
-    private func focusFirstField(in section: FormKitRenderPlan.SectionDescriptor) {
-        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
-        guard let arrayDescriptor = renderIndex.section(section.id)?.arrayDescriptor,
+    func focusFirstField(in sectionID: String, renderIndex: FormKitRenderIndex) {
+        guard let arrayDescriptor = renderIndex.section(sectionID)?.arrayDescriptor,
               let row = arrayDescriptor.rows.last
         else {
             return
         }
 
-        if let field = renderIndex.firstVisibleField(in: row) {
+        if let field = renderIndex.firstFocusableField(in: row) {
             focusedFieldID = field.id
         }
     }
 
-    private func sectionHeaderTitle(for section: FormKitRenderPlan.SectionDescriptor) -> String? {
+    @discardableResult
+    func commitFocusedTextDraft() -> Bool {
+        guard let focusedFieldID,
+              let draft = pendingTextDrafts.removeValue(forKey: focusedFieldID),
+              let field = session.renderPlan.fields.first(where: { $0.id == focusedFieldID })
+        else {
+            return false
+        }
+
+        session.setStringValue(draft, for: field)
+        return true
+    }
+
+    func advanceFocus(after fieldID: String) {
+        commitFocusedTextDraft()
+        let focusableIDs = FormKitFocusSupport.resolvedComponents(session: session, options: options).focusableFieldIDs
+        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan, focusableFieldIDs: focusableIDs)
+        focusedFieldID = renderIndex.nextFocusableFieldID(after: fieldID)
+    }
+
+    func sectionHeaderTitle(for section: FormKitRenderPlan.SectionDescriptor) -> String? {
         if section.pointer == "#", section.title == session.renderPlan.title {
             return nil
         }
         return section.title
     }
 
-    private func borderColor(
+    func borderColor(
         for field: FormKitFieldDescriptor,
         state: FormKitFieldVisualState,
         hasErrors: Bool
@@ -650,7 +823,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func fieldPrompt(for field: FormKitFieldDescriptor) -> String {
+    func fieldPrompt(for field: FormKitFieldDescriptor) -> String {
         switch field.scalarType {
         case .email:
             return "name@example.com"
@@ -665,7 +838,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func nullableBooleanSelection(for field: FormKitFieldDescriptor) -> NullableBooleanSelection {
+    func nullableBooleanSelection(for field: FormKitFieldDescriptor) -> NullableBooleanSelection {
         switch session.primitiveValue(for: field) {
         case .boolean(let value):
             return .boolean(value)
@@ -678,7 +851,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
+    func nullableValueSelection(for field: FormKitFieldDescriptor) -> NullableValueSelection {
         if session.isConcreteValuePending(for: field) {
             return .value
         }
@@ -695,7 +868,7 @@ private struct FormKitContainerView: View {
         }
     }
 
-    private func fieldIdentifier(for field: FormKitFieldDescriptor) -> String {
+    func fieldIdentifier(for field: FormKitFieldDescriptor) -> String {
         FormKitAccessibility.fieldIdentifier(for: field)
     }
 }
@@ -736,9 +909,11 @@ private struct FormKitDebouncedTextInputField: View {
     let prompt: String
     let canonicalText: String
     let submitLabel: SubmitLabel
-    let nextFocusableFieldID: String?
     let focusedFieldID: FocusState<String?>.Binding
+    let inputTraits: FormKitTextInputTraits
     let isEditingLocked: Bool
+    let onDraftChange: (String?) -> Void
+    let onSubmit: () -> Void
     let onCommit: (String) -> Void
 
     @State private var draftText: String
@@ -750,9 +925,11 @@ private struct FormKitDebouncedTextInputField: View {
         prompt: String,
         canonicalText: String,
         submitLabel: SubmitLabel,
-        nextFocusableFieldID: String?,
         focusedFieldID: FocusState<String?>.Binding,
+        inputTraits: FormKitTextInputTraits,
         isEditingLocked: Bool,
+        onDraftChange: @escaping (String?) -> Void,
+        onSubmit: @escaping () -> Void,
         onCommit: @escaping (String) -> Void
     ) {
         self.fieldID = fieldID
@@ -761,17 +938,34 @@ private struct FormKitDebouncedTextInputField: View {
         self.prompt = prompt
         self.canonicalText = canonicalText
         self.submitLabel = submitLabel
-        self.nextFocusableFieldID = nextFocusableFieldID
         self.focusedFieldID = focusedFieldID
+        self.inputTraits = inputTraits
         self.isEditingLocked = isEditingLocked
+        self.onDraftChange = onDraftChange
+        self.onSubmit = onSubmit
         self.onCommit = onCommit
         _draftText = State(initialValue: canonicalText)
     }
 
     var body: some View {
-        TextField(prompt, text: $draftText, axis: .vertical)
+        textField
+            .formKitTextInputTraits(inputTraits)
+    }
+
+    private var textField: some View {
+        TextField(
+            prompt,
+            text: Binding(
+                get: { draftText },
+                set: { newValue in
+                    draftText = newValue
+                    onDraftChange(newValue == canonicalText ? nil : newValue)
+                }
+            ),
+            axis: inputTraits.supportsVerticalExpansion ? .vertical : .horizontal
+        )
             .lineLimit(1...)
-            .submitLabel(submitLabel)
+            .submitLabel(inputTraits.supportsVerticalExpansion ? .return : submitLabel)
             .focused(focusedFieldID, equals: fieldID)
             .disabled(isEditingLocked)
             .onChange(of: canonicalText) { _, newValue in
@@ -779,6 +973,7 @@ private struct FormKitDebouncedTextInputField: View {
                     return
                 }
                 draftText = newValue
+                onDraftChange(nil)
             }
             .onChange(of: focusedFieldID.wrappedValue) { _, newValue in
                 if newValue != fieldID {
@@ -787,7 +982,7 @@ private struct FormKitDebouncedTextInputField: View {
             }
             .onSubmit {
                 commitIfNeeded()
-                focusedFieldID.wrappedValue = nextFocusableFieldID
+                onSubmit()
             }
             .onDisappear {
                 commitIfNeeded()

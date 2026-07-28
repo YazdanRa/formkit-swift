@@ -31,9 +31,10 @@ struct FormKitRenderIndex {
     private let sectionsByID: [String: FormKitRenderPlan.SectionDescriptor]
     private let displayBlocksBySectionID: [String: [DisplayBlock]]
     private let visibleChildSectionsByParentKey: [ParentSectionKey: [FormKitRenderPlan.SectionDescriptor]]
+    private let focusableFieldIDs: Set<String>
     private let orderedFocusableFieldIDs: [String]
 
-    init(renderPlan: FormKitRenderPlan) {
+    init(renderPlan: FormKitRenderPlan, focusableFieldIDs: Set<String>? = nil) {
         let fieldsByID = Dictionary(uniqueKeysWithValues: renderPlan.fields.map { ($0.id, $0) })
         let sectionsByID = Dictionary(uniqueKeysWithValues: renderPlan.sections.map { ($0.id, $0) })
         let visibleChildSectionsByParentKey = Dictionary(
@@ -66,20 +67,12 @@ struct FormKitRenderIndex {
         self.sectionsByID = sectionsByID
         self.displayBlocksBySectionID = displayBlocksBySectionID
         self.visibleChildSectionsByParentKey = visibleChildSectionsByParentKey
+        let focusableFieldIDs = focusableFieldIDs ?? Set(
+            renderPlan.fields.lazy.filter(\.supportsStockTextInputFocus).map(\.id)
+        )
+        self.focusableFieldIDs = focusableFieldIDs
         orderedFocusableFieldIDs = renderPlan.fieldOrder.compactMap { fieldID in
-            guard let field = fieldsByID[fieldID],
-                  field.isVisible,
-                  field.isInteractive
-            else {
-                return nil
-            }
-
-            switch field.scalarType {
-            case .string, .email, .uri, .integer, .number:
-                return field.id
-            case .date, .dateTime, .boolean:
-                return nil
-            }
+            focusableFieldIDs.contains(fieldID) ? fieldID : nil
         }
 
         if let rootSection = renderPlan.sections.first(where: {
@@ -131,6 +124,13 @@ struct FormKitRenderIndex {
 
     func firstVisibleField(in row: FormKitArrayRowDescriptor) -> FormKitFieldDescriptor? {
         row.fieldIDs.compactMap { field($0) }.first(where: \.isVisible)
+    }
+
+    func firstFocusableField(in row: FormKitArrayRowDescriptor) -> FormKitFieldDescriptor? {
+        row.fieldIDs.lazy
+            .filter { focusableFieldIDs.contains($0) }
+            .compactMap { field($0) }
+            .first
     }
 
     func nextFocusableFieldID(after fieldID: String) -> String? {

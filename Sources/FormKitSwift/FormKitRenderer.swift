@@ -194,7 +194,7 @@ public final class FormKitRenderer: FormKitRendering {
                 fieldOrder: [],
                 unsupportedReasons: [
                     .invalidSchema(
-                        String(localized: "The schema could not be compiled for validation.")
+                        String(localized: "The schema could not be compiled for validation.", bundle: .module)
                     )
                 ]
             )
@@ -254,7 +254,7 @@ public final class FormKitRenderer: FormKitRendering {
             guard case .object = value else {
                 return (
                     nil,
-                    String(localized: "The instance JSON must decode to an object.")
+                    String(localized: "The instance JSON must decode to an object.", bundle: .module)
                 )
             }
             return (value, nil)
@@ -262,7 +262,7 @@ public final class FormKitRenderer: FormKitRendering {
             return (
                 nil,
                 String(
-                    format: String(localized: "The form data couldn’t be opened. %@"),
+                    format: String(localized: "The form data couldn’t be opened. %@", bundle: .module),
                     error.localizedDescription
                 )
             )
@@ -293,7 +293,7 @@ public final class FormKitRenderer: FormKitRendering {
                 fieldOrder: [],
                 unsupportedReasons: [
                     .invalidSchema(
-                        String(localized: "The schema root must be a JSON object.")
+                        String(localized: "The schema root must be a JSON object.", bundle: .module)
                     )
                 ]
             )
@@ -469,7 +469,7 @@ public final class FormKitRenderer: FormKitRendering {
                 reasons.append(
                     .unsupportedSchemaShape(
                         location: pointerForChild(name, in: pointerTokens),
-                        message: String(localized: "Properties must resolve to schema objects.")
+                        message: String(localized: "Properties must resolve to schema objects.", bundle: .module)
                     )
                 )
                 continue
@@ -603,7 +603,7 @@ public final class FormKitRenderer: FormKitRendering {
                     .unsupportedKeyword(
                         keyword: "additionalProperties",
                         location: pointer,
-                        message: String(localized: "Dynamic object keys are not supported in this renderer.")
+                        message: String(localized: "Dynamic object keys are not supported in this renderer.", bundle: .module)
                     )
                 )
             }
@@ -614,7 +614,7 @@ public final class FormKitRenderer: FormKitRendering {
                 .unsupportedKeyword(
                     keyword: keyword,
                     location: pointer,
-                    message: String(localized: "This keyword changes the form structure in a way the renderer does not support yet.")
+                    message: String(localized: "This keyword changes the form structure in a way the renderer does not support yet.", bundle: .module)
                 )
             )
         }
@@ -627,7 +627,7 @@ public final class FormKitRenderer: FormKitRendering {
             reasons.append(
                 .unsupportedSchemaShape(
                     location: pointer,
-                    message: String(localized: "Only object schemas can create form sections.")
+                    message: String(localized: "Only object schemas can create form sections.", bundle: .module)
                 )
             )
             return false
@@ -663,7 +663,7 @@ public final class FormKitRenderer: FormKitRendering {
                 .unsupportedKeyword(
                     keyword: "items",
                     location: pointer,
-                    message: String(localized: "Nested repeatable groups are not supported in this renderer yet.")
+                    message: String(localized: "Nested repeatable groups are not supported in this renderer yet.", bundle: .module)
                 )
             )
             return false
@@ -682,7 +682,7 @@ public final class FormKitRenderer: FormKitRendering {
                 .unsupportedKeyword(
                     keyword: "items",
                     location: pointer,
-                    message: String(localized: "Array rendering requires a single supported items schema.")
+                    message: String(localized: "Array rendering requires a single supported items schema.", bundle: .module)
                 )
             )
             return false
@@ -778,7 +778,7 @@ public final class FormKitRenderer: FormKitRendering {
             let rowPointerTokens = pointerTokens + [String(index)]
             let rowPointer = JSONPointer.pointerString(from: rowPointerTokens)
             let rowTitle = String(
-                format: String(localized: "%@ %d"),
+                format: String(localized: "%@ %d", bundle: .module),
                 itemTitle,
                 index + 1
             )
@@ -799,7 +799,7 @@ public final class FormKitRenderer: FormKitRendering {
                     continue
                 }
                 let fieldTitle = String(
-                    format: String(localized: "%@ %d"),
+                    format: String(localized: "%@ %d", bundle: .module),
                     itemTitle,
                     index + 1
                 )
@@ -938,7 +938,7 @@ public final class FormKitRenderer: FormKitRendering {
             reasons.append(
                 .unsupportedSchemaShape(
                     location: pointer,
-                    message: String(localized: "Only array schemas can create repeatable groups.")
+                    message: String(localized: "Only array schemas can create repeatable groups.", bundle: .module)
                 )
             )
             return false
@@ -950,7 +950,7 @@ public final class FormKitRenderer: FormKitRendering {
                 .unsupportedKeyword(
                     keyword: keyword,
                     location: pointer,
-                    message: String(localized: "This array shape is not supported in the native renderer yet.")
+                    message: String(localized: "This array shape is not supported in the native renderer yet.", bundle: .module)
                 )
             )
         }
@@ -964,7 +964,7 @@ public final class FormKitRenderer: FormKitRendering {
                 .unsupportedKeyword(
                     keyword: "items",
                     location: pointer,
-                    message: String(localized: "Array schemas must declare a single items schema.")
+                    message: String(localized: "Array schemas must declare a single items schema.", bundle: .module)
                 )
             )
             return false
@@ -991,7 +991,7 @@ public final class FormKitRenderer: FormKitRendering {
             reasons.append(
                 .unsupportedSchemaShape(
                     location: JSONPointer.pointerString(from: pointerTokens),
-                    message: String(localized: "Rendered schema nodes must resolve to objects.")
+                    message: String(localized: "Rendered schema nodes must resolve to objects.", bundle: .module)
                 )
             )
             return nil
@@ -1461,7 +1461,7 @@ public final class FormKitRenderer: FormKitRendering {
 
         let trimmedTitle = arrayTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedTitle.count > 1 else {
-            return String(localized: "Item")
+            return String(localized: "Item", bundle: .module)
         }
 
         if trimmedTitle.hasSuffix("ies") {
@@ -1940,7 +1940,7 @@ public final class FormKitRenderer: FormKitRendering {
                 .unsupportedKeyword(
                     keyword: keyword,
                     location: pointer,
-                    message: String(localized: "This field shape is not supported in the native renderer yet.")
+                    message: String(localized: "This field shape is not supported in the native renderer yet.", bundle: .module)
                 )
             )
         }
@@ -1953,7 +1953,7 @@ public final class FormKitRenderer: FormKitRendering {
             reasons.append(
                 .unsupportedSchemaShape(
                     location: pointer,
-                    message: String(localized: "Object nodes must be rendered as sections.")
+                    message: String(localized: "Object nodes must be rendered as sections.", bundle: .module)
                 )
             )
             return nil
@@ -2206,7 +2206,7 @@ public final class FormKitRenderer: FormKitRendering {
             let allowsNull = enumValues.contains(.null)
             let nonNullValues = enumValues.filter { $0 != .null }
             guard let firstValue = nonNullValues.first else {
-                reasons.append(.unsupportedSchemaShape(location: pointer, message: String(localized: "Enums must include at least one concrete value.")))
+                reasons.append(.unsupportedSchemaShape(location: pointer, message: String(localized: "Enums must include at least one concrete value.", bundle: .module)))
                 return .unsupported
             }
 
@@ -2233,7 +2233,7 @@ public final class FormKitRenderer: FormKitRendering {
             reasons.append(
                 .unsupportedSchemaShape(
                     location: pointer,
-                    message: String(localized: "Every supported schema node must declare a type or enum.")
+                    message: String(localized: "Every supported schema node must declare a type or enum.", bundle: .module)
                 )
             )
             return .unsupported
@@ -2271,7 +2271,7 @@ public final class FormKitRenderer: FormKitRendering {
                 reasons.append(
                     .unsupportedSchemaShape(
                         location: pointer,
-                        message: String(localized: "Union types are only supported for nullable primitives.")
+                        message: String(localized: "Union types are only supported for nullable primitives.", bundle: .module)
                     )
                 )
                 return .unsupported
@@ -2295,7 +2295,7 @@ public final class FormKitRenderer: FormKitRendering {
             reasons.append(
                 .unsupportedSchemaShape(
                     location: pointer,
-                    message: String(localized: "Type declarations must be strings or nullable primitive unions.")
+                    message: String(localized: "Type declarations must be strings or nullable primitive unions.", bundle: .module)
                 )
             )
             return .unsupported
@@ -2326,7 +2326,7 @@ public final class FormKitRenderer: FormKitRendering {
                     .unsupportedKeyword(
                         keyword: "format",
                         location: location,
-                        message: String(localized: "Only email, uri, date, and date-time formats are supported in v1.")
+                        message: String(localized: "Only email, uri, date, and date-time formats are supported in v1.", bundle: .module)
                     )
                 )
                 return nil
@@ -2360,7 +2360,7 @@ public final class FormKitRenderer: FormKitRendering {
                 reasons.append(
                     .unsupportedSchemaShape(
                         location: location,
-                        message: String(localized: "Enum options must match the rendered field type.")
+                        message: String(localized: "Enum options must match the rendered field type.", bundle: .module)
                     )
                 )
                 return []
@@ -3188,9 +3188,9 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
             case .number(let value):
                 return String(value)
             case .boolean(let value):
-                return value ? String(localized: "On") : String(localized: "Off")
+                return value ? String(localized: "On", bundle: .module) : String(localized: "Off", bundle: .module)
             case .null:
-                return String(localized: "No Value")
+                return String(localized: "No Value", bundle: .module)
             }
         }
 
@@ -3269,19 +3269,19 @@ public enum FormKitUnsupportedReason: Sendable, Equatable {
     public var title: String {
         switch self {
         case .invalidSchemaJSON:
-            return String(localized: "Invalid Schema JSON")
+            return String(localized: "Invalid Schema JSON", bundle: .module)
         case .invalidSchema:
-            return String(localized: "Invalid Schema")
+            return String(localized: "Invalid Schema", bundle: .module)
         case .unsupportedKeyword:
-            return String(localized: "Unsupported Keyword")
+            return String(localized: "Unsupported Keyword", bundle: .module)
         case .unsupportedType:
-            return String(localized: "Unsupported Type")
+            return String(localized: "Unsupported Type", bundle: .module)
         case .unsupportedSchemaShape:
-            return String(localized: "Unsupported Schema Shape")
+            return String(localized: "Unsupported Schema Shape", bundle: .module)
         case .unresolvedReference:
-            return String(localized: "Unresolved Reference")
+            return String(localized: "Unresolved Reference", bundle: .module)
         case .remoteReference:
-            return String(localized: "Remote Reference")
+            return String(localized: "Remote Reference", bundle: .module)
         }
     }
 
@@ -3292,10 +3292,10 @@ public enum FormKitUnsupportedReason: Sendable, Equatable {
         case .invalidSchema(let message):
             return message
         case .unsupportedKeyword(let keyword, let location, let message):
-            return "\(keyword) at \(location): \(message)"
+            return String(format: String(localized: "%@ at %@: %@", bundle: .module), keyword, location, message)
         case .unsupportedType(let typeDescription, let location):
             return String(
-                format: String(localized: "Type '%@' at %@ is not supported in this renderer."),
+                format: String(localized: "Type '%@' at %@ is not supported in this renderer.", bundle: .module),
                 typeDescription,
                 location
             )
@@ -3303,13 +3303,13 @@ public enum FormKitUnsupportedReason: Sendable, Equatable {
             return "\(location): \(message)"
         case .unresolvedReference(let reference, let location):
             return String(
-                format: String(localized: "The local reference %@ could not be resolved from %@."),
+                format: String(localized: "The local reference %@ could not be resolved from %@.", bundle: .module),
                 reference,
                 location
             )
         case .remoteReference(let reference, let location):
             return String(
-                format: String(localized: "Remote reference %@ at %@ is not supported in this renderer."),
+                format: String(localized: "Remote reference %@ at %@ is not supported in this renderer.", bundle: .module),
                 reference,
                 location
             )

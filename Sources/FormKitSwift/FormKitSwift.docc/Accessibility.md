@@ -12,6 +12,10 @@ Use descriptor identifiers when host UI tests or surrounding views need to coord
 let identifier = field.accessibilityIdentifier
 ```
 
+Pass `focusedFieldID` to the controlled ``FormKitView`` initializer when surrounding UI must dismiss or restore a stock text field. The binding uses ``FormKitFieldDescriptor/id`` values and returns to `nil` when focus leaves the package-owned text controls.
+
+``FormKitFieldVisualState/changed`` is exposed as an accessibility value in addition to its visual border treatment, so change state does not rely on color alone.
+
 ## Custom Components
 
 A full ``FormKitComponents/field`` override replaces the stock field wrapper, so the host owns its accessibility, focus, errors, and layout. A ``FormKitComponents/fieldInput`` override keeps the stock field presentation but owns the input's control semantics. Preserve:

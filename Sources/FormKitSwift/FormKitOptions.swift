@@ -90,6 +90,18 @@ public struct FormKitStyle: Equatable, Sendable {
 }
 
 public struct FormKitLabels: Equatable, Sendable {
+    public static let localizedDefaults = FormKitLabels(
+        valueState: String(localized: "Value State", bundle: .module),
+        value: String(localized: "Value", bundle: .module),
+        noValue: String(localized: "No Value", bundle: .module),
+        notSet: String(localized: "Not Set", bundle: .module),
+        noItems: String(localized: "No items added yet.", bundle: .module),
+        addItemPrefix: String(localized: "Add", bundle: .module),
+        remove: String(localized: "Remove", bundle: .module),
+        minimumItemsPrefix: String(localized: "Minimum items:", bundle: .module),
+        maximumItemsPrefix: String(localized: "Maximum items:", bundle: .module)
+    )
+
     public var valueState: String
     public var value: String
     public var noValue: String
@@ -101,15 +113,15 @@ public struct FormKitLabels: Equatable, Sendable {
     public var maximumItemsPrefix: String
 
     public init(
-        valueState: String = "Value State",
-        value: String = "Value",
-        noValue: String = "No Value",
-        notSet: String = "Not Set",
-        noItems: String = "No items added yet.",
-        addItemPrefix: String = "Add",
-        remove: String = "Remove",
-        minimumItemsPrefix: String = "Minimum items:",
-        maximumItemsPrefix: String = "Maximum items:"
+        valueState: String = FormKitLabels.localizedDefaults.valueState,
+        value: String = FormKitLabels.localizedDefaults.value,
+        noValue: String = FormKitLabels.localizedDefaults.noValue,
+        notSet: String = FormKitLabels.localizedDefaults.notSet,
+        noItems: String = FormKitLabels.localizedDefaults.noItems,
+        addItemPrefix: String = FormKitLabels.localizedDefaults.addItemPrefix,
+        remove: String = FormKitLabels.localizedDefaults.remove,
+        minimumItemsPrefix: String = FormKitLabels.localizedDefaults.minimumItemsPrefix,
+        maximumItemsPrefix: String = FormKitLabels.localizedDefaults.maximumItemsPrefix
     ) {
         self.valueState = valueState
         self.value = value

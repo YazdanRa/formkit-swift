@@ -30,6 +30,22 @@ jobs:
       - name: Run tests
         run: swift test -Xswiftc -warnings-as-errors
 
+      - name: Build demo
+        run: >-
+          xcodebuild build
+          -project Example/FormKitSwiftDemo/FormKitSwiftDemo.xcodeproj
+          -scheme FormKitSwiftDemo
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+
+      - name: Run controlled-focus UI tests
+        run: >-
+          xcodebuild test
+          -project Example/FormKitSwiftDemo/FormKitSwiftDemo.xcodeproj
+          -scheme FormKitSwiftDemo
+          -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest'
+          CODE_SIGNING_ALLOWED=NO
+
   release:
     name: Release version
     runs-on: ubuntu-latest

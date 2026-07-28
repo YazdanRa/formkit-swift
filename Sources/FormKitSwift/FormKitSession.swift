@@ -148,7 +148,7 @@ public func stringValue(for field: FormKitFieldDescriptor) -> String {
         case .number(let number):
             return Self.numberFormatter.string(from: NSNumber(value: number)) ?? String(number)
         case .boolean(let isEnabled):
-            return isEnabled ? String(localized: "true") : String(localized: "false")
+            return isEnabled ? "true" : "false"
         case .null:
             return ""
         }
@@ -368,24 +368,24 @@ public func removeArrayRow(
             return
         }
 
-        touchedArrayIDs.insert(section.id)
-        var instance = makeInstanceJSONValue()
-        guard var array = arrayValue(at: arrayDescriptor.pointer, in: instance),
+        guard var array = arrayValue(for: section),
               array.indices.contains(row.index)
         else {
             return
         }
 
         array.remove(at: row.index)
-        setArray(array, at: arrayDescriptor.pointer, in: &instance)
-        applyInstance(instance)
+        setArrayValue(
+            array,
+            for: section
+        )
     }
 
 public func validate() -> Bool {
         hasAttemptedValidation = true
         guard renderPlan.isSupported else {
             formErrorMessage = renderPlan.unsupportedReasons.map(\.message).joined(separator: "\n")
-            validationStatusMessage = String(localized: "This form isn’t supported yet.")
+            validationStatusMessage = String(localized: "This form isn’t supported yet.", bundle: .module)
             return false
         }
 
@@ -426,8 +426,8 @@ public func validate() -> Bool {
 
         let isValid = nextFieldErrors.isEmpty && nextArrayErrors.isEmpty && formErrorMessage == nil
         validationStatusMessage = isValid
-            ? String(localized: "All fields look good.")
-            : String(localized: "Fix the highlighted fields and try again.")
+            ? String(localized: "All fields look good.", bundle: .module)
+            : String(localized: "Fix the highlighted fields and try again.", bundle: .module)
         return isValid
     }
 
@@ -772,7 +772,7 @@ public func setFormMessage(_ message: String?) {
             let isBlank = !field.allowsNull
                 && value?.string?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
             if value == nil || isBlank {
-                result[field.id] = [String(localized: "This field is required.")]
+                result[field.id] = [String(localized: "This field is required.", bundle: .module)]
             }
         }
     }

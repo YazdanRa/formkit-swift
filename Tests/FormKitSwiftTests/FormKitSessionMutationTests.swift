@@ -178,6 +178,21 @@ final class FormKitSessionMutationTests: XCTestCase {
         }
     }
 
+    func testBooleanStringsRoundTripCanonically() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: #"{"type":"object","properties":{"enabled":{"type":"boolean"}}}"#,
+            instanceJSON: #"{"enabled":true}"#
+        )
+        let field = try XCTUnwrap(
+            session.renderPlan.fields.first { $0.propertyKey == "enabled" }
+        )
+
+        XCTAssertEqual(session.stringValue(for: field), "true")
+        session.setStringValue("false", for: field)
+        XCTAssertEqual(session.primitiveValue(for: field), .boolean(false))
+        XCTAssertEqual(session.stringValue(for: field), "false")
+    }
+
     func testToolEmptyValuesUseCanonicalRepresentation() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
