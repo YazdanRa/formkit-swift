@@ -11,7 +11,7 @@ FormKitSwift renders native SwiftUI forms from JSON Schema. It owns schema parsi
 Add the package to a SwiftPM or Xcode project:
 
 ```swift
-.package(url: "https://github.com/YazdanRa/formkit-swift.git", from: "1.1.0")
+.package(url: "https://github.com/YazdanRa/formkit-swift.git", from: "1.2.0")
 ```
 
 Then depend on the product:

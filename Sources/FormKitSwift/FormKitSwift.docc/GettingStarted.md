@@ -6,7 +6,7 @@ Add FormKitSwift to a SwiftPM package:
 dependencies: [
     .package(
         url: "https://github.com/YazdanRa/formkit-swift.git",
-        from: "1.1.0"
+        from: "1.2.0"
     )
 ]
 ```
