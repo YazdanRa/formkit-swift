@@ -2,6 +2,20 @@ import XCTest
 
 final class ControlledFocusUITests: XCTestCase {
     @MainActor
+    func testNextUsesPostCommitConditionalPlan() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-UITEST_CONTROLLED_FOCUS"]
+        app.launch()
+
+        app.buttons["demo_focus_site"].tap()
+        app.textFields["json_form_field_site_input"].typeText(" Updated")
+        formKitSubmitButton(named: "Done", in: app).tap()
+
+        XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "#/temperature")
+        waitForInstanceJSON(containing: "North Yard Updated", in: app)
+    }
+
+    @MainActor
     func testControlledFocusCommitsAndSynchronizesNextAndDone() {
         let app = XCUIApplication()
         app.launchArguments = ["-UITEST_CONTROLLED_FOCUS"]

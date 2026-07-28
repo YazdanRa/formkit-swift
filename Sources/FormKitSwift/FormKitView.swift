@@ -137,8 +137,7 @@ private struct FormKitContainerView: View {
                 {
                     Spacer()
                     Button {
-                        commitFocusedTextDraft()
-                        self.focusedFieldID = renderIndex.nextFocusableFieldID(after: focusedFieldID)
+                        advanceFocus(after: focusedFieldID)
                     } label: {
                         Text(
                             renderIndex.nextFocusableFieldID(after: focusedFieldID) == nil
@@ -613,12 +612,14 @@ private extension FormKitContainerView {
                     prompt: fieldPrompt(for: field),
                     canonicalText: session.stringValue(for: field),
                     submitLabel: renderIndex.nextFocusableFieldID(after: field.id) == nil ? .done : .next,
-                    nextFocusableFieldID: renderIndex.nextFocusableFieldID(after: field.id),
                     focusedFieldID: $focusedFieldID,
                     inputTraits: FormKitTextInputTraits(scalarType: field.scalarType),
                     isEditingLocked: locked,
                     onDraftChange: { draft in
                         pendingTextDrafts[field.id] = draft
+                    },
+                    onSubmit: {
+                        advanceFocus(after: field.id)
                     }
                 ) { updatedText in
                     guard pendingTextDrafts.removeValue(forKey: field.id) != nil else {
@@ -787,6 +788,13 @@ private extension FormKitContainerView {
         return true
     }
 
+    func advanceFocus(after fieldID: String) {
+        commitFocusedTextDraft()
+        let focusableIDs = FormKitFocusSupport.resolvedComponents(session: session, options: options).focusableFieldIDs
+        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan, focusableFieldIDs: focusableIDs)
+        focusedFieldID = renderIndex.nextFocusableFieldID(after: fieldID)
+    }
+
     func sectionHeaderTitle(for section: FormKitRenderPlan.SectionDescriptor) -> String? {
         if section.pointer == "#", section.title == session.renderPlan.title {
             return nil
@@ -901,11 +909,11 @@ private struct FormKitDebouncedTextInputField: View {
     let prompt: String
     let canonicalText: String
     let submitLabel: SubmitLabel
-    let nextFocusableFieldID: String?
     let focusedFieldID: FocusState<String?>.Binding
     let inputTraits: FormKitTextInputTraits
     let isEditingLocked: Bool
     let onDraftChange: (String?) -> Void
+    let onSubmit: () -> Void
     let onCommit: (String) -> Void
 
     @State private var draftText: String
@@ -917,11 +925,11 @@ private struct FormKitDebouncedTextInputField: View {
         prompt: String,
         canonicalText: String,
         submitLabel: SubmitLabel,
-        nextFocusableFieldID: String?,
         focusedFieldID: FocusState<String?>.Binding,
         inputTraits: FormKitTextInputTraits,
         isEditingLocked: Bool,
         onDraftChange: @escaping (String?) -> Void,
+        onSubmit: @escaping () -> Void,
         onCommit: @escaping (String) -> Void
     ) {
         self.fieldID = fieldID
@@ -930,11 +938,11 @@ private struct FormKitDebouncedTextInputField: View {
         self.prompt = prompt
         self.canonicalText = canonicalText
         self.submitLabel = submitLabel
-        self.nextFocusableFieldID = nextFocusableFieldID
         self.focusedFieldID = focusedFieldID
         self.inputTraits = inputTraits
         self.isEditingLocked = isEditingLocked
         self.onDraftChange = onDraftChange
+        self.onSubmit = onSubmit
         self.onCommit = onCommit
         _draftText = State(initialValue: canonicalText)
     }
@@ -974,7 +982,7 @@ private struct FormKitDebouncedTextInputField: View {
             }
             .onSubmit {
                 commitIfNeeded()
-                focusedFieldID.wrappedValue = nextFocusableFieldID
+                onSubmit()
             }
             .onDisappear {
                 commitIfNeeded()
@@ -989,5 +997,4 @@ private struct FormKitDebouncedTextInputField: View {
         }
         onCommit(draftText)
     }
-
 }
