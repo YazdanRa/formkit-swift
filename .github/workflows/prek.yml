@@ -47,6 +47,15 @@ jobs:
       - name: Run tests
         run: swift test -Xswiftc -warnings-as-errors
 
+      - name: Test canonical Boolean strings in French
+        env:
+          FORMKIT_ASSERT_FRENCH: "1"
+        run: >-
+          xcrun xctest
+          -XCTest FormKitSwiftTests.FormKitLocalizationRegressionTests
+          -AppleLanguages '(fr)'
+          "$(swift build --show-bin-path)/FormKitSwiftTests.xctest"
+
       - name: Generate DocC
         run: scripts/make-docs.sh .build/docc-site formkit-swift
 

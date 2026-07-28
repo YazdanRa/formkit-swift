@@ -148,7 +148,7 @@ public func stringValue(for field: FormKitFieldDescriptor) -> String {
         case .number(let number):
             return Self.numberFormatter.string(from: NSNumber(value: number)) ?? String(number)
         case .boolean(let isEnabled):
-            return isEnabled ? String(localized: "true", bundle: .module) : String(localized: "false", bundle: .module)
+            return isEnabled ? "true" : "false"
         case .null:
             return ""
         }
