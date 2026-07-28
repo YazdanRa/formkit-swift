@@ -230,6 +230,25 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertTrue(session.validate())
     }
 
+    func testParsedTimeUsesCurrentSeasonalOffsetWhenDisplayed() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let referenceDate = try XCTUnwrap(
+            FormKitRenderer.dateTimeFallbackFormatter.date(from: "2026-07-28T12:00:00Z")
+        )
+        let parsedDate = try XCTUnwrap(
+            FormKitRenderer.reanchoredTime(
+                from: "16:00:00Z",
+                referenceDate: referenceDate,
+                timeZone: timeZone
+            )
+        )
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+
+        XCTAssertEqual(calendar.component(.hour, from: parsedDate), 9)
+        XCTAssertEqual(FormKitRenderer.timeFormatter.string(from: parsedDate), "16:00:00Z")
+    }
+
     func testRendererPreservesDeclaredPropertyOrder() throws {
         let schema =
             """

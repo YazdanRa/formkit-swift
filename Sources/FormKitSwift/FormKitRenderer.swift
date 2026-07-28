@@ -3129,6 +3129,38 @@ public final class FormKitRenderer: FormKitRendering {
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
     }()
+
+    static func reanchoredTime(
+        from rawValue: String,
+        referenceDate: Date = .now,
+        timeZone: TimeZone = .current
+    ) -> Date? {
+        guard let parsedDate = timeFormatter.date(from: rawValue)
+            ?? timeFractionalFormatter.date(from: rawValue)
+        else {
+            return nil
+        }
+
+        var localCalendar = Calendar(identifier: .gregorian)
+        localCalendar.timeZone = timeZone
+        let dateComponents = localCalendar.dateComponents([.year, .month, .day], from: referenceDate)
+
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = .gmt
+        let timeComponents = utcCalendar.dateComponents([.hour, .minute, .second, .nanosecond], from: parsedDate)
+
+        var components = DateComponents()
+        components.calendar = utcCalendar
+        components.timeZone = utcCalendar.timeZone
+        components.year = dateComponents.year
+        components.month = dateComponents.month
+        components.day = dateComponents.day
+        components.hour = timeComponents.hour
+        components.minute = timeComponents.minute
+        components.second = timeComponents.second
+        components.nanosecond = timeComponents.nanosecond
+        return utcCalendar.date(from: components)
+    }
 }
 
 public struct FormKitRenderPlan: Sendable, Equatable {
