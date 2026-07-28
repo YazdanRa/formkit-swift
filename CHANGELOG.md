@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/YazdanRa/formkit-swift/compare/v1.0.0...v1.1.0) (2026-07-28)
+
+
+### Features
+
+* **forms:** add schema-driven input components ([#2](https://github.com/YazdanRa/formkit-swift/issues/2)) ([72fc7e9](https://github.com/YazdanRa/formkit-swift/commit/72fc7e9c3812fee0764245deecc22d17d613269c))
+
 ## 1.0.0 (2026-05-25)
 
 
