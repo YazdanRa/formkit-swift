@@ -12,9 +12,17 @@ final class ControlledFocusUITests: XCTestCase {
         app.buttons["demo_focus_site"].tap()
         XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "#/site")
         app.textFields["json_form_field_site_input"].typeText(" Updated!")
+        app.buttons["demo_focus_temperature"].tap()
+        XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "#/temperature")
+        waitForInstanceJSON(containing: "North Yard Updated", in: app)
         app.buttons["demo_clear_focus"].tap()
         XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "none")
-        waitForInstanceJSON(containing: "North Yard Updated", in: app)
+
+        app.buttons["demo_focus_site"].tap()
+        app.textFields["json_form_field_site_input"].typeText(" Again")
+        app.buttons["demo_clear_focus"].tap()
+        XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "none")
+        waitForInstanceJSON(containing: "Again", in: app)
 
         app.buttons["demo_focus_site"].tap()
         keyboardButton(named: "next", in: app).tap()

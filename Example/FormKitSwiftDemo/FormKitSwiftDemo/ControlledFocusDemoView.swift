@@ -61,9 +61,18 @@ struct ControlledFocusDemoView: View {
           "format": "uri",
           "title": "Attachment",
           "x-formkit-ui-component": "file-field"
-        },
-        "temperature": { "type": "number", "title": "Temperature" },
-        "inspector": { "type": "string", "title": "Inspector" }
+        }
+      },
+      "if": {
+        "properties": {
+          "site": { "pattern": "Updated" }
+        }
+      },
+      "then": {
+        "properties": {
+          "temperature": { "type": "number", "title": "Temperature" },
+          "inspector": { "type": "string", "title": "Inspector" }
+        }
       }
     }
     """

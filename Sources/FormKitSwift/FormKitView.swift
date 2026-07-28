@@ -191,9 +191,19 @@ private struct FormKitContainerView: View {
             return
         }
 
+        var currentFocusableFieldIDs = focusableFieldIDs
+        if requestedFieldID != nil,
+           focusedFieldID != requestedFieldID,
+           commitFocusedTextDraft()
+        {
+            currentFocusableFieldIDs = FormKitFocusSupport.resolvedComponents(
+                session: session,
+                options: options
+            ).focusableFieldIDs
+        }
         let normalizedFieldID = FormKitFocusSupport.normalizedFieldID(
             requestedFieldID,
-            focusableFieldIDs: focusableFieldIDs
+            focusableFieldIDs: currentFocusableFieldIDs
         )
 
         if focusedFieldID != normalizedFieldID {
@@ -741,15 +751,17 @@ private extension FormKitContainerView {
         }
     }
 
-    func commitFocusedTextDraft() {
+    @discardableResult
+    func commitFocusedTextDraft() -> Bool {
         guard let focusedFieldID,
               let draft = pendingTextDrafts.removeValue(forKey: focusedFieldID),
               let field = session.renderPlan.fields.first(where: { $0.id == focusedFieldID })
         else {
-            return
+            return false
         }
 
         session.setStringValue(draft, for: field)
+        return true
     }
 
     func sectionHeaderTitle(for section: FormKitRenderPlan.SectionDescriptor) -> String? {
