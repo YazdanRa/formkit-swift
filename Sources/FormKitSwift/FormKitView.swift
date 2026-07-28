@@ -128,6 +128,29 @@ private struct FormKitContainerView: View {
             }
         }
         .scrollDismissesKeyboard(.immediately)
+        #if os(iOS) || os(visionOS)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                if let focusedFieldID,
+                   let field = renderIndex.field(focusedFieldID),
+                   FormKitTextInputTraits(scalarType: field.scalarType).supportsVerticalExpansion
+                {
+                    Spacer()
+                    Button {
+                        commitFocusedTextDraft()
+                        self.focusedFieldID = renderIndex.nextFocusableFieldID(after: focusedFieldID)
+                    } label: {
+                        Text(
+                            renderIndex.nextFocusableFieldID(after: focusedFieldID) == nil
+                                ? String(localized: "Done", bundle: .module)
+                                : String(localized: "Next", bundle: .module)
+                        )
+                    }
+                    .accessibilityIdentifier("formkit_keyboard_submit")
+                }
+            }
+        }
+        #endif
         .onAppear {
             synchronizeFocusFromHost(
                 externalFocusedFieldID?.wrappedValue,
@@ -930,9 +953,11 @@ private struct FormKitDebouncedTextInputField: View {
                     draftText = newValue
                     onDraftChange(newValue == canonicalText ? nil : newValue)
                 }
-            )
+            ),
+            axis: inputTraits.supportsVerticalExpansion ? .vertical : .horizontal
         )
-            .submitLabel(submitLabel)
+            .lineLimit(1...)
+            .submitLabel(inputTraits.supportsVerticalExpansion ? .return : submitLabel)
             .focused(focusedFieldID, equals: fieldID)
             .disabled(isEditingLocked)
             .onChange(of: canonicalText) { _, newValue in
@@ -964,4 +989,5 @@ private struct FormKitDebouncedTextInputField: View {
         }
         onCommit(draftText)
     }
+
 }

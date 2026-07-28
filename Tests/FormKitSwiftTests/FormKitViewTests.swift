@@ -266,6 +266,11 @@ final class FormKitViewTests: XCTestCase {
         XCTAssertEqual(FormKitTextInputTraits(scalarType: .uri), .url)
         XCTAssertEqual(FormKitTextInputTraits(scalarType: .integer), .integer)
         XCTAssertEqual(FormKitTextInputTraits(scalarType: .number), .decimal)
+        XCTAssertTrue(FormKitTextInputTraits.standard.supportsVerticalExpansion)
+        XCTAssertTrue(FormKitTextInputTraits.email.supportsVerticalExpansion)
+        XCTAssertTrue(FormKitTextInputTraits.url.supportsVerticalExpansion)
+        XCTAssertFalse(FormKitTextInputTraits.integer.supportsVerticalExpansion)
+        XCTAssertFalse(FormKitTextInputTraits.decimal.supportsVerticalExpansion)
     }
 
     func testChangedFieldStateHasNonvisualAccessibilityValue() {

@@ -122,6 +122,14 @@ enum FormKitTextInputTraits: Equatable {
         }
     }
 
+    var supportsVerticalExpansion: Bool {
+        switch self {
+        case .standard, .email, .url:
+            return true
+        case .integer, .decimal:
+            return false
+        }
+    }
 }
 
 private struct FormKitTextInputModifier: ViewModifier {

@@ -25,8 +25,12 @@ final class ControlledFocusUITests: XCTestCase {
         waitForInstanceJSON(containing: "Again", in: app)
 
         app.buttons["demo_focus_site"].tap()
-        keyboardButton(named: "next", in: app).tap()
+        app.textFields["json_form_field_site_input"].typeText("\nContinued")
+        XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "#/site")
+        formKitSubmitButton(named: "Next", in: app).tap()
         XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "#/temperature")
+        XCTAssertGreaterThan(app.textFields["json_form_field_site_input"].frame.height, 24)
+        waitForInstanceJSON(containing: "\\nContinued", in: app)
         app.textFields["json_form_field_temperature_input"].typeText("-")
         app.textFields["json_form_field_temperature_input"].typeText("1")
 
@@ -34,7 +38,7 @@ final class ControlledFocusUITests: XCTestCase {
         XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "#/inspector")
         app.textFields["json_form_field_inspector_input"].typeText(" Updated!")
 
-        keyboardButton(named: "done", in: app).tap()
+        formKitSubmitButton(named: "Done", in: app).tap()
         XCTAssertEqual(app.staticTexts["demo_focus_value"].label, "none")
 
         waitForInstanceJSON(containing: "\"temperature\" : -1", in: app)
@@ -65,6 +69,14 @@ final class ControlledFocusUITests: XCTestCase {
     @MainActor
     private func keyboardButton(named label: String, in app: XCUIApplication) -> XCUIElement {
         app.keyboards.buttons.matching(NSPredicate(format: "label ==[c] %@", label)).firstMatch
+    }
+
+    @MainActor
+    private func formKitSubmitButton(named label: String, in app: XCUIApplication) -> XCUIElement {
+        let button = app.buttons["formkit_keyboard_submit"]
+        XCTAssertTrue(button.waitForExistence(timeout: 2))
+        XCTAssertEqual(button.label, label)
+        return button
     }
 
     @MainActor
