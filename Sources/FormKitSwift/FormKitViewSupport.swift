@@ -141,7 +141,6 @@ private struct FormKitTextInputModifier: ViewModifier {
         case .standard:
             content
                 .keyboardType(.default)
-                .textInputAutocapitalization(.words)
                 .autocorrectionDisabled(false)
         case .email:
             content
