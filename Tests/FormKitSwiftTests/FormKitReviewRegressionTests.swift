@@ -122,6 +122,7 @@ final class FormKitReviewRegressionTests: XCTestCase {
               "type": "object",
               "properties": {
                 "birthday": { "type": ["string", "null"], "format": "date" },
+                "reminder": { "type": ["string", "null"], "format": "time" },
                 "appointment": { "type": ["string", "null"], "format": "date-time" },
                 "requiredDate": { "type": ["string", "null"], "format": "date" }
               },
@@ -130,7 +131,7 @@ final class FormKitReviewRegressionTests: XCTestCase {
             """,
             instanceJSON: nil
         )
-        let fields = try ["birthday", "appointment"].map {
+        let fields = try ["birthday", "reminder", "appointment"].map {
             try XCTUnwrap(field(named: $0, in: session))
         }
 

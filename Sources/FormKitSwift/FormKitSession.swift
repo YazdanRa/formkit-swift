@@ -168,7 +168,7 @@ public func setStringValue(_ text: String, for field: FormKitFieldDescriptor) {
         }
 
         switch field.scalarType {
-        case .string, .email, .uri, .date, .dateTime:
+        case .string, .email, .uri, .date, .time, .dateTime:
             setPrimitiveValue(.string(text), for: field)
         case .integer:
             if let value = Int(trimmed) {
@@ -251,6 +251,10 @@ public func dateValue(for field: FormKitFieldDescriptor) -> Date {
             switch field.scalarType {
             case .date:
                 return FormKitRenderer.dateFormatter.date(from: rawValue) ?? fallbackDate(for: field)
+            case .time:
+                return FormKitRenderer.timeFormatter.date(from: rawValue)
+                    ?? FormKitRenderer.timeFractionalFormatter.date(from: rawValue)
+                    ?? fallbackDate(for: field)
             case .dateTime:
                 return FormKitRenderer.dateTimeFormatter.date(from: rawValue)
                     ?? FormKitRenderer.dateTimeFallbackFormatter.date(from: rawValue)
@@ -272,6 +276,8 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
         switch field.scalarType {
         case .date:
             setPrimitiveValue(.string(FormKitRenderer.dateFormatter.string(from: date)), for: field)
+        case .time:
+            setPrimitiveValue(.string(FormKitRenderer.timeFormatter.string(from: date)), for: field)
         case .dateTime:
             setPrimitiveValue(.string(FormKitRenderer.dateTimeFormatter.string(from: date)), for: field)
         default:
@@ -704,6 +710,8 @@ public func setFormMessage(_ message: String?) {
             return field.isRequired ? .boolean(false) : nil
         case .date:
             return field.isRequired ? .string(FormKitRenderer.dateFormatter.string(from: .now)) : nil
+        case .time:
+            return field.isRequired ? .string(FormKitRenderer.timeFormatter.string(from: .now)) : nil
         case .dateTime:
             return field.isRequired ? .string(FormKitRenderer.dateTimeFormatter.string(from: .now)) : nil
         default:
@@ -732,7 +740,7 @@ public func setFormMessage(_ message: String?) {
                 return .null
             }
             switch scalarType {
-            case .string, .email, .uri, .date, .dateTime:
+            case .string, .email, .uri, .date, .time, .dateTime:
                 return .string(value)
             case .integer, .number:
                 return .string(value)
@@ -965,6 +973,10 @@ public func setFormMessage(_ message: String?) {
             switch field.scalarType {
             case .date:
                 return FormKitRenderer.dateFormatter.date(from: text) ?? .now
+            case .time:
+                return FormKitRenderer.timeFormatter.date(from: text)
+                    ?? FormKitRenderer.timeFractionalFormatter.date(from: text)
+                    ?? .now
             case .dateTime:
                 return FormKitRenderer.dateTimeFormatter.date(from: text)
                     ?? FormKitRenderer.dateTimeFallbackFormatter.date(from: text)

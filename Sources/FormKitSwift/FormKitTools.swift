@@ -289,7 +289,7 @@ public extension FormKitSession {
             }
 
             switch field.scalarType {
-            case .string, .email, .uri, .date, .dateTime:
+            case .string, .email, .uri, .date, .time, .dateTime:
                 guard case .string(let text) = value else {
                     return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "This field requires a string value."))
                 }

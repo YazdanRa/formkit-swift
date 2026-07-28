@@ -1050,7 +1050,25 @@ public final class FormKitRenderer: FormKitRendering {
 
         if let dependencySchemas = resolvedSchema.object["dependentSchemas"]?.object {
             let instanceKeys = Set(instanceValue?.object?.map(\.key) ?? [])
-            for (key, rawSubschema) in dependencySchemas {
+            let declaredDependentSchemaOrder = resolvedSchema.propertyOrderPathTokens.reduce(
+                [],
+                { partialResult, pathTokens in
+                    mergeDeclaredPropertyOrder(
+                        partialResult,
+                        propertyOrderIndex.dependentSchemaNames(at: pathTokens),
+                        properties: dependencySchemas
+                    )
+                }
+            )
+            let dependentSchemaOrder = mergePropertyOrder(
+                declaredDependentSchemaOrder,
+                [],
+                properties: dependencySchemas
+            )
+            for key in dependentSchemaOrder {
+                guard let rawSubschema = dependencySchemas[key] else {
+                    continue
+                }
                 let schemaPointerTokens = pointerTokens + ["dependentSchemas", key]
                 guard let overlay = materializedSchemaObject(
                     schemaValue: rawSubschema,
@@ -1527,7 +1545,7 @@ public final class FormKitRenderer: FormKitRendering {
                 return .boolean(false)
             case .integer, .number:
                 return .string("")
-            case .string, .email, .uri, .date, .dateTime:
+            case .string, .email, .uri, .date, .time, .dateTime:
                 return .string("")
             }
 
@@ -1778,6 +1796,25 @@ public final class FormKitRenderer: FormKitRendering {
             return []
         }
 
+        var orderedKeys = mergeDeclaredPropertyOrder(
+            base,
+            overlay,
+            properties: properties
+        )
+        var seenKeys = Set(orderedKeys)
+
+        for key in properties.keys where seenKeys.insert(key).inserted {
+            orderedKeys.append(key)
+        }
+
+        return orderedKeys
+    }
+
+    private func mergeDeclaredPropertyOrder(
+        _ base: [String],
+        _ overlay: [String],
+        properties: [String: FormKitJSONValue]
+    ) -> [String] {
         var orderedKeys: [String] = []
         var seenKeys = Set<String>()
         let propertyKeys = Set(properties.keys)
@@ -1787,10 +1824,6 @@ public final class FormKitRenderer: FormKitRendering {
         }
 
         for key in overlay where propertyKeys.contains(key) && seenKeys.insert(key).inserted {
-            orderedKeys.append(key)
-        }
-
-        for key in properties.keys where seenKeys.insert(key).inserted {
             orderedKeys.append(key)
         }
 
@@ -2163,6 +2196,8 @@ public final class FormKitRenderer: FormKitRendering {
             return .boolean(false)
         case .date where field.isRequired:
             return .string(Self.dateFormatter.string(from: .now))
+        case .time where field.isRequired:
+            return .string(Self.timeFormatter.string(from: .now))
         case .dateTime where field.isRequired:
             return .string(Self.dateTimeFormatter.string(from: .now))
         default:
@@ -2319,6 +2354,8 @@ public final class FormKitRenderer: FormKitRendering {
                 return .uri
             case "date":
                 return .date
+            case "time":
+                return .time
             case "date-time":
                 return .dateTime
             default:
@@ -2326,7 +2363,10 @@ public final class FormKitRenderer: FormKitRendering {
                     .unsupportedKeyword(
                         keyword: "format",
                         location: location,
-                        message: String(localized: "Only email, uri, date, and date-time formats are supported in v1.", bundle: .module)
+                        message: String(
+                            localized: "Only email, uri, date, time, and date-time formats are supported in v1.",
+                            bundle: .module
+                        )
                     )
                 )
                 return nil
@@ -2399,7 +2439,7 @@ public final class FormKitRenderer: FormKitRendering {
                 return .null
             }
             switch scalarType {
-            case .string, .email, .uri, .date, .dateTime:
+            case .string, .email, .uri, .date, .time, .dateTime:
                 return .string(value)
             case .integer, .number:
                 return .string(value)
@@ -2525,16 +2565,13 @@ public final class FormKitRenderer: FormKitRendering {
         let declaredOrder = schemaPathTokenOptions.reduce(
             preferredOrder,
             { partialResult, schemaPathTokens in
-                mergePropertyOrder(
+                mergeDeclaredPropertyOrder(
                     partialResult,
                     propertyOrderIndex.propertyNames(at: schemaPathTokens),
                     properties: properties
                 )
             }
         )
-        if !declaredOrder.isEmpty {
-            return declaredOrder
-        }
         return mergePropertyOrder(declaredOrder, [], properties: properties)
     }
 
@@ -2614,6 +2651,12 @@ public final class FormKitRenderer: FormKitRendering {
         func propertyNames(at schemaPathTokens: [String]) -> [String] {
             propertyNamesBySchemaPointer[JSONPointer.pointerString(from: schemaPathTokens)] ?? []
         }
+
+        func dependentSchemaNames(at schemaPathTokens: [String]) -> [String] {
+            propertyNamesBySchemaPointer[
+                JSONPointer.pointerString(from: schemaPathTokens + ["dependentSchemas"])
+            ] ?? []
+        }
     }
 
     private struct JSONSchemaPropertyOrderScanner {
@@ -2691,13 +2734,22 @@ public final class FormKitRenderer: FormKitRendering {
                 let key = try parseString()
                 skipWhitespace()
                 try consume(":")
+                skipWhitespace()
 
-                if key == "properties" {
-                    let propertyNames = try parsePropertiesObject(
+                if key == "properties" || key == "dependentSchemas",
+                   currentCharacter == "{"
+                {
+                    let memberNames = try parseSchemaMap(
+                        named: key,
                         at: schemaPathTokens,
                         propertyNamesBySchemaPointer: &propertyNamesBySchemaPointer
                     )
-                    propertyNamesBySchemaPointer[JSONPointer.pointerString(from: schemaPathTokens)] = propertyNames
+                    let orderPathTokens = key == "properties"
+                        ? schemaPathTokens
+                        : schemaPathTokens + [key]
+                    propertyNamesBySchemaPointer[
+                        JSONPointer.pointerString(from: orderPathTokens)
+                    ] = memberNames
                 } else {
                     try parseValue(
                         at: schemaPathTokens + [key],
@@ -2717,7 +2769,8 @@ public final class FormKitRenderer: FormKitRendering {
             }
         }
 
-        private mutating func parsePropertiesObject(
+        private mutating func parseSchemaMap(
+            named memberName: String,
             at schemaPathTokens: [String],
             propertyNamesBySchemaPointer: inout [String: [String]]
         ) throws -> [String] {
@@ -2735,7 +2788,7 @@ public final class FormKitRenderer: FormKitRendering {
                 skipWhitespace()
                 try consume(":")
                 try parseValue(
-                    at: schemaPathTokens + ["properties", key],
+                    at: schemaPathTokens + [memberName, key],
                     propertyNamesBySchemaPointer: &propertyNamesBySchemaPointer
                 )
 
@@ -3062,6 +3115,20 @@ public final class FormKitRenderer: FormKitRendering {
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
     }()
+
+    static let timeFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullTime]
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter
+    }()
+
+    static let timeFractionalFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullTime, .withFractionalSeconds]
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter
+    }()
 }
 
 public struct FormKitRenderPlan: Sendable, Equatable {
@@ -3166,6 +3233,7 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
         case email
         case uri
         case date
+        case time
         case dateTime
         case integer
         case number
