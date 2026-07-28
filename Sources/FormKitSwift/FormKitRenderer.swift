@@ -3169,10 +3169,17 @@ public final class FormKitRenderer: FormKitRendering {
         let localDateCandidates = candidates.filter {
                 localCalendar.dateComponents([.year, .month, .day], from: $0) == dateComponents
             }
-        return (localDateCandidates.isEmpty ? candidates : localDateCandidates)
-            .min {
-                abs($0.timeIntervalSince(referenceDate)) < abs($1.timeIntervalSince(referenceDate))
-            }
+        var preferredCandidates = localDateCandidates.isEmpty ? candidates : localDateCandidates
+        let referenceOffset = timeZone.secondsFromGMT(for: referenceDate)
+        let matchingOffsetCandidates = preferredCandidates.filter {
+            timeZone.secondsFromGMT(for: $0) == referenceOffset
+        }
+        if !matchingOffsetCandidates.isEmpty {
+            preferredCandidates = matchingOffsetCandidates
+        }
+        return preferredCandidates.min {
+            abs($0.timeIntervalSince(referenceDate)) < abs($1.timeIntervalSince(referenceDate))
+        }
     }
 }
 

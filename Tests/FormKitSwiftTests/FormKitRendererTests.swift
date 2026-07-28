@@ -269,7 +269,7 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(FormKitRenderer.timeFormatter.string(from: parsedDate), "03:00:00Z")
     }
 
-    func testParsedTimeUsesNearestAnchorAtDSTDayBoundaries() throws {
+    func testParsedTimeUsesReferenceOffsetAtDSTDayBoundaries() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
@@ -284,7 +284,7 @@ final class FormKitRendererTests: XCTestCase {
             )
         )
         let fallReference = try XCTUnwrap(
-            calendar.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 22))
+            calendar.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 3))
         )
         let fallOverlap = try XCTUnwrap(
             FormKitRenderer.reanchoredTime(
