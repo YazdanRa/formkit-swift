@@ -33,11 +33,12 @@ jobs:
       - name: Test canonical Boolean strings in French
         env:
           FORMKIT_ASSERT_FRENCH: "1"
-        run: >-
-          xcrun xctest
-          -XCTest FormKitSwiftTests.FormKitLocalizationRegressionTests
-          -AppleLanguages '(fr)'
-          "$(swift build --show-bin-path)/FormKitSwiftTests.xctest"
+        run: |
+          formkit_test_bundle="$(find "$(swift build --show-bin-path)" -maxdepth 1 -name '*.xctest' -print -quit)"
+          xcrun xctest \
+            -XCTest FormKitSwiftTests.FormKitLocalizationRegressionTests \
+            -AppleLanguages '(fr)' \
+            "$formkit_test_bundle"
 
       - name: Build demo
         run: >-
