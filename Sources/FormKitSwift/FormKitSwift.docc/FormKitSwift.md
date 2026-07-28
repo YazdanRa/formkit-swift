@@ -29,7 +29,7 @@ Start with ``FormKitView`` for rendering and ``FormKitSession`` when you need co
 
 - <doc:GenericTools>
 
-### Contributing
+### Contributor Guide
 
 - <doc:Contributing>
 
