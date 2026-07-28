@@ -24,6 +24,11 @@ struct ControlledFocusDemoView: View {
                         }
                         .accessibilityIdentifier("demo_focus_site")
 
+                        Button("Focus Temperature") {
+                            focusedFieldID = "#/temperature"
+                        }
+                        .accessibilityIdentifier("demo_focus_temperature")
+
                         Button("Clear Focus") {
                             focusedFieldID = nil
                         }
@@ -57,6 +62,7 @@ struct ControlledFocusDemoView: View {
           "title": "Attachment",
           "x-formkit-ui-component": "file-field"
         },
+        "temperature": { "type": "number", "title": "Temperature" },
         "inspector": { "type": "string", "title": "Inspector" }
       }
     }

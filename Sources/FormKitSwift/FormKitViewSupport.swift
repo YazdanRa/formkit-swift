@@ -1,20 +1,100 @@
 import SwiftUI
 
+struct FormKitResolvedComponents {
+    let fieldInputs: [String: AnyView]
+    let arraySections: [String: AnyView]
+    let fieldStates: [String: FormKitFieldVisualState]
+    let focusableFieldIDs: Set<String>
+}
+
 enum FormKitFocusSupport {
+    @MainActor
+    static func resolvedComponents(
+        session: FormKitSession,
+        options: FormKitOptions
+    ) -> FormKitResolvedComponents {
+        let arraySections = session.renderPlan.sections.reduce(into: [String: AnyView]()) { result, section in
+            guard section.isVisible, let descriptor = section.arrayDescriptor else {
+                return
+            }
+            let context = FormKitArraySectionComponentContext(
+                session: session,
+                section: section,
+                descriptor: descriptor,
+                errors: session.errorMessages(for: section),
+                isEditingLocked: options.mode == .readOnly,
+                style: options.style,
+                labels: options.labels,
+                uploadHandler: options.uploadHandler
+            )
+            if let arraySection = options.components.arraySection?(context)
+                ?? FormKitComponentRegistry.arraySection(for: context)
+            {
+                result[section.id] = arraySection
+            }
+        }
+        let replacedRowPointers = Set(
+            session.renderPlan.sections
+                .filter { arraySections[$0.id] != nil }
+                .flatMap { $0.arrayDescriptor?.rows.map(\.pointer) ?? [] }
+        )
+        let fields = session.renderPlan.fields.filter { field in
+            field.isVisible && !replacedRowPointers.contains {
+                field.pointer == $0 || field.pointer.hasPrefix("\($0)/")
+            }
+        }
+        let fieldStates = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, options.fieldState($0)) })
+        let fieldInputs: [String: AnyView] = if options.components.field == nil, let fieldInput = options.components.fieldInput {
+            fields.reduce(into: [:]) { result, field in
+                let state = fieldStates[field.id] ?? .normal
+                let context = FormKitFieldComponentContext(
+                    session: session,
+                    field: field,
+                    errors: session.errorMessages(for: field),
+                    state: state,
+                    isEditingLocked: options.mode == .readOnly || state == .locked,
+                    style: options.style,
+                    uploadHandler: options.uploadHandler
+                )
+                if let input = fieldInput(context) {
+                    result[field.id] = input
+                }
+            }
+        } else {
+            [:]
+        }
+
+        let focusableFieldIDs: Set<String> = if options.mode == .editable, options.components.field == nil {
+            Set(fields.compactMap { field in
+                guard field.supportsStockTextInputFocus,
+                      fieldStates[field.id] != .locked,
+                      fieldInputs[field.id] == nil
+                else {
+                    return nil
+                }
+                return field.id
+            })
+        } else {
+            []
+        }
+
+        return FormKitResolvedComponents(
+            fieldInputs: fieldInputs,
+            arraySections: arraySections,
+            fieldStates: fieldStates,
+            focusableFieldIDs: focusableFieldIDs
+        )
+    }
+
     static func normalizedFieldID(
         _ requestedFieldID: String?,
-        in renderPlan: FormKitRenderPlan,
-        isEditingLocked: Bool
+        focusableFieldIDs: Set<String>
     ) -> String? {
-        guard !isEditingLocked,
-              let requestedFieldID,
-              let field = renderPlan.fields.first(where: { $0.id == requestedFieldID }),
-              field.supportsStockTextInputFocus
-        else {
+        guard let requestedFieldID, focusableFieldIDs.contains(requestedFieldID) else {
             return nil
         }
 
-        return field.id
+        return requestedFieldID
     }
 }
 
@@ -72,7 +152,7 @@ private struct FormKitTextInputModifier: ViewModifier {
                 .autocorrectionDisabled()
         case .decimal:
             content
-                .keyboardType(.decimalPad)
+                .keyboardType(.numbersAndPunctuation)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
         }

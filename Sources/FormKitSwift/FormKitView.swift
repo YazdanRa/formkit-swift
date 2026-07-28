@@ -112,32 +112,35 @@ private struct FormKitContainerView: View {
     let options: FormKitOptions
     @FocusState private var focusedFieldID: String?
     @State private var pendingTextDrafts: [String: String] = [:]
+    @State private var pendingArraySectionFocusID: String?
 
-    private var isEditingLocked: Bool {
-        options.mode == .readOnly
-    }
+    private var isEditingLocked: Bool { options.mode == .readOnly }
 
     var body: some View {
-        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
+        let components = FormKitFocusSupport.resolvedComponents(session: session, options: options)
+        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan,
+                                             focusableFieldIDs: components.focusableFieldIDs)
 
         Form {
             statusSection
             ForEach(renderIndex.visibleRootBlocks) { block in
-                renderDisplayBlock(block, renderIndex: renderIndex)
+                renderDisplayBlock(block, renderIndex: renderIndex, components: components)
             }
         }
         .scrollDismissesKeyboard(.immediately)
         .onAppear {
-            synchronizeFocusFromHost(externalFocusedFieldID?.wrappedValue)
+            synchronizeFocusFromHost(
+                externalFocusedFieldID?.wrappedValue,
+                focusableFieldIDs: components.focusableFieldIDs
+            )
         }
         .onChange(of: externalFocusedFieldID?.wrappedValue) { _, newValue in
-            synchronizeFocusFromHost(newValue)
+            synchronizeFocusFromHost(newValue, focusableFieldIDs: components.focusableFieldIDs)
         }
         .onChange(of: focusedFieldID) { _, newValue in
             let normalizedFieldID = FormKitFocusSupport.normalizedFieldID(
                 newValue,
-                in: session.renderPlan,
-                isEditingLocked: isEditingLocked
+                focusableFieldIDs: components.focusableFieldIDs
             )
             guard normalizedFieldID == newValue else {
                 focusedFieldID = normalizedFieldID
@@ -152,14 +155,23 @@ private struct FormKitContainerView: View {
         }
         .onChange(of: session.renderPlan) { _, _ in
             if let externalFocusedFieldID {
-                synchronizeFocusFromHost(externalFocusedFieldID.wrappedValue)
+                synchronizeFocusFromHost(
+                    externalFocusedFieldID.wrappedValue,
+                    focusableFieldIDs: components.focusableFieldIDs
+                )
             } else if FormKitFocusSupport.normalizedFieldID(
                 focusedFieldID,
-                in: session.renderPlan,
-                isEditingLocked: isEditingLocked
+                focusableFieldIDs: components.focusableFieldIDs
             ) != focusedFieldID {
                 focusedFieldID = nil
             }
+        }
+        .task(id: session.revision) {
+            guard let sectionID = pendingArraySectionFocusID else {
+                return
+            }
+            pendingArraySectionFocusID = nil
+            focusFirstField(in: sectionID, renderIndex: renderIndex)
         }
         .onChange(of: isEditingLocked) { _, isEditingLocked in
             if isEditingLocked {
@@ -170,15 +182,17 @@ private struct FormKitContainerView: View {
         .accessibilityIdentifier("formkit_form")
     }
 
-    private func synchronizeFocusFromHost(_ requestedFieldID: String?) {
+    private func synchronizeFocusFromHost(
+        _ requestedFieldID: String?,
+        focusableFieldIDs: Set<String>
+    ) {
         guard let externalFocusedFieldID else {
             return
         }
 
         let normalizedFieldID = FormKitFocusSupport.normalizedFieldID(
             requestedFieldID,
-            in: session.renderPlan,
-            isEditingLocked: isEditingLocked
+            focusableFieldIDs: focusableFieldIDs
         )
 
         if focusedFieldID != normalizedFieldID {
@@ -228,14 +242,20 @@ private struct FormKitContainerView: View {
     @ViewBuilder
     private func renderDisplayBlock(
         _ block: FormKitRenderIndex.DisplayBlock,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         switch block.kind {
         case let .section(sectionID):
             if let section = renderIndex.section(sectionID),
                let arrayDescriptor = section.arrayDescriptor
             {
-                arraySection(section, descriptor: arrayDescriptor, renderIndex: renderIndex)
+                arraySection(
+                    section,
+                    descriptor: arrayDescriptor,
+                    renderIndex: renderIndex,
+                    components: components
+                )
             }
 
         case let .fieldGroup(sectionID, fieldIDs):
@@ -245,7 +265,8 @@ private struct FormKitContainerView: View {
                     fieldIDs: fieldIDs,
                     showHeader: block.showSectionHeader,
                     showFooter: block.showSectionFooter,
-                    renderIndex: renderIndex
+                    renderIndex: renderIndex,
+                    components: components
                 )
             }
         }
@@ -256,7 +277,8 @@ private struct FormKitContainerView: View {
         fieldIDs: [String],
         showHeader: Bool,
         showFooter: Bool,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         let visibleFields: [FormKitFieldDescriptor] = fieldIDs.compactMap { fieldID in
             guard let field = renderIndex.field(fieldID), field.isVisible else {
@@ -267,7 +289,7 @@ private struct FormKitContainerView: View {
 
         return Section {
             ForEach(visibleFields, id: \.id) { field in
-                fieldCard(field, renderIndex: renderIndex)
+                fieldCard(field, renderIndex: renderIndex, components: components)
             }
         } header: {
             if showHeader, let title = sectionHeaderTitle(for: section) {
@@ -285,25 +307,14 @@ private struct FormKitContainerView: View {
     private func arraySection(
         _ section: FormKitRenderPlan.SectionDescriptor,
         descriptor: FormKitArraySectionDescriptor,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         let canAddMore = descriptor.maxItems.map { descriptor.rows.count < $0 } ?? true
         let arrayErrors = session.errorMessages(for: section)
-        let componentContext = FormKitArraySectionComponentContext(
-            session: session,
-            section: section,
-            descriptor: descriptor,
-            errors: arrayErrors,
-            isEditingLocked: isEditingLocked,
-            style: options.style,
-            labels: options.labels,
-            uploadHandler: options.uploadHandler
-        )
 
-        if let customArraySection = options.components.arraySection?(componentContext) {
+        if let customArraySection = components.arraySections[section.id] {
             customArraySection
-        } else if let registeredArraySection = FormKitComponentRegistry.arraySection(for: componentContext) {
-            registeredArraySection
         } else {
             Section {
                 if descriptor.rows.isEmpty {
@@ -314,13 +325,19 @@ private struct FormKitContainerView: View {
                 }
 
                 ForEach(descriptor.rows) { row in
-                    arrayRowView(row, in: section, descriptor: descriptor, renderIndex: renderIndex)
+                    arrayRowView(
+                        row,
+                        in: section,
+                        descriptor: descriptor,
+                        renderIndex: renderIndex,
+                        components: components
+                    )
                 }
 
                 if options.mode == .editable {
                     Button {
+                        pendingArraySectionFocusID = section.id
                         session.appendArrayRow(to: section)
-                        focusFirstField(in: section)
                     } label: {
                         Label(
                             "\(options.labels.addItemPrefix) \(descriptor.itemTitle)",
@@ -377,10 +394,11 @@ private extension FormKitContainerView {
     @ViewBuilder
     func fieldCard(
         _ field: FormKitFieldDescriptor,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         let errors = session.errorMessages(for: field)
-        let state = options.fieldState(field)
+        let state = components.fieldStates[field.id] ?? options.fieldState(field)
         let locked = isEditingLocked || state == .locked
         let componentContext = FormKitFieldComponentContext(
             session: session,
@@ -395,7 +413,7 @@ private extension FormKitContainerView {
         if let customField = options.components.field {
             customField(componentContext)
         } else {
-            let componentInput = options.components.fieldInput?(componentContext)
+            let componentInput = components.fieldInputs[field.id]
                 ?? FormKitComponentRegistry.fieldInput(for: componentContext)
             let usesStackedLabel = componentInput != nil
                 || (!field.isEnum && ![.boolean, .date, .dateTime].contains(field.scalarType))
@@ -648,7 +666,8 @@ private extension FormKitContainerView {
         _ row: FormKitArrayRowDescriptor,
         in section: FormKitRenderPlan.SectionDescriptor,
         descriptor: FormKitArraySectionDescriptor,
-        renderIndex: FormKitRenderIndex
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             if descriptor.itemKind == .object {
@@ -657,7 +676,7 @@ private extension FormKitContainerView {
             }
 
             if let field = renderIndex.firstVisibleField(in: row) {
-                fieldCard(field, renderIndex: renderIndex)
+                fieldCard(field, renderIndex: renderIndex, components: components)
             }
 
             ForEach(renderIndex.visibleSections(in: row), id: \.id) { nestedSection in
@@ -673,7 +692,7 @@ private extension FormKitContainerView {
                             .foregroundStyle(options.style.secondaryText)
                     }
                     ForEach(renderIndex.visibleFields(in: nestedSection), id: \.id) { field in
-                        fieldCard(field, renderIndex: renderIndex)
+                        fieldCard(field, renderIndex: renderIndex, components: components)
                     }
                 }
             }
@@ -706,9 +725,8 @@ private extension FormKitContainerView {
         .accessibilityIdentifier("\(section.id)_row_\(row.index)")
     }
 
-    func focusFirstField(in section: FormKitRenderPlan.SectionDescriptor) {
-        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
-        guard let arrayDescriptor = renderIndex.section(section.id)?.arrayDescriptor,
+    func focusFirstField(in sectionID: String, renderIndex: FormKitRenderIndex) {
+        guard let arrayDescriptor = renderIndex.section(sectionID)?.arrayDescriptor,
               let row = arrayDescriptor.rows.last
         else {
             return

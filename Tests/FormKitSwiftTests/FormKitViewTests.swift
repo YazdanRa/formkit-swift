@@ -45,17 +45,26 @@ final class FormKitViewTests: XCTestCase {
         let choice = try XCTUnwrap(field("choice"))
         let enabled = try XCTUnwrap(field("enabled"))
         let file = try XCTUnwrap(field("file"))
+        let focusableFieldIDs = FormKitFocusSupport.resolvedComponents(
+            session: session,
+            options: .init()
+        ).focusableFieldIDs
 
         XCTAssertEqual(
-            FormKitFocusSupport.normalizedFieldID(name.id, in: session.renderPlan, isEditingLocked: false),
+            FormKitFocusSupport.normalizedFieldID(name.id, focusableFieldIDs: focusableFieldIDs),
             name.id
         )
-        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(choice.id, in: session.renderPlan, isEditingLocked: false))
-        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(enabled.id, in: session.renderPlan, isEditingLocked: false))
-        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(file.id, in: session.renderPlan, isEditingLocked: false))
-        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(name.id, in: session.renderPlan, isEditingLocked: true))
-        XCTAssertNil(FormKitFocusSupport.normalizedFieldID("#/missing", in: session.renderPlan, isEditingLocked: false))
-        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(nil, in: session.renderPlan, isEditingLocked: false))
+        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(choice.id, focusableFieldIDs: focusableFieldIDs))
+        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(enabled.id, focusableFieldIDs: focusableFieldIDs))
+        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(file.id, focusableFieldIDs: focusableFieldIDs))
+        XCTAssertNil(FormKitFocusSupport.normalizedFieldID("#/missing", focusableFieldIDs: focusableFieldIDs))
+        XCTAssertNil(FormKitFocusSupport.normalizedFieldID(nil, focusableFieldIDs: focusableFieldIDs))
+
+        let readOnlyFieldIDs = FormKitFocusSupport.resolvedComponents(
+            session: session,
+            options: .init(mode: .readOnly)
+        ).focusableFieldIDs
+        XCTAssertTrue(readOnlyFieldIDs.isEmpty)
     }
 
     func testFocusTraversalSkipsEnumsAndCustomComponents() throws {
@@ -106,15 +115,101 @@ final class FormKitViewTests: XCTestCase {
         let note = try XCTUnwrap(renderIndex.firstFocusableField(in: row))
 
         XCTAssertEqual(
-            FormKitFocusSupport.normalizedFieldID(note.id, in: session.renderPlan, isEditingLocked: false),
+            FormKitFocusSupport.normalizedFieldID(
+                note.id,
+                focusableFieldIDs: FormKitFocusSupport.resolvedComponents(
+                    session: session,
+                    options: .init()
+                ).focusableFieldIDs
+            ),
             note.id
         )
 
         session.removeArrayRow(row, from: section)
 
         XCTAssertNil(
-            FormKitFocusSupport.normalizedFieldID(note.id, in: session.renderPlan, isEditingLocked: false)
+            FormKitFocusSupport.normalizedFieldID(
+                note.id,
+                focusableFieldIDs: FormKitFocusSupport.resolvedComponents(
+                    session: session,
+                    options: .init()
+                ).focusableFieldIDs
+            )
         )
+    }
+
+    func testHostFieldOverridesAreExcludedFromControlledFocus() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: #"{"type":"object","properties":{"name":{"type":"string"},"city":{"type":"string"}}}"#,
+            instanceJSON: nil
+        )
+        let name = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "name" })
+        let city = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "city" })
+        var invocationCount = 0
+        let options = FormKitOptions(
+            components: FormKitComponents(
+                fieldInput: { context in
+                    invocationCount += 1
+                    return context.field.id == name.id ? AnyView(Text("Custom")) : nil
+                }
+            )
+        )
+        let components = FormKitFocusSupport.resolvedComponents(session: session, options: options)
+        let focusableFieldIDs = components.focusableFieldIDs
+
+        XCTAssertEqual(invocationCount, 2)
+        XCTAssertFalse(focusableFieldIDs.contains(name.id))
+        XCTAssertTrue(focusableFieldIDs.contains(city.id))
+        XCTAssertNotNil(components.fieldInputs[name.id])
+        let renderIndex = FormKitRenderIndex(
+            renderPlan: session.renderPlan,
+            focusableFieldIDs: focusableFieldIDs
+        )
+        XCTAssertEqual(renderIndex.firstFocusableField(in: .init(
+            id: "row",
+            pointer: "#",
+            index: 0,
+            title: "Row",
+            placeholderValue: .null,
+            fieldIDs: [name.id, city.id],
+            sectionIDs: []
+        ))?.id, city.id)
+        XCTAssertNil(renderIndex.nextFocusableFieldID(after: city.id))
+    }
+
+    func testArraySectionOverridesExcludeUnmountedDescendantsFromFocusResolution() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "notes": { "type": "array", "items": { "type": "string" } },
+                "city": { "type": "string" }
+              }
+            }
+            """,
+            instanceJSON: #"{"notes":["First"]}"#
+        )
+        let section = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == "notes" })
+        let noteID = try XCTUnwrap(section.arrayDescriptor?.rows.first?.fieldIDs.first)
+        let city = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == "city" })
+        var resolvedInputIDs: [String] = []
+        let options = FormKitOptions(
+            components: FormKitComponents(
+                fieldInput: { context in
+                    resolvedInputIDs.append(context.field.id)
+                    return nil
+                },
+                arraySection: { _ in AnyView(Text("Custom array")) }
+            )
+        )
+
+        let components = FormKitFocusSupport.resolvedComponents(session: session, options: options)
+
+        XCTAssertNotNil(components.arraySections[section.id])
+        XCTAssertFalse(components.focusableFieldIDs.contains(noteID))
+        XCTAssertTrue(components.focusableFieldIDs.contains(city.id))
+        XCTAssertFalse(resolvedInputIDs.contains(noteID))
     }
 
     func testStockTextInputTraitsFollowScalarType() {
