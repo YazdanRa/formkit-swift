@@ -449,7 +449,7 @@ private extension FormKitContainerView {
             let componentInput = components.fieldInputs[field.id]
                 ?? FormKitComponentRegistry.fieldInput(for: componentContext)
             let usesStackedLabel = componentInput != nil
-                || (!field.isEnum && ![.boolean, .date, .dateTime].contains(field.scalarType))
+                || (!field.isEnum && ![.boolean, .date, .time, .dateTime].contains(field.scalarType))
             VStack(alignment: .leading, spacing: options.style.fieldSpacing) {
                 if usesStackedLabel {
                     Text(field.title)
@@ -598,11 +598,10 @@ private extension FormKitContainerView {
                     .accessibilityIdentifier("\(fieldIdentifier(for: field))_toggle")
                 }
 
-            case .date:
-                dateInput(field, displayedComponents: .date, locked: locked)
-
-            case .dateTime:
-                dateInput(field, displayedComponents: [.date, .hourAndMinute], locked: locked)
+            case .date, .time, .dateTime:
+                if let displayedComponents = field.scalarType.datePickerComponents {
+                    dateInput(field, displayedComponents: displayedComponents, locked: locked)
+                }
 
             default:
                 FormKitDebouncedTextInputField(

@@ -107,7 +107,7 @@ Host apps map `FormKitToolContext`, `FormKitToolEdit`, and `FormKitToolEditResul
 The first public package pass focuses on the current renderer behavior:
 
 - object sections and field ordering
-- strings, numbers, integers, booleans, dates, date-times, enums, nullable scalar values
+- strings, numbers, integers, booleans, dates, times, date-times, enums, nullable scalar values
 - arrays of scalar or object items
 - defaults, required fields, validation messages, and serialization
 - `$ref`, `allOf`, `oneOf`, `if`/`then`/`else`, `dependentSchemas`, and `dependentRequired` where supported by the renderer

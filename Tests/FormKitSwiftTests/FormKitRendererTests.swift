@@ -190,6 +190,46 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(field(named: "priority", in: session)?.enumOptions.map(\.title), ["Standard", "Expedited", "Critical"])
     }
 
+    func testTimeFormatMapsToTimeScalarAndRoundTripsRFC3339FullTime() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "startTime": {
+                  "type": "string",
+                  "format": "time"
+                }
+              },
+              "required": ["startTime"]
+            }
+            """,
+            instanceJSON: #"{"startTime":"08:30:06.5-08:00"}"#
+        )
+        let field = try XCTUnwrap(session.renderPlan.fields.first)
+
+        XCTAssertEqual(field.scalarType, .time)
+        XCTAssertTrue(session.validate())
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
+        let parsedComponents = calendar.dateComponents(
+            [.hour, .minute, .second],
+            from: session.dateValue(for: field)
+        )
+        XCTAssertEqual(parsedComponents.hour, 16)
+        XCTAssertEqual(parsedComponents.minute, 30)
+        XCTAssertEqual(parsedComponents.second, 6)
+
+        session.setDateValue(Date(timeIntervalSince1970: 52200), for: field)
+
+        XCTAssertEqual(
+            try decodeJSONObject(session.currentInstanceJSON)["startTime"] as? String,
+            "14:30:00Z"
+        )
+        XCTAssertTrue(session.validate())
+    }
+
     func testRendererPreservesDeclaredPropertyOrder() throws {
         let schema =
             """
@@ -214,13 +254,74 @@ final class FormKitRendererTests: XCTestCase {
             }
             """
 
-        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        for _ in 0..<25 {
+            let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
 
-        XCTAssertEqual(
-            session.renderPlan.sections.first(where: { $0.title == "Ordering" })?.fieldIDs,
-            ["#/zeta", "#/alpha", "#/middle"]
+            XCTAssertEqual(
+                session.renderPlan.sections.first(where: { $0.title == "Ordering" })?.fieldIDs,
+                ["#/zeta", "#/alpha", "#/middle"]
+            )
+            XCTAssertEqual(session.renderPlan.fields.map(\.propertyKey), ["zeta", "alpha", "middle"])
+        }
+    }
+
+    func testRendererPreservesDependentSchemaOrderAcrossSessions() {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "one": { "type": "string" },
+                "two": { "type": "string" }
+              },
+              "dependentSchemas": {
+                "one": {
+                  "properties": {
+                    "z": { "type": "string" },
+                    "a": { "type": "string" }
+                  }
+                },
+                "two": {
+                  "properties": {
+                    "m": { "type": "string" },
+                    "b": { "type": "string" }
+                  }
+                }
+              }
+            }
+            """
+
+        for _ in 0..<25 {
+            let session = FormKitRenderer().makeFormSession(
+                schemaJSON: schema,
+                instanceJSON: #"{"one":"1","two":"2"}"#
+            )
+
+            XCTAssertEqual(
+                session.renderPlan.fields.map(\.propertyKey),
+                ["one", "two", "z", "a", "m", "b"]
+            )
+        }
+    }
+
+    func testPropertyOrderScannerIgnoresAnnotationDataNamedDependentSchemas() {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "examples": [
+                { "dependentSchemas": "ordinary data" }
+              ],
+              "properties": {
+                "name": { "type": "string" }
+              }
+            }
+            """,
+            instanceJSON: nil
         )
-        XCTAssertEqual(session.renderPlan.fields.map(\.propertyKey), ["zeta", "alpha", "middle"])
+
+        XCTAssertEqual(session.renderPlan.fields.map(\.propertyKey), ["name"])
+        XCTAssertTrue(session.renderPlan.unsupportedReasons.isEmpty)
     }
 
     func testRendererPreservesReferencedPropertyOrder() throws {

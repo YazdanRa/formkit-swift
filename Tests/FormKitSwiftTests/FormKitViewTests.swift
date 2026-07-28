@@ -76,6 +76,37 @@ final class FormKitViewTests: XCTestCase {
         XCTAssertTrue(readOnlyFieldIDs.isEmpty)
     }
 
+    func testTemporalFormatsUseNativePickerRenderingPath() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "date": { "type": "string", "format": "date" },
+                "time": { "type": "string", "format": "time" },
+                "dateTime": { "type": "string", "format": "date-time" }
+              }
+            }
+            """,
+            instanceJSON: nil
+        )
+        let fields = Dictionary(
+            uniqueKeysWithValues: session.renderPlan.fields.map { ($0.propertyKey, $0) }
+        )
+        let focusableFieldIDs = FormKitFocusSupport.resolvedComponents(
+            session: session,
+            options: .init()
+        ).focusableFieldIDs
+
+        XCTAssertEqual(fields["date"]?.scalarType, .date)
+        XCTAssertEqual(fields["time"]?.scalarType, .time)
+        XCTAssertEqual(fields["dateTime"]?.scalarType, .dateTime)
+        XCTAssertEqual(fields["date"]?.scalarType.datePickerComponents, .date)
+        XCTAssertEqual(fields["time"]?.scalarType.datePickerComponents, .hourAndMinute)
+        XCTAssertEqual(fields["dateTime"]?.scalarType.datePickerComponents, [.date, .hourAndMinute])
+        XCTAssertTrue(fields.values.allSatisfy { !focusableFieldIDs.contains($0.id) })
+    }
+
     func testFocusTraversalSkipsEnumsAndCustomComponents() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """

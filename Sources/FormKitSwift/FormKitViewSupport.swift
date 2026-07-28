@@ -191,8 +191,23 @@ private extension FormKitFieldDescriptor.ScalarType {
         switch self {
         case .string, .email, .uri, .integer, .number:
             return true
-        case .date, .dateTime, .boolean:
+        case .date, .time, .dateTime, .boolean:
             return false
+        }
+    }
+}
+
+extension FormKitFieldDescriptor.ScalarType {
+    var datePickerComponents: DatePickerComponents? {
+        switch self {
+        case .date:
+            return .date
+        case .time:
+            return .hourAndMinute
+        case .dateTime:
+            return [.date, .hourAndMinute]
+        default:
+            return nil
         }
     }
 }

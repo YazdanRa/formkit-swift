@@ -1703,48 +1703,48 @@
         }
       }
     },
-    "Only email, uri, date, and date-time formats are supported in v1.": {
+    "Only email, uri, date, time, and date-time formats are supported in v1.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Only email, uri, date, and date-time formats are supported in v1."
+            "value": "Only email, uri, date, time, and date-time formats are supported in v1."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Solo se admiten los formatos email, uri, date y date-time en la versión 1."
+            "value": "Solo se admiten los formatos email, uri, date, time y date-time en la versión 1."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Seuls les formats « email », « uri », « date » et « date-time » sont pris en charge dans la version 1."
+            "value": "Seuls les formats « email », « uri », « date », « time » et « date-time » sont pris en charge dans la version 1."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nella versione 1 sono supportati solo i formati email, uri, date e date-time."
+            "value": "Nella versione 1 sono supportati solo i formati email, uri, date, time e date-time."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "W wersji 1 obsługiwane są tylko formaty email, uri, date i date-time."
+            "value": "W wersji 1 obsługiwane są tylko formaty email, uri, date, time i date-time."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "A v1 oferece suporte somente aos formatos email, uri, date e date-time."
+            "value": "A v1 oferece suporte somente aos formatos email, uri, date, time e date-time."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В версии 1 поддерживаются только форматы email, uri, date и date-time."
+            "value": "В версии 1 поддерживаются только форматы email, uri, date, time и date-time."
           }
         }
       }

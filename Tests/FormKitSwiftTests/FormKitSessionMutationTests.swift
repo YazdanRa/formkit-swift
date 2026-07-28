@@ -162,6 +162,7 @@ final class FormKitSessionMutationTests: XCTestCase {
                 "email": { "type": ["string", "null"], "format": "email" },
                 "uri": { "type": ["string", "null"], "format": "uri" },
                 "date": { "type": ["string", "null"], "format": "date" },
+                "time": { "type": ["string", "null"], "format": "time" },
                 "dateTime": { "type": ["string", "null"], "format": "date-time" },
                 "integer": { "type": ["integer", "null"] },
                 "number": { "type": ["number", "null"] }
@@ -171,7 +172,7 @@ final class FormKitSessionMutationTests: XCTestCase {
             instanceJSON: nil
         )
 
-        for propertyKey in ["text", "email", "uri", "date", "dateTime", "integer", "number"] {
+        for propertyKey in ["text", "email", "uri", "date", "time", "dateTime", "integer", "number"] {
             let field = try XCTUnwrap(session.renderPlan.fields.first { $0.propertyKey == propertyKey })
             session.setStringValue(" \n\t", for: field)
             XCTAssertEqual(session.primitiveValue(for: field), .null)
