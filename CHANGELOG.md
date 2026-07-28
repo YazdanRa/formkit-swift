@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/YazdanRa/formkit-swift/compare/v1.2.0...v1.3.0) (2026-07-28)
+
+
+### Features
+
+* **renderer:** support time fields and declared ordering ([#12](https://github.com/YazdanRa/formkit-swift/issues/12)) ([c49ea15](https://github.com/YazdanRa/formkit-swift/commit/c49ea156a747da95f5cb3694311e11d02c1e6bdd))
+
+
+### Bug Fixes
+
+* **session:** preserve time values across DST ([#14](https://github.com/YazdanRa/formkit-swift/issues/14)) ([683f240](https://github.com/YazdanRa/formkit-swift/commit/683f240311caf5396882c9df0e03f4f34354e9a9))
+
 ## [1.2.0](https://github.com/YazdanRa/formkit-swift/compare/v1.1.0...v1.2.0) (2026-07-28)
 
 
