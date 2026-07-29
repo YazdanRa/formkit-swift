@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/YazdanRa/formkit-swift/compare/v1.3.0...v1.3.1) (2026-07-29)
+
+
+### Bug Fixes
+
+* **renderer:** preserve date-only calendar days ([3bdee7c](https://github.com/YazdanRa/formkit-swift/commit/3bdee7ccc740bdcc179fa1ddf3e74c800d385b1c))
+
 ## [1.3.0](https://github.com/YazdanRa/formkit-swift/compare/v1.2.0...v1.3.0) (2026-07-28)
 
 
