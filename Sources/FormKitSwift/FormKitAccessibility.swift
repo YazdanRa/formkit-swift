@@ -8,8 +8,8 @@ enum FormKitAccessibility {
             return sectionID
         }
         guard let firstFieldID = fieldIDs.first else {
-            return "\(sectionID)_footer"
+            return "formkit_display_block_footer:\(sectionID)"
         }
-        return "\(sectionID)_group_\(firstFieldID)"
+        return "formkit_display_block_group:\(sectionID):\(firstFieldID)"
     }
 }

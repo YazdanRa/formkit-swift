@@ -309,6 +309,17 @@ final class FormKitViewTests: XCTestCase {
         XCTAssertEqual(FormKitFieldVisualState.normal.formKitAccessibilityValue, "")
         XCTAssertEqual(FormKitFieldVisualState.locked.formKitAccessibilityValue, "")
     }
+
+    func testSyntheticSectionIdentifierCannotCollideWithCanonicalSectionID() {
+        XCTAssertNotEqual(
+            FormKitAccessibility.sectionIdentifier(
+                "json_form_section_a",
+                fieldIDs: [],
+                showsHeader: false
+            ),
+            "json_form_section_a_footer"
+        )
+    }
 }
 
 extension FormKitViewTests {
