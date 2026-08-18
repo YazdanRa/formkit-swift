@@ -319,7 +319,7 @@ private struct FormKitContainerView: View {
             }
             return field
         }
-        let accessibilityID = fieldIDs.isEmpty && showFooter ? "\(section.id)_footer" : section.id
+        let accessibilityID = FormKitAccessibility.sectionIdentifier(section.id, fieldIDs: fieldIDs, showsHeader: showHeader)
 
         return Section {
             ForEach(visibleFields, id: \.id) { field in

@@ -405,4 +405,67 @@ extension FormKitViewTests {
         }
         XCTAssertEqual(fieldIDs.compactMap { renderIndex.field($0)?.propertyKey }, ["name"])
     }
+
+    func testRenderableRootBlocksBoundMixedObjectContent() {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "container": {
+                  "title": "Container",
+                  "description": "Container description",
+                  "type": "object",
+                  "properties": {
+                    "leading": {
+                      "title": "Leading",
+                      "type": "object",
+                      "properties": { "first": { "type": "string" } }
+                    },
+                    "middle": { "type": "string" },
+                    "trailing": {
+                      "title": "Trailing",
+                      "type": "object",
+                      "properties": { "last": { "type": "string" } }
+                    }
+                  }
+                }
+              }
+            }
+            """
+        )
+        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
+        let blocks = renderIndex.renderableRootBlocks
+        let containerID = session.renderPlan.sections.first { $0.propertyKey == "container" }?.id
+
+        XCTAssertEqual(blocks.count, 5)
+        XCTAssertEqual(blocks.first?.id, containerID.map { "field_group:\($0):header" })
+        XCTAssertEqual(blocks.last?.id, containerID.map { "field_group:\($0):footer" })
+        XCTAssertEqual(
+            blocks.flatMap { block -> [String] in
+                guard case .fieldGroup(_, let fieldIDs) = block.kind else {
+                    return []
+                }
+                return fieldIDs.compactMap { renderIndex.field($0)?.propertyKey }
+            },
+            ["first", "middle", "last"]
+        )
+        let accessibilityIDs = blocks.compactMap { block -> String? in
+            guard case .fieldGroup(let sectionID, let fieldIDs) = block.kind else {
+                return nil
+            }
+            return FormKitAccessibility.sectionIdentifier(
+                sectionID,
+                fieldIDs: fieldIDs,
+                showsHeader: block.showSectionHeader
+            )
+        }
+        XCTAssertEqual(Set(accessibilityIDs).count, accessibilityIDs.count)
+        guard case .fieldGroup(_, let fieldIDs) = blocks[2].kind else {
+            return XCTFail("Expected the container's scalar field between its child objects")
+        }
+        XCTAssertEqual(fieldIDs.compactMap { renderIndex.field($0)?.propertyKey }, ["middle"])
+        XCTAssertFalse(blocks[2].showSectionHeader)
+        XCTAssertFalse(blocks[2].showSectionFooter)
+    }
 }

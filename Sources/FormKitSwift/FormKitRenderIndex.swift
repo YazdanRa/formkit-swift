@@ -248,34 +248,37 @@ struct FormKitRenderIndex {
             }
 
             let childBlocks = displayBlocksBySectionID[sectionID] ?? []
+            let showsHeaderInContent = childBlocks.first?.showSectionHeader == true
+            let showsFooterInContent = childBlocks.last?.showSectionFooter == true
+            let contentBlocks = childBlocks.map { childBlock in
+                DisplayBlock(
+                    kind: childBlock.kind,
+                    showSectionHeader: childBlock.showSectionHeader && showsHeaderInContent,
+                    showSectionFooter: childBlock.showSectionFooter && showsFooterInContent
+                )
+            }
             let expandedChildBlocks = expandingObjectSections(
-                in: childBlocks,
+                in: contentBlocks,
                 sectionsByID: sectionsByID,
                 displayBlocksBySectionID: displayBlocksBySectionID
             )
 
-            guard !childBlocks.contains(where: {
-                if case .fieldGroup = $0.kind {
-                    return true
-                }
-                return false
-            }) else {
-                return expandedChildBlocks
-            }
-
-            return [
+            let headerBlocks = showsHeaderInContent ? [] : [
                 DisplayBlock(
                     kind: .fieldGroup(sectionID: sectionID, fieldIDs: []),
                     showSectionHeader: true,
                     showSectionFooter: false
                 ),
-            ] + expandedChildBlocks + [
+            ]
+            let footerBlocks = showsFooterInContent ? [] : [
                 DisplayBlock(
                     kind: .fieldGroup(sectionID: sectionID, fieldIDs: []),
                     showSectionHeader: false,
                     showSectionFooter: true
                 ),
             ]
+
+            return headerBlocks + expandedChildBlocks + footerBlocks
         }
     }
 
