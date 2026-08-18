@@ -460,6 +460,7 @@ extension FormKitViewTests {
                 showsHeader: block.showSectionHeader
             )
         }
+        XCTAssertEqual(accessibilityIDs.first, containerID)
         XCTAssertEqual(Set(accessibilityIDs).count, accessibilityIDs.count)
         guard case .fieldGroup(_, let fieldIDs) = blocks[2].kind else {
             return XCTFail("Expected the container's scalar field between its child objects")
