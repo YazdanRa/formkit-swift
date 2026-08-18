@@ -21,6 +21,9 @@ struct FormKitRenderIndex {
             case let .section(sectionID):
                 return "section:\(sectionID)"
             case let .fieldGroup(sectionID, fieldIDs):
+                if fieldIDs.isEmpty {
+                    return "field_group:\(sectionID):\(showSectionHeader ? "header" : "footer")"
+                }
                 return "field_group:\(sectionID):\(fieldIDs.joined(separator: ","))"
             }
         }
@@ -244,11 +247,35 @@ struct FormKitRenderIndex {
                 return [block]
             }
 
-            return expandingObjectSections(
-                in: displayBlocksBySectionID[sectionID] ?? [],
+            let childBlocks = displayBlocksBySectionID[sectionID] ?? []
+            let expandedChildBlocks = expandingObjectSections(
+                in: childBlocks,
                 sectionsByID: sectionsByID,
                 displayBlocksBySectionID: displayBlocksBySectionID
             )
+
+            guard !childBlocks.contains(where: {
+                if case .fieldGroup = $0.kind {
+                    return true
+                }
+                return false
+            }) else {
+                return expandedChildBlocks
+            }
+
+            return [
+                DisplayBlock(
+                    kind: .fieldGroup(sectionID: sectionID, fieldIDs: []),
+                    showSectionHeader: true,
+                    showSectionFooter: false
+                ),
+            ] + expandedChildBlocks + [
+                DisplayBlock(
+                    kind: .fieldGroup(sectionID: sectionID, fieldIDs: []),
+                    showSectionHeader: false,
+                    showSectionFooter: true
+                ),
+            ]
         }
     }
 

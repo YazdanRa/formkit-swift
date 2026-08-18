@@ -359,4 +359,50 @@ extension FormKitViewTests {
             ["inspectorName", "noCracks", "disposition"]
         )
     }
+
+    func testRenderableRootBlocksPreserveContainerOnlyObjectSection() {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "container": {
+                  "title": "Container",
+                  "description": "Container description",
+                  "type": "object",
+                  "properties": {
+                    "nested": {
+                      "title": "Nested",
+                      "type": "object",
+                      "properties": { "name": { "title": "Name", "type": "string" } }
+                    }
+                  }
+                }
+              }
+            }
+            """
+        )
+        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
+        let blocks = renderIndex.renderableRootBlocks
+        let containerID = session.renderPlan.sections.first { $0.propertyKey == "container" }?.id
+
+        XCTAssertEqual(blocks.count, 3)
+        XCTAssertEqual(
+            blocks.first?.kind,
+            containerID.map { .fieldGroup(sectionID: $0, fieldIDs: []) }
+        )
+        XCTAssertEqual(blocks.first?.showSectionHeader, true)
+        XCTAssertEqual(blocks.first?.showSectionFooter, false)
+        XCTAssertEqual(
+            blocks.last?.kind,
+            containerID.map { .fieldGroup(sectionID: $0, fieldIDs: []) }
+        )
+        XCTAssertEqual(blocks.last?.showSectionHeader, false)
+        XCTAssertEqual(blocks.last?.showSectionFooter, true)
+        XCTAssertNotEqual(blocks.first?.id, blocks.last?.id)
+        guard case .fieldGroup(_, let fieldIDs) = blocks[1].kind else {
+            return XCTFail("Expected the nested object's fields between the container boundaries")
+        }
+        XCTAssertEqual(fieldIDs.compactMap { renderIndex.field($0)?.propertyKey }, ["name"])
+    }
 }
