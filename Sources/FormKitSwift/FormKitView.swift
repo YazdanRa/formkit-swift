@@ -123,7 +123,7 @@ private struct FormKitContainerView: View {
 
         Form {
             statusSection
-            ForEach(renderIndex.visibleRootBlocks) { block in
+            ForEach(renderIndex.renderableRootBlocks) { block in
                 renderDisplayBlock(block, renderIndex: renderIndex, components: components)
             }
         }
@@ -319,6 +319,7 @@ private struct FormKitContainerView: View {
             }
             return field
         }
+        let accessibilityID = FormKitAccessibility.sectionIdentifier(section.id, fieldIDs: fieldIDs, showsHeader: showHeader)
 
         return Section {
             ForEach(visibleFields, id: \.id) { field in
@@ -333,7 +334,7 @@ private struct FormKitContainerView: View {
                 Text(description)
             }
         }
-        .accessibilityIdentifier(section.id)
+        .accessibilityIdentifier(accessibilityID)
     }
 
     @ViewBuilder
