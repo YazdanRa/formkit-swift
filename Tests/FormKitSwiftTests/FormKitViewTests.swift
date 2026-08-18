@@ -358,6 +358,20 @@ extension FormKitViewTests {
             },
             ["inspectorName", "noCracks", "disposition"]
         )
+        guard let rootBlock = blocks.last,
+              case .fieldGroup(let rootSectionID, let rootFieldIDs) = rootBlock.kind
+        else {
+            return XCTFail("Expected the root scalar field group last")
+        }
+        XCTAssertTrue(rootBlock.showSectionHeader)
+        XCTAssertEqual(
+            FormKitAccessibility.sectionIdentifier(
+                rootSectionID,
+                fieldIDs: rootFieldIDs,
+                showsHeader: rootBlock.showSectionHeader
+            ),
+            rootSectionID
+        )
     }
 
     func testRenderableRootBlocksPreserveContainerOnlyObjectSection() {
