@@ -34,6 +34,7 @@ struct FormKitRenderIndex {
     private let sectionsByID: [String: FormKitRenderPlan.SectionDescriptor]
     private let displayBlocksBySectionID: [String: [DisplayBlock]]
     private let visibleChildSectionsByParentKey: [ParentSectionKey: [FormKitRenderPlan.SectionDescriptor]]
+    private let rootSectionID: String?
     private let focusableFieldIDs: Set<String>
     private let orderedFocusableFieldIDs: [String]
 
@@ -78,9 +79,11 @@ struct FormKitRenderIndex {
             focusableFieldIDs.contains(fieldID) ? fieldID : nil
         }
 
-        if let rootSection = renderPlan.sections.first(where: {
+        let rootSection = renderPlan.sections.first(where: {
             $0.pointer == "#" && !$0.isOwnedByArrayRow
-        }) {
+        })
+        rootSectionID = rootSection?.id
+        if let rootSection {
             visibleRootBlocks = displayBlocksBySectionID[rootSection.id] ?? []
         } else {
             visibleRootBlocks = renderPlan.sections
@@ -96,8 +99,19 @@ struct FormKitRenderIndex {
     }
 
     var renderableRootBlocks: [DisplayBlock] {
-        Self.expandingObjectSections(
-            in: visibleRootBlocks,
+        guard let rootSectionID,
+              sectionsByID[rootSectionID]?.arrayDescriptor == nil
+        else {
+            return Self.expandingObjectSections(
+                in: visibleRootBlocks,
+                sectionsByID: sectionsByID,
+                displayBlocksBySectionID: displayBlocksBySectionID
+            )
+        }
+
+        return Self.expandingRootObjectSection(
+            rootSectionID,
+            blocks: visibleRootBlocks,
             sectionsByID: sectionsByID,
             displayBlocksBySectionID: displayBlocksBySectionID
         )
@@ -280,6 +294,45 @@ struct FormKitRenderIndex {
 
             return headerBlocks + expandedChildBlocks + footerBlocks
         }
+    }
+
+    private static func expandingRootObjectSection(
+        _ sectionID: String,
+        blocks: [DisplayBlock],
+        sectionsByID: [String: FormKitRenderPlan.SectionDescriptor],
+        displayBlocksBySectionID: [String: [DisplayBlock]]
+    ) -> [DisplayBlock] {
+        let hasFieldGroup = blocks.contains { block in
+            if case .fieldGroup = block.kind {
+                return true
+            }
+            return false
+        }
+        let showsFooterInContent = blocks.last?.showSectionFooter == true
+        let contentBlocks = blocks.map { block in
+            DisplayBlock(
+                kind: block.kind,
+                showSectionHeader: block.showSectionHeader,
+                showSectionFooter: block.showSectionFooter && showsFooterInContent
+            )
+        }
+        let expandedChildBlocks = expandingObjectSections(
+            in: contentBlocks,
+            sectionsByID: sectionsByID,
+            displayBlocksBySectionID: displayBlocksBySectionID
+        )
+
+        guard !showsFooterInContent else {
+            return expandedChildBlocks
+        }
+
+        return expandedChildBlocks + [
+            DisplayBlock(
+                kind: .fieldGroup(sectionID: sectionID, fieldIDs: []),
+                showSectionHeader: !hasFieldGroup,
+                showSectionFooter: true
+            ),
+        ]
     }
 
 }
