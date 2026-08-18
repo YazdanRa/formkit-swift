@@ -123,7 +123,7 @@ private struct FormKitContainerView: View {
 
         Form {
             statusSection
-            ForEach(renderIndex.visibleRootBlocks) { block in
+            ForEach(renderIndex.renderableRootBlocks) { block in
                 renderDisplayBlock(block, renderIndex: renderIndex, components: components)
             }
         }

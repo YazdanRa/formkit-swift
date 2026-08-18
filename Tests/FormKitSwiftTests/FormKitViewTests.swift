@@ -310,3 +310,53 @@ final class FormKitViewTests: XCTestCase {
         XCTAssertEqual(FormKitFieldVisualState.locked.formKitAccessibilityValue, "")
     }
 }
+
+extension FormKitViewTests {
+    func testRenderableRootBlocksIncludeNestedObjectFields() {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "title": "Weld Inspection",
+              "type": "object",
+              "properties": {
+                "generalInformation": {
+                  "title": "General Information",
+                  "type": "object",
+                  "properties": { "inspectorName": { "title": "Inspector Name", "type": "string" } }
+                },
+                "inspectionChecks": {
+                  "title": "Inspection Checks",
+                  "type": "object",
+                  "properties": {
+                    "noCracks": { "title": "No Cracks", "type": "string", "enum": ["Pass", "Fail", "N/A"] }
+                  }
+                },
+                "disposition": { "title": "Disposition", "type": "string", "enum": ["Accept", "Reject"] }
+              }
+            }
+            """
+        )
+        let renderIndex = FormKitRenderIndex(renderPlan: session.renderPlan)
+        let blocks = renderIndex.renderableRootBlocks
+
+        XCTAssertEqual(blocks.count, 3)
+        XCTAssertEqual(
+            blocks.compactMap { block in
+                guard case .fieldGroup(let sectionID, _) = block.kind else {
+                    return nil
+                }
+                return renderIndex.section(sectionID)?.title
+            },
+            ["General Information", "Inspection Checks", "Weld Inspection"]
+        )
+        XCTAssertEqual(
+            blocks.flatMap { block -> [String] in
+                guard case .fieldGroup(_, let fieldIDs) = block.kind else {
+                    return []
+                }
+                return fieldIDs.compactMap { renderIndex.field($0)?.propertyKey }
+            },
+            ["inspectorName", "noCracks", "disposition"]
+        )
+    }
+}

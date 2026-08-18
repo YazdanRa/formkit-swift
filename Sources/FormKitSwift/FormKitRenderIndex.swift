@@ -92,6 +92,14 @@ struct FormKitRenderIndex {
         }
     }
 
+    var renderableRootBlocks: [DisplayBlock] {
+        Self.expandingObjectSections(
+            in: visibleRootBlocks,
+            sectionsByID: sectionsByID,
+            displayBlocksBySectionID: displayBlocksBySectionID
+        )
+    }
+
     func field(_ fieldID: String) -> FormKitFieldDescriptor? {
         fieldsByID[fieldID]
     }
@@ -219,6 +227,27 @@ struct FormKitRenderIndex {
                 kind: kind,
                 showSectionHeader: fieldGroupIndices.first == index,
                 showSectionFooter: fieldGroupIndices.last == index
+            )
+        }
+    }
+
+    private static func expandingObjectSections(
+        in blocks: [DisplayBlock],
+        sectionsByID: [String: FormKitRenderPlan.SectionDescriptor],
+        displayBlocksBySectionID: [String: [DisplayBlock]]
+    ) -> [DisplayBlock] {
+        blocks.flatMap { block in
+            guard case .section(let sectionID) = block.kind,
+                  let section = sectionsByID[sectionID],
+                  section.arrayDescriptor == nil
+            else {
+                return [block]
+            }
+
+            return expandingObjectSections(
+                in: displayBlocksBySectionID[sectionID] ?? [],
+                sectionsByID: sectionsByID,
+                displayBlocksBySectionID: displayBlocksBySectionID
             )
         }
     }
