@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/YazdanRa/formkit-swift/compare/v1.3.1...v1.3.2) (2026-08-18)
+
+
+### Bug Fixes
+
+* **view:** render nested object sections ([#18](https://github.com/YazdanRa/formkit-swift/issues/18)) ([9326dfc](https://github.com/YazdanRa/formkit-swift/commit/9326dfc3013ba4ded60634fe70582f85aceb5311))
+
 ## [1.3.1](https://github.com/YazdanRa/formkit-swift/compare/v1.3.0...v1.3.1) (2026-07-29)
 
 
