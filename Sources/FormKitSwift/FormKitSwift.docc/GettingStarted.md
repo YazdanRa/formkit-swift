@@ -23,6 +23,8 @@ The package supports iOS 18, macOS 15, and visionOS 2 or later.
 
 FormKitSwift supports object sections; string, email, URI, date, time, date-time, integer, number, and Boolean fields; enums and constants; nullable primitive unions; and arrays of scalar or object items. It resolves supported local references and composition or conditional keywords including `allOf`, `oneOf`, `if`/`then`/`else`, `dependentSchemas`, and `dependentRequired`.
 
+Add an integer `x-formkit-order` to property schemas when display order must differ from JSON source order. Lower values render first, ties retain source order, and properties without a valid order follow in source order.
+
 Time-only fields use `{ "type": "string", "format": "time" }` and RFC 3339 full-time values such as `14:30:00Z`.
 
 Remote references, nested arrays, schema-valued `additionalProperties`, and other unsupported render shapes produce explicit unsupported reasons instead of a partial editable form.

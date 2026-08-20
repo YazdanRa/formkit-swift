@@ -86,8 +86,8 @@ public enum FormKitJSONValue: Codable, Equatable, Sendable {
         switch self {
         case .integer(let value):
             return value
-        case .number(let value) where value.rounded(.towardZero) == value:
-            return Int(value)
+        case .number(let value):
+            return Int(exactly: value)
         default:
             return nil
         }
