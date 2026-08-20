@@ -2572,7 +2572,7 @@ public final class FormKitRenderer: FormKitRendering {
                 )
             }
         )
-        return mergePropertyOrder(declaredOrder, [], properties: properties)
+        return applyFormKitOrder(mergePropertyOrder(declaredOrder, [], properties: properties), properties: properties)
     }
 
     private func requiredPropertyNames(
