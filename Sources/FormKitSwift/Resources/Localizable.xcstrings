@@ -21,6 +21,12 @@
             "value": "%1$@ %2$d"
           }
         },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$d"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -40,6 +46,18 @@
           }
         },
         "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$d"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$d"
+          }
+        },
+        "tr": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ %2$d"
@@ -67,6 +85,12 @@
             "value": "Tous les champs sont valides."
           }
         },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minden mező megfelelő."
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -90,6 +114,18 @@
             "state": "translated",
             "value": "Все поля заполнены правильно."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Všetky polia sú v poriadku."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm alanlar geçerli."
+          }
         }
       }
     },
@@ -111,6 +147,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un gestionnaire de téléversement est requis."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feltöltéskezelő szükséges."
           }
         },
         "it": {
@@ -136,6 +178,18 @@
             "state": "translated",
             "value": "Требуется обработчик загрузки."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vyžaduje sa obslužná rutina nahrávania."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir yükleme işleyicisi gerekli."
+          }
         }
       }
     },
@@ -157,6 +211,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le rendu d’un tableau nécessite un seul schéma d’éléments pris en charge."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tömb megjelenítéséhez egyetlen támogatott elemséma szükséges."
           }
         },
         "it": {
@@ -182,6 +242,18 @@
             "state": "translated",
             "value": "Для отображения массива требуется одна поддерживаемая схема элементов."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vykreslenie poľa vyžaduje jednu podporovanú schému položiek."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dizinin işlenmesi, desteklenen tek bir öğe şeması gerektirir."
+          }
         }
       }
     },
@@ -203,6 +275,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les schémas de type tableau doivent déclarer un seul schéma d’éléments."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tömbsémáknak egyetlen elemsémát kell megadniuk."
           }
         },
         "it": {
@@ -228,6 +306,18 @@
             "state": "translated",
             "value": "В схеме массива должна быть объявлена одна схема элементов."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schémy polí musia deklarovať jednu schému položiek."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dizi şemaları tek bir öğe şeması tanımlamalıdır."
+          }
         }
       }
     },
@@ -249,6 +339,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Annuler"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mégse"
           }
         },
         "it": {
@@ -274,6 +370,18 @@
             "state": "translated",
             "value": "Отмена"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zrušiť"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İptal"
+          }
         }
       }
     },
@@ -295,6 +403,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modifié"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Módosítva"
           }
         },
         "it": {
@@ -320,6 +434,18 @@
             "state": "translated",
             "value": "Изменено"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zmenené"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değiştirildi"
+          }
         }
       }
     },
@@ -341,6 +467,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisir un fichier"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fájl kiválasztása"
           }
         },
         "it": {
@@ -366,6 +498,18 @@
             "state": "translated",
             "value": "Выбрать файл"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vybrať súbor"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya Seç"
+          }
         }
       }
     },
@@ -387,6 +531,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisir des fichiers"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fájlok kiválasztása"
           }
         },
         "it": {
@@ -412,6 +562,18 @@
             "state": "translated",
             "value": "Выбрать файлы"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vybrať súbory"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosyaları Seç"
+          }
         }
       }
     },
@@ -433,6 +595,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisissez un fichier à téléverser."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Válasszon ki egy feltöltendő fájlt."
           }
         },
         "it": {
@@ -458,6 +626,18 @@
             "state": "translated",
             "value": "Выберите файл для загрузки."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vyberte súbor na nahratie."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yüklenecek bir dosya seçin."
+          }
         }
       }
     },
@@ -479,6 +659,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choisissez des fichiers à téléverser."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Válassza ki a feltöltendő fájlokat."
           }
         },
         "it": {
@@ -504,6 +690,18 @@
             "state": "translated",
             "value": "Выберите файлы для загрузки."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vyberte súbory na nahratie."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yüklenecek dosyaları seçin."
+          }
         }
       }
     },
@@ -525,6 +723,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tout effacer"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Összes törlése"
           }
         },
         "it": {
@@ -550,6 +754,18 @@
             "state": "translated",
             "value": "Очистить всё"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vymazať všetko"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tümünü Temizle"
+          }
         }
       }
     },
@@ -571,6 +787,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Effacer le brouillon"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piszkozat törlése"
           }
         },
         "it": {
@@ -596,6 +818,18 @@
             "state": "translated",
             "value": "Очистить черновик"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vymazať koncept"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taslağı Temizle"
+          }
         }
       }
     },
@@ -617,6 +851,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Effacer tous les fichiers ?"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Törli az összes fájlt?"
           }
         },
         "it": {
@@ -642,6 +882,18 @@
             "state": "translated",
             "value": "Очистить все файлы?"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vymazať všetky súbory?"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm dosyalar temizlensin mi?"
+          }
         }
       }
     },
@@ -663,6 +915,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Terminé"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kész"
           }
         },
         "it": {
@@ -688,6 +946,18 @@
             "state": "translated",
             "value": "Готово"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hotovo"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitti"
+          }
         }
       }
     },
@@ -709,6 +979,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dessinez une signature avant de l’enregistrer."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mentés előtt rajzolja meg az aláírását."
           }
         },
         "it": {
@@ -734,6 +1010,18 @@
             "state": "translated",
             "value": "Нарисуйте подпись перед сохранением."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pred uložením nakreslite podpis."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydetmeden önce bir imza çizin."
+          }
         }
       }
     },
@@ -755,6 +1043,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dessinez une signature, puis enregistrez-la."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rajzolja meg az aláírását, majd mentse el."
           }
         },
         "it": {
@@ -780,6 +1074,18 @@
             "state": "translated",
             "value": "Нарисуйте подпись, затем сохраните её."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nakreslite podpis a potom ho uložte."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bir imza çizin, ardından kaydedin."
+          }
         }
       }
     },
@@ -801,6 +1107,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les clés d’objet dynamiques ne sont pas prises en charge par ce moteur de rendu."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A dinamikus objektumkulcsokat ez a megjelenítő nem támogatja."
           }
         },
         "it": {
@@ -826,6 +1138,18 @@
             "state": "translated",
             "value": "Этот рендерер не поддерживает динамические ключи объектов."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tento vykresľovač nepodporuje dynamické kľúče objektov."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu işleyici dinamik nesne anahtarlarını desteklemiyor."
+          }
         }
       }
     },
@@ -847,6 +1171,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vide"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Üres"
           }
         },
         "it": {
@@ -872,6 +1202,18 @@
             "state": "translated",
             "value": "Пусто"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prázdne"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boş"
+          }
         }
       }
     },
@@ -893,6 +1235,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les options d’énumération doivent correspondre au type de champ affiché."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A felsorolás elemeinek meg kell egyezniük a megjelenített mező típusával."
           }
         },
         "it": {
@@ -918,6 +1266,18 @@
             "state": "translated",
             "value": "Значения перечисления должны соответствовать типу отображаемого поля."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Možnosti enumerácie musia zodpovedať typu vykresleného poľa."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enum seçenekleri işlenen alan türüyle eşleşmelidir."
+          }
         }
       }
     },
@@ -939,6 +1299,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les énumérations doivent inclure au moins une valeur concrète."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A felsorolásoknak legalább egy konkrét értéket kell tartalmazniuk."
           }
         },
         "it": {
@@ -964,6 +1330,18 @@
             "state": "translated",
             "value": "Перечисление должно содержать хотя бы одно конкретное значение."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enumerácie musia obsahovať aspoň jednu konkrétnu hodnotu."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enum tanımları en az bir somut değer içermelidir."
+          }
         }
       }
     },
@@ -985,6 +1363,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chaque nœud de schéma pris en charge doit déclarer un type ou une énumération."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minden támogatott sémacsomópontnál meg kell adni egy típust vagy felsorolást."
           }
         },
         "it": {
@@ -1010,6 +1394,18 @@
             "state": "translated",
             "value": "Каждый поддерживаемый узел схемы должен объявлять тип или перечисление."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Každý podporovaný uzol schémy musí deklarovať typ alebo enumeráciu."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desteklenen her şema düğümü bir tür veya enum tanımlamalıdır."
+          }
         }
       }
     },
@@ -1031,6 +1427,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le téléversement des fichiers est en cours."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fájlok feltöltése folyamatban van."
           }
         },
         "it": {
@@ -1056,6 +1458,18 @@
             "state": "translated",
             "value": "Файлы загружаются."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Súbory sa nahrávajú."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosyalar yükleniyor."
+          }
         }
       }
     },
@@ -1077,6 +1491,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Corrigez les champs en surbrillance, puis réessayez."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Javítsa a kiemelt mezőket, majd próbálja újra."
           }
         },
         "it": {
@@ -1102,6 +1522,18 @@
             "state": "translated",
             "value": "Исправьте выделенные поля и повторите попытку."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opravte zvýraznené polia a skúste to znova."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vurgulanan alanları düzeltip yeniden deneyin."
+          }
         }
       }
     },
@@ -1123,6 +1555,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Schéma non valide"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Érvénytelen séma"
           }
         },
         "it": {
@@ -1148,6 +1586,18 @@
             "state": "translated",
             "value": "Некорректная схема"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neplatná schéma"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geçersiz Şema"
+          }
         }
       }
     },
@@ -1169,6 +1619,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "JSON du schéma non valide"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Érvénytelen séma-JSON"
           }
         },
         "it": {
@@ -1194,6 +1650,18 @@
             "state": "translated",
             "value": "Некорректный JSON схемы"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neplatný JSON schémy"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geçersiz Şema JSON'u"
+          }
         }
       }
     },
@@ -1215,6 +1683,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Élément"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elem"
           }
         },
         "it": {
@@ -1240,6 +1714,18 @@
             "state": "translated",
             "value": "Элемент"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Položka"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öğe"
+          }
         }
       }
     },
@@ -1261,6 +1747,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nombre maximal de fichiers atteint."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elérte a fájlok maximális számát."
           }
         },
         "it": {
@@ -1286,6 +1778,18 @@
             "state": "translated",
             "value": "Достигнуто максимальное количество файлов."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosiahli ste maximálny počet súborov."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maksimum dosya sayısına ulaşıldı."
+          }
         }
       }
     },
@@ -1307,6 +1811,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suivant"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tovább"
           }
         },
         "it": {
@@ -1332,6 +1842,18 @@
             "state": "translated",
             "value": "Далее"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ďalej"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sonraki"
+          }
         }
       }
     },
@@ -1353,6 +1875,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les groupes répétables imbriqués ne sont pas encore pris en charge par ce moteur de rendu."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A beágyazott ismételhető csoportokat ez a megjelenítő még nem támogatja."
           }
         },
         "it": {
@@ -1378,6 +1906,18 @@
             "state": "translated",
             "value": "Вложенные повторяемые группы пока не поддерживаются этим рендерером."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tento vykresľovač zatiaľ nepodporuje vnorené opakovateľné skupiny."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İç içe yinelenebilir gruplar henüz bu işleyicide desteklenmiyor."
+          }
         }
       }
     },
@@ -1399,6 +1939,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucune valeur"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nincs érték"
           }
         },
         "it": {
@@ -1424,6 +1970,18 @@
             "state": "translated",
             "value": "Нет значения"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Žiadna hodnota"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Değer Yok"
+          }
         }
       }
     },
@@ -1445,6 +2003,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun fichier sélectionné"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nincs kiválasztott fájl"
           }
         },
         "it": {
@@ -1470,6 +2034,18 @@
             "state": "translated",
             "value": "Файл не выбран"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie je vybratý žiadny súbor"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya seçilmedi"
+          }
         }
       }
     },
@@ -1491,6 +2067,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun fichier sélectionné"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nincsenek kiválasztott fájlok"
           }
         },
         "it": {
@@ -1516,6 +2098,18 @@
             "state": "translated",
             "value": "Файлы не выбраны"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie sú vybraté žiadne súbory"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya seçilmedi"
+          }
         }
       }
     },
@@ -1537,6 +2131,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les nœuds de type objet doivent être affichés sous forme de sections."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Az objektumcsomópontokat szakaszokként kell megjeleníteni."
           }
         },
         "it": {
@@ -1562,6 +2162,18 @@
             "state": "translated",
             "value": "Узлы объектов должны отображаться как разделы."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzly objektov sa musia vykresliť ako sekcie."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nesne düğümleri bölüm olarak oluşturulmalıdır."
+          }
         }
       }
     },
@@ -1583,6 +2195,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Désactivé"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ki"
           }
         },
         "it": {
@@ -1608,6 +2226,18 @@
             "state": "translated",
             "value": "Выкл."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vypnuté"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapalı"
+          }
         }
       }
     },
@@ -1629,6 +2259,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Activé"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Be"
           }
         },
         "it": {
@@ -1654,6 +2290,18 @@
             "state": "translated",
             "value": "Вкл."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapnuté"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Açık"
+          }
         }
       }
     },
@@ -1675,6 +2323,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seuls les schémas de type tableau peuvent créer des groupes répétables."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Csak tömbsémák hozhatnak létre ismételhető csoportokat."
           }
         },
         "it": {
@@ -1700,6 +2354,18 @@
             "state": "translated",
             "value": "Только схемы массивов могут создавать повторяемые группы."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opakovateľné skupiny môžu vytvárať iba schémy polí."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yinelenebilir grupları yalnızca dizi şemaları oluşturabilir."
+          }
         }
       }
     },
@@ -1721,6 +2387,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seuls les formats « email », « uri », « date », « time » et « date-time » sont pris en charge dans la version 1."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Az 1. verzió csak az email, uri, date, time és date-time formátumokat támogatja."
           }
         },
         "it": {
@@ -1746,6 +2418,18 @@
             "state": "translated",
             "value": "В версии 1 поддерживаются только форматы email, uri, date, time и date-time."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vo verzii v1 sú podporované iba formáty email, uri, date, time a date-time."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "v1'de yalnızca email, uri, date, time ve date-time biçimleri desteklenir."
+          }
         }
       }
     },
@@ -1767,6 +2451,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seuls les schémas de type objet peuvent créer des sections de formulaire."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Csak objektumsémák hozhatnak létre űrlapszakaszokat."
           }
         },
         "it": {
@@ -1792,6 +2482,18 @@
             "state": "translated",
             "value": "Только схемы объектов могут создавать разделы формы."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sekcie formulára môžu vytvárať iba schémy objektov."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Form bölümlerini yalnızca nesne şemaları oluşturabilir."
+          }
         }
       }
     },
@@ -1813,6 +2515,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvre le sélecteur de fichiers."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Megnyitja a fájlválasztót."
           }
         },
         "it": {
@@ -1838,6 +2546,18 @@
             "state": "translated",
             "value": "Открывает окно выбора файлов."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otvorí nástroj na výber súborov."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya seçiciyi açar."
+          }
         }
       }
     },
@@ -1859,6 +2579,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les propriétés doivent correspondre à des objets de schéma."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tulajdonságoknak sémaobjektumokká kell feloldódniuk."
           }
         },
         "it": {
@@ -1884,6 +2610,18 @@
             "state": "translated",
             "value": "Свойства должны разрешаться как объекты схемы."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vlastnosti musia predstavovať objekty schémy."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Özellikler şema nesnelerine çözümlenmelidir."
+          }
         }
       }
     },
@@ -1905,6 +2643,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Référence distante"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Távoli hivatkozás"
           }
         },
         "it": {
@@ -1930,6 +2674,18 @@
             "state": "translated",
             "value": "Удалённая ссылка"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vzdialený odkaz"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzak Referans"
+          }
         }
       }
     },
@@ -1951,6 +2707,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La référence distante %1$@ à l’emplacement %2$@ n’est pas prise en charge par ce moteur de rendu."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A(z) %1$@ távoli hivatkozást a(z) %2$@ helyen ez a megjelenítő nem támogatja."
           }
         },
         "it": {
@@ -1976,6 +2738,18 @@
             "state": "translated",
             "value": "Удалённая ссылка %1$@ в %2$@ не поддерживается этим рендерером."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tento vykresľovač nepodporuje vzdialený odkaz %1$@ na mieste %2$@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uzak referans %1$@, %2$@ konumunda bu işleyici tarafından desteklenmiyor."
+          }
         }
       }
     },
@@ -1997,6 +2771,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Supprimer le fichier"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fájl eltávolítása"
           }
         },
         "it": {
@@ -2022,6 +2802,18 @@
             "state": "translated",
             "value": "Удалить файл"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstrániť súbor"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosyayı kaldır"
+          }
         }
       }
     },
@@ -2043,6 +2835,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Supprimer la signature"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aláírás eltávolítása"
           }
         },
         "it": {
@@ -2068,6 +2866,18 @@
             "state": "translated",
             "value": "Удалить подпись"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstrániť podpis"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmzayı kaldır"
+          }
         }
       }
     },
@@ -2089,6 +2899,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les nœuds de schéma affichés doivent correspondre à des objets."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A megjelenített sémacsomópontoknak objektumokká kell feloldódniuk."
           }
         },
         "it": {
@@ -2114,6 +2930,18 @@
             "state": "translated",
             "value": "Отображаемые узлы схемы должны разрешаться как объекты."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vykresľované uzly schémy musia byť objekty."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İşlenen şema düğümleri nesnelere çözümlenmelidir."
+          }
         }
       }
     },
@@ -2135,6 +2963,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Remplacer le fichier"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fájl cseréje"
           }
         },
         "it": {
@@ -2160,6 +2994,18 @@
             "state": "translated",
             "value": "Заменить файл"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahradiť súbor"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosyayı Değiştir"
+          }
         }
       }
     },
@@ -2181,6 +3027,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enregistrer la signature"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aláírás mentése"
           }
         },
         "it": {
@@ -2206,6 +3058,18 @@
             "state": "translated",
             "value": "Сохранить подпись"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uložiť podpis"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmzayı Kaydet"
+          }
         }
       }
     },
@@ -2227,6 +3091,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Signature enregistrée"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mentett aláírás"
           }
         },
         "it": {
@@ -2252,6 +3122,18 @@
             "state": "translated",
             "value": "Сохранённая подпись"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uložený podpis"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydedilen imza"
+          }
         }
       }
     },
@@ -2273,6 +3155,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enregistrement"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mentés…"
           }
         },
         "it": {
@@ -2298,6 +3186,18 @@
             "state": "translated",
             "value": "Сохранение"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ukladá sa"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydediliyor"
+          }
         }
       }
     },
@@ -2319,6 +3219,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Signez ici"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Írjon alá itt"
           }
         },
         "it": {
@@ -2344,6 +3250,18 @@
             "state": "translated",
             "value": "Подпишите здесь"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podpíšte sa tu"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Burayı imzalayın"
+          }
         }
       }
     },
@@ -2365,6 +3283,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zone de dessin de la signature"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aláírási terület"
           }
         },
         "it": {
@@ -2390,6 +3314,18 @@
             "state": "translated",
             "value": "Область для рисования подписи"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oblasť na nakreslenie podpisu"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmza çizim alanı"
+          }
         }
       }
     },
@@ -2411,6 +3347,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "L’image de la signature n’a pas pu être créée."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem sikerült létrehozni az aláírás képét."
           }
         },
         "it": {
@@ -2436,6 +3378,18 @@
             "state": "translated",
             "value": "Не удалось создать изображение подписи."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obrázok podpisu sa nepodarilo vytvoriť."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmza görüntüsü oluşturulamadı."
+          }
         }
       }
     },
@@ -2457,6 +3411,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La signature est en cours d’enregistrement."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Az aláírás mentése folyamatban van."
           }
         },
         "it": {
@@ -2482,6 +3442,18 @@
             "state": "translated",
             "value": "Подпись сохраняется."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podpis sa ukladá."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmza kaydediliyor."
+          }
         }
       }
     },
@@ -2503,6 +3475,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le fichier est en cours de téléversement."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fájl feltöltése folyamatban van."
           }
         },
         "it": {
@@ -2528,6 +3506,18 @@
             "state": "translated",
             "value": "Файл загружается."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Súbor sa nahráva."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya yükleniyor."
+          }
         }
       }
     },
@@ -2549,6 +3539,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le formulaire a changé avant la fin du téléversement du fichier."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Az űrlap megváltozott, mielőtt befejeződött a fájl feltöltése."
           }
         },
         "it": {
@@ -2574,6 +3570,18 @@
             "state": "translated",
             "value": "Форма изменилась до завершения загрузки файла."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formulár sa zmenil pred dokončením nahrávania súboru."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosya yüklenmeden önce form değişti."
+          }
         }
       }
     },
@@ -2595,6 +3603,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le formulaire a changé avant la fin du téléversement des fichiers."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Az űrlap megváltozott, mielőtt befejeződött a fájlok feltöltése."
           }
         },
         "it": {
@@ -2620,6 +3634,18 @@
             "state": "translated",
             "value": "Форма изменилась до завершения загрузки файлов."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formulár sa zmenil pred dokončením nahrávania súborov."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dosyalar yüklenmeden önce form değişti."
+          }
         }
       }
     },
@@ -2641,6 +3667,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le formulaire a changé avant la fin de l’enregistrement de la signature."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Az űrlap megváltozott, mielőtt befejeződött az aláírás mentése."
           }
         },
         "it": {
@@ -2666,6 +3698,18 @@
             "state": "translated",
             "value": "Форма изменилась до завершения сохранения подписи."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formulár sa zmenil pred dokončením ukladania podpisu."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İmza kaydedilmeden önce form değişti."
+          }
         }
       }
     },
@@ -2687,6 +3731,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les données du formulaire n’ont pas pu être ouvertes. %@"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem sikerült megnyitni az űrlap adatait. %@"
           }
         },
         "it": {
@@ -2712,6 +3762,18 @@
             "state": "translated",
             "value": "Не удалось открыть данные формы. %@"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Údaje formulára sa nepodarilo otvoriť. %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Form verileri açılamadı. %@"
+          }
         }
       }
     },
@@ -2733,6 +3795,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le JSON de l’instance doit pouvoir être décodé en objet."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A példány JSON-jának objektummá kell dekódolódnia."
           }
         },
         "it": {
@@ -2758,6 +3826,18 @@
             "state": "translated",
             "value": "JSON экземпляра должен декодироваться как объект."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON inštancie sa musí dekódovať na objekt."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Örnek JSON bir nesneye çözümlenmelidir."
+          }
         }
       }
     },
@@ -2779,6 +3859,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La référence locale %1$@ n’a pas pu être résolue depuis %2$@."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A(z) %1$@ helyi hivatkozást nem sikerült feloldani innen: %2$@."
           }
         },
         "it": {
@@ -2804,6 +3890,18 @@
             "state": "translated",
             "value": "Не удалось разрешить локальную ссылку %1$@ из %2$@."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lokálny odkaz %1$@ z %2$@ sa nepodarilo vyriešiť."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ yerel referansı, %2$@ üzerinden çözümlenemedi."
+          }
         }
       }
     },
@@ -2825,6 +3923,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le schéma n’a pas pu être compilé pour la validation."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem sikerült lefordítani a sémát az ellenőrzéshez."
           }
         },
         "it": {
@@ -2850,6 +3954,18 @@
             "state": "translated",
             "value": "Не удалось скомпилировать схему для проверки."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schému sa nepodarilo skompilovať na overenie."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şema doğrulama için derlenemedi."
+          }
         }
       }
     },
@@ -2871,6 +3987,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La racine du schéma doit être un objet JSON."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A séma gyökerének JSON-objektumnak kell lennie."
           }
         },
         "it": {
@@ -2896,6 +4018,18 @@
             "state": "translated",
             "value": "Корень схемы должен быть JSON-объектом."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koreň schémy musí byť objekt JSON."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Şema kökü bir JSON nesnesi olmalıdır."
+          }
         }
       }
     },
@@ -2917,6 +4051,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cette structure de tableau n’est pas encore prise en charge par le moteur de rendu natif."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ezt a tömbstruktúrát a natív megjelenítő még nem támogatja."
           }
         },
         "it": {
@@ -2942,6 +4082,18 @@
             "state": "translated",
             "value": "Эта структура массива пока не поддерживается нативным рендерером."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Natívny vykresľovač zatiaľ nepodporuje tento tvar poľa."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu dizi yapısı henüz yerel işleyicide desteklenmiyor."
+          }
         }
       }
     },
@@ -2963,6 +4115,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce champ n’est pas modifiable."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ez a mező nem szerkeszthető."
           }
         },
         "it": {
@@ -2988,6 +4146,18 @@
             "state": "translated",
             "value": "Это поле нельзя редактировать."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toto pole nie je možné upravovať."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu alan düzenlenemez."
+          }
         }
       }
     },
@@ -3009,6 +4179,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce champ est obligatoire."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ez a mező kötelező."
           }
         },
         "it": {
@@ -3034,6 +4210,18 @@
             "state": "translated",
             "value": "Это поле обязательно."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toto pole je povinné."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu alan zorunludur."
+          }
         }
       }
     },
@@ -3055,6 +4243,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cette structure de champ n’est pas encore prise en charge par le moteur de rendu natif."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ezt a mezőstruktúrát a natív megjelenítő még nem támogatja."
           }
         },
         "it": {
@@ -3080,6 +4274,18 @@
             "state": "translated",
             "value": "Эта структура поля пока не поддерживается нативным рендерером."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Natívny vykresľovač zatiaľ nepodporuje tento tvar poľa."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu alan yapısı henüz yerel işleyicide desteklenmiyor."
+          }
         }
       }
     },
@@ -3101,6 +4307,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce formulaire n’est pas encore pris en charge."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ez az űrlap még nem támogatott."
           }
         },
         "it": {
@@ -3126,6 +4338,18 @@
             "state": "translated",
             "value": "Эта форма пока не поддерживается."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tento formulár zatiaľ nie je podporovaný."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu form henüz desteklenmiyor."
+          }
         }
       }
     },
@@ -3147,6 +4371,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ce mot-clé modifie la structure du formulaire d’une manière qui n’est pas encore prise en charge par le moteur de rendu."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ez a kulcsszó úgy módosítja az űrlap szerkezetét, hogy azt a megjelenítő még nem támogatja."
           }
         },
         "it": {
@@ -3172,6 +4402,18 @@
             "state": "translated",
             "value": "Это ключевое слово изменяет структуру формы способом, который пока не поддерживается рендерером."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toto kľúčové slovo mení štruktúru formulára spôsobom, ktorý vykresľovač zatiaľ nepodporuje."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu anahtar sözcük, form yapısını işleyicinin henüz desteklemediği şekilde değiştiriyor."
+          }
         }
       }
     },
@@ -3193,6 +4435,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cette action supprime de ce champ toutes les URL des fichiers téléversés."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ez eltávolítja a mezőből az összes feltöltött fájl URL-címét."
           }
         },
         "it": {
@@ -3218,6 +4466,18 @@
             "state": "translated",
             "value": "Это удалит из поля все URL загруженных файлов."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Týmto sa z poľa odstránia adresy URL všetkých nahraných súborov."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bu işlem, yüklenen tüm dosya URL'lerini bu alandan kaldırır."
+          }
         }
       }
     },
@@ -3239,6 +4499,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le type « %1$@ » à l’emplacement %2$@ n’est pas pris en charge par ce moteur de rendu."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A(z) „%1$@” típus a(z) %2$@ helyen nem támogatott ebben a megjelenítőben."
           }
         },
         "it": {
@@ -3264,6 +4530,18 @@
             "state": "translated",
             "value": "Тип «%1$@» в %2$@ не поддерживается этим рендерером."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tento vykresľovač nepodporuje typ „%1$@“ na mieste %2$@."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@ konumundaki '%1$@' türü bu işleyicide desteklenmiyor."
+          }
         }
       }
     },
@@ -3285,6 +4563,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les déclarations de type doivent être des chaînes ou des unions de types primitifs acceptant la valeur null."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A típusdeklarációknak karakterláncoknak vagy null értéket engedélyező primitív unióknak kell lenniük."
           }
         },
         "it": {
@@ -3310,6 +4594,18 @@
             "state": "translated",
             "value": "Объявления типов должны быть строками или объединениями примитивных типов с поддержкой null."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deklarácie typov musia byť reťazce alebo zjednotenia primitívnych typov s možnosťou hodnoty null."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tür tanımları dize veya null olabilen temel tür birleşimleri olmalıdır."
+          }
         }
       }
     },
@@ -3331,6 +4627,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les types union ne sont pris en charge que pour les types primitifs acceptant la valeur null."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Az uniótípusok csak null értéket engedélyező primitív típusoknál támogatottak."
           }
         },
         "it": {
@@ -3356,6 +4658,18 @@
             "state": "translated",
             "value": "Объединения типов поддерживаются только для примитивных типов, допускающих null."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zjednotenia typov sú podporované iba pre primitívne typy s možnosťou hodnoty null."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Birleşim türleri yalnızca null olabilen temel türler için desteklenir."
+          }
         }
       }
     },
@@ -3377,6 +4691,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Référence non résolue"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feloldatlan hivatkozás"
           }
         },
         "it": {
@@ -3402,6 +4722,18 @@
             "state": "translated",
             "value": "Неразрешённая ссылка"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nevyriešený odkaz"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çözümlenemeyen Referans"
+          }
         }
       }
     },
@@ -3423,6 +4755,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dessin de signature non enregistré"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem mentett, kézzel rajzolt aláírás"
           }
         },
         "it": {
@@ -3448,6 +4786,18 @@
             "state": "translated",
             "value": "Несохранённый рисунок подписи"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neuložená kresba podpisu"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydedilmemiş imza çizimi"
+          }
         }
       }
     },
@@ -3469,6 +4819,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mot-clé non pris en charge"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem támogatott kulcsszó"
           }
         },
         "it": {
@@ -3494,6 +4850,18 @@
             "state": "translated",
             "value": "Неподдерживаемое ключевое слово"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nepodporované kľúčové slovo"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desteklenmeyen Anahtar Sözcük"
+          }
         }
       }
     },
@@ -3515,6 +4883,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Structure de schéma non prise en charge"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem támogatott sémastruktúra"
           }
         },
         "it": {
@@ -3540,6 +4914,18 @@
             "state": "translated",
             "value": "Неподдерживаемая структура схемы"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nepodporovaný tvar schémy"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desteklenmeyen Şema Yapısı"
+          }
         }
       }
     },
@@ -3561,6 +4947,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Type non pris en charge"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nem támogatott típus"
           }
         },
         "it": {
@@ -3586,6 +4978,18 @@
             "state": "translated",
             "value": "Неподдерживаемый тип"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nepodporovaný typ"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desteklenmeyen Tür"
+          }
         }
       }
     },
@@ -3607,6 +5011,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Formulaire JSON sans titre"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Névtelen JSON-űrlap"
           }
         },
         "it": {
@@ -3632,6 +5042,18 @@
             "state": "translated",
             "value": "JSON-форма без названия"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formulár JSON bez názvu"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adsız JSON Formu"
+          }
         }
       }
     },
@@ -3653,6 +5075,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le téléversement n’a renvoyé aucune URL."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A feltöltés nem adott vissza URL-címet."
           }
         },
         "it": {
@@ -3678,6 +5106,18 @@
             "state": "translated",
             "value": "В результате загрузки не получен URL."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahrávanie nevrátilo adresu URL."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleme bir URL döndürmedi."
+          }
         }
       }
     },
@@ -3699,6 +5139,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le téléversement n’a renvoyé aucune URL."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A feltöltés egyetlen URL-címet sem adott vissza."
           }
         },
         "it": {
@@ -3724,6 +5170,18 @@
             "state": "translated",
             "value": "В результате загрузки не получено ни одного URL."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahrávanie nevrátilo žiadne adresy URL."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleme herhangi bir URL döndürmedi."
+          }
         }
       }
     },
@@ -3745,6 +5203,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Téléversement indisponible"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A feltöltés nem érhető el"
           }
         },
         "it": {
@@ -3770,6 +5234,18 @@
             "state": "translated",
             "value": "Загрузка недоступна"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahrávanie nie je k dispozícii"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleme kullanılamıyor"
+          }
         }
       }
     },
@@ -3791,6 +5267,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Téléversement indisponible, car aucun gestionnaire de téléversement n’est configuré."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A feltöltés nem érhető el, mert nincs beállítva feltöltéskezelő."
           }
         },
         "it": {
@@ -3816,6 +5298,18 @@
             "state": "translated",
             "value": "Загрузка недоступна, поскольку обработчик загрузки не настроен."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahrávanie nie je k dispozícii, pretože nie je nakonfigurovaná obslužná rutina nahrávania."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleme işleyicisi yapılandırılmadığı için yükleme kullanılamıyor."
+          }
         }
       }
     },
@@ -3837,6 +5331,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Téléversement indisponible."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A feltöltés nem érhető el."
           }
         },
         "it": {
@@ -3862,6 +5362,18 @@
             "state": "translated",
             "value": "Загрузка недоступна."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahrávanie nie je k dispozícii."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleme kullanılamıyor."
+          }
         }
       }
     },
@@ -3883,6 +5395,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Téléversement en cours"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feltöltés…"
           }
         },
         "it": {
@@ -3908,6 +5426,18 @@
             "state": "translated",
             "value": "Загрузка"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahráva sa"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yükleniyor"
+          }
         }
       }
     },
@@ -3929,6 +5459,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Téléverse la signature dessinée et enregistre l’URL renvoyée."
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feltölti a megrajzolt aláírást, és eltárolja a visszakapott URL-címet."
           }
         },
         "it": {
@@ -3954,6 +5490,18 @@
             "state": "translated",
             "value": "Загружает нарисованную подпись и сохраняет полученный URL."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nahrá nakreslený podpis a uloží vrátenú adresu URL."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Çizilen imzayı yükler ve döndürülen URL'yi saklar."
+          }
         }
       }
     },
@@ -3975,6 +5523,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "faux"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hamis"
           }
         },
         "it": {
@@ -4000,6 +5554,18 @@
             "state": "translated",
             "value": "ложь"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nepravda"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "yanlış"
+          }
         }
       }
     },
@@ -4021,6 +5587,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "vrai"
+          }
+        },
+        "hu": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "igaz"
           }
         },
         "it": {
@@ -4046,6 +5618,18 @@
             "state": "translated",
             "value": "истина"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pravda"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "doğru"
+          }
         }
       }
     },
@@ -4067,6 +5651,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "État de la valeur"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Érték állapota"
             }
           },
           "it": {
@@ -4092,6 +5682,18 @@
               "state": "translated",
               "value": "Состояние значения"
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Stav hodnoty"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Değer Durumu"
+            }
           }
         }
       },
@@ -4113,6 +5715,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Valeur"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Érték"
             }
           },
           "it": {
@@ -4138,6 +5746,18 @@
               "state": "translated",
               "value": "Значение"
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Hodnota"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Değer"
+            }
           }
         }
       },
@@ -4159,6 +5779,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Non défini"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Nincs beállítva"
             }
           },
           "it": {
@@ -4184,6 +5810,18 @@
               "state": "translated",
               "value": "Не задано"
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Nenastavené"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Ayarlanmadı"
+            }
           }
         }
       },
@@ -4205,6 +5843,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Aucun élément ajouté pour l'instant."
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Még nincs hozzáadott elem."
             }
           },
           "it": {
@@ -4230,6 +5874,18 @@
               "state": "translated",
               "value": "Элементы еще не добавлены."
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Zatiaľ neboli pridané žiadne položky."
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Henüz öğe eklenmedi."
+            }
           }
         }
       },
@@ -4251,6 +5907,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Ajouter"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Új"
             }
           },
           "it": {
@@ -4276,6 +5938,18 @@
               "state": "translated",
               "value": "Добавить"
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Pridať:"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Yeni"
+            }
           }
         }
       },
@@ -4297,6 +5971,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Supprimer"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Eltávolítás"
             }
           },
           "it": {
@@ -4322,6 +6002,18 @@
               "state": "translated",
               "value": "Удалить"
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Odstrániť"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Kaldır"
+            }
           }
         }
       },
@@ -4343,6 +6035,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Nombre minimum d'éléments :"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Elemek minimális száma:"
             }
           },
           "it": {
@@ -4368,6 +6066,18 @@
               "state": "translated",
               "value": "Минимум элементов:"
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Minimálny počet položiek:"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "En az öğe sayısı:"
+            }
           }
         }
       },
@@ -4389,6 +6099,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Nombre maximum d'éléments :"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Elemek maximális száma:"
             }
           },
           "it": {
@@ -4414,6 +6130,18 @@
               "state": "translated",
               "value": "Максимум элементов:"
             }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Maximálny počet položiek:"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "En fazla öğe sayısı:"
+            }
           }
         }
       },
@@ -4435,6 +6163,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "%1$@ à l’emplacement %2$@ : %3$@"
+            }
+          },
+          "hu": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "%1$@ (%2$@): %3$@"
             }
           },
           "it": {
@@ -4459,6 +6193,18 @@
             "stringUnit": {
               "state": "translated",
               "value": "%1$@ в %2$@: %3$@"
+            }
+          },
+          "sk": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "%1$@ na mieste %2$@: %3$@"
+            }
+          },
+          "tr": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "%1$@, %2$@ konumunda: %3$@"
             }
           }
         }
