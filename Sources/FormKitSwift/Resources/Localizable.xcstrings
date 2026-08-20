@@ -3,6 +3,12 @@
   "strings": {
     "%@ %d": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$d"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -10,6 +16,12 @@
           }
         },
         "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$d"
+          }
+        },
+        "fi": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ %2$d"
@@ -45,6 +57,12 @@
             "value": "%1$@ %2$d"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$d"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -67,6 +85,12 @@
     },
     "All fields look good.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всички полета изглеждат добре."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -77,6 +101,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Todos los campos son correctos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaikki kentät ovat kunnossa."
           }
         },
         "fr": {
@@ -109,6 +139,12 @@
             "value": "Todos os campos estão corretos."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toate câmpurile sunt în regulă."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -131,6 +167,12 @@
     },
     "An upload handler is required.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Необходим е обработчик за качване."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -141,6 +183,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Se requiere un controlador de carga."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähetyskäsittelijä tarvitaan."
           }
         },
         "fr": {
@@ -173,6 +221,12 @@
             "value": "É necessário um manipulador de upload."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este necesară o funcție de gestionare a încărcării."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -195,6 +249,12 @@
     },
     "Array rendering requires a single supported items schema.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изобразяването на масив изисква една поддържана схема за елементите."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -205,6 +265,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La representación de arrays requiere un único esquema de elementos compatible."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taulukon näyttäminen edellyttää yhtä tuettua alkioskeemaa."
           }
         },
         "fr": {
@@ -237,6 +303,12 @@
             "value": "A renderização do array requer um único esquema de itens compatível."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redarea unui tablou necesită o singură schemă de elemente acceptată."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -259,6 +331,12 @@
     },
     "Array schemas must declare a single items schema.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Схемите за масиви трябва да декларират една схема за елементите."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -269,6 +347,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los esquemas de tipo array deben declarar un único esquema de elementos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taulukkoskeemojen on määritettävä yksi alkioskeema."
           }
         },
         "fr": {
@@ -301,6 +385,12 @@
             "value": "Os esquemas de array devem declarar um único esquema de itens."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schemele de tip tablou trebuie să declare o singură schemă de elemente."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -323,6 +413,12 @@
     },
     "Cancel": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отказ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -333,6 +429,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cancelar"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peruuta"
           }
         },
         "fr": {
@@ -365,6 +467,12 @@
             "value": "Cancelar"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anulați"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -387,6 +495,12 @@
     },
     "Changed": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Променено"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -397,6 +511,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modificado"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muutettu"
           }
         },
         "fr": {
@@ -429,6 +549,12 @@
             "value": "Alterado"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modificat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -451,6 +577,12 @@
     },
     "Choose File": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Избери файл"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -461,6 +593,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Elegir archivo"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valitse tiedosto"
           }
         },
         "fr": {
@@ -493,6 +631,12 @@
             "value": "Escolher arquivo"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alegeți fișierul"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -515,6 +659,12 @@
     },
     "Choose Files": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Избери файлове"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -525,6 +675,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Elegir archivos"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valitse tiedostot"
           }
         },
         "fr": {
@@ -557,6 +713,12 @@
             "value": "Escolher arquivos"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alegeți fișierele"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -579,6 +741,12 @@
     },
     "Choose a file to upload.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изберете файл за качване."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -589,6 +757,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Elige un archivo para subir."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valitse lähetettävä tiedosto."
           }
         },
         "fr": {
@@ -621,6 +795,12 @@
             "value": "Escolha um arquivo para enviar."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alegeți un fișier de încărcat."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -643,6 +823,12 @@
     },
     "Choose files to upload.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изберете файлове за качване."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -653,6 +839,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Elige archivos para subir."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valitse lähetettävät tiedostot."
           }
         },
         "fr": {
@@ -685,6 +877,12 @@
             "value": "Escolha arquivos para enviar."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alegeți fișiere de încărcat."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -707,6 +905,12 @@
     },
     "Clear All": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изчисти всичко"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -717,6 +921,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Borrar todo"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tyhjennä kaikki"
           }
         },
         "fr": {
@@ -749,6 +959,12 @@
             "value": "Limpar tudo"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ștergeți tot"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -771,6 +987,12 @@
     },
     "Clear Draft": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изчисти черновата"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -781,6 +1003,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Borrar borrador"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tyhjennä luonnos"
           }
         },
         "fr": {
@@ -813,6 +1041,12 @@
             "value": "Limpar rascunho"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ștergeți schița"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -835,6 +1069,12 @@
     },
     "Clear all files?": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Да се премахнат ли всички файлове?"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -845,6 +1085,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "¿Borrar todos los archivos?"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poistetaanko kaikki tiedostot?"
           }
         },
         "fr": {
@@ -877,6 +1123,12 @@
             "value": "Limpar todos os arquivos?"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ștergeți toate fișierele?"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -899,6 +1151,12 @@
     },
     "Done": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -909,6 +1167,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Listo"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valmis"
           }
         },
         "fr": {
@@ -941,6 +1205,12 @@
             "value": "Concluído"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gata"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -963,6 +1233,12 @@
     },
     "Draw a signature before saving.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нарисувайте подпис, преди да запазите."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -973,6 +1249,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dibuja una firma antes de guardarla."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piirrä allekirjoitus ennen tallentamista."
           }
         },
         "fr": {
@@ -1005,6 +1287,12 @@
             "value": "Desenhe uma assinatura antes de salvar."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desenați o semnătură înainte de a salva."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1027,6 +1315,12 @@
     },
     "Draw a signature, then save it.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нарисувайте подпис и след това го запазете."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1037,6 +1331,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dibuja una firma y luego guárdala."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piirrä allekirjoitus ja tallenna se."
           }
         },
         "fr": {
@@ -1069,6 +1369,12 @@
             "value": "Desenhe uma assinatura e depois salve-a."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desenați o semnătură, apoi salvați-o."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1091,6 +1397,12 @@
     },
     "Dynamic object keys are not supported in this renderer.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Динамичните ключове на обекти не се поддържат от този визуализатор."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1101,6 +1413,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Las claves dinámicas de los objetos no son compatibles con este renderizador."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tämä renderöintikomponentti ei tue dynaamisia objektin avaimia."
           }
         },
         "fr": {
@@ -1133,6 +1451,12 @@
             "value": "Chaves dinâmicas de objeto não são compatíveis com este renderizador."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cheile dinamice ale obiectelor nu sunt acceptate de acest modul de redare."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1155,6 +1479,12 @@
     },
     "Empty": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Празно"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1165,6 +1495,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vacío"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tyhjä"
           }
         },
         "fr": {
@@ -1197,6 +1533,12 @@
             "value": "Vazio"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gol"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1219,6 +1561,12 @@
     },
     "Enum options must match the rendered field type.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Опциите на изброяването трябва да съответстват на типа на изобразеното поле."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1229,6 +1577,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Las opciones de la enumeración deben coincidir con el tipo del campo renderizado."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enum-vaihtoehtojen on vastattava näytettävän kentän tyyppiä."
           }
         },
         "fr": {
@@ -1261,6 +1615,12 @@
             "value": "As opções da enumeração devem corresponder ao tipo de campo renderizado."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opțiunile enumerării trebuie să corespundă tipului câmpului redat."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1283,6 +1643,12 @@
     },
     "Enums must include at least one concrete value.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изброяванията трябва да съдържат поне една конкретна стойност."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1293,6 +1659,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Las enumeraciones deben incluir al menos un valor concreto."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enum-luetteloissa on oltava vähintään yksi konkreettinen arvo."
           }
         },
         "fr": {
@@ -1325,6 +1697,12 @@
             "value": "As enumerações devem incluir pelo menos um valor concreto."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enumerările trebuie să includă cel puțin o valoare concretă."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1347,6 +1725,12 @@
     },
     "Every supported schema node must declare a type or enum.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всеки поддържан възел на схемата трябва да декларира тип или изброяване."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1357,6 +1741,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Todo nodo de esquema compatible debe declarar un tipo o una enumeración."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jokaisella tuetulla skeemasolmulla on oltava tyyppi tai enum."
           }
         },
         "fr": {
@@ -1389,6 +1779,12 @@
             "value": "Cada nó de esquema compatível deve declarar um tipo ou uma enumeração."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fiecare nod de schemă acceptat trebuie să declare un tip sau o enumerare."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1411,6 +1807,12 @@
     },
     "Files are uploading.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файловете се качват."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1421,6 +1823,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los archivos se están subiendo."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiedostojen lähetys on käynnissä."
           }
         },
         "fr": {
@@ -1453,6 +1861,12 @@
             "value": "Os arquivos estão sendo enviados."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fișierele se încarcă."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1475,6 +1889,12 @@
     },
     "Fix the highlighted fields and try again.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Коригирайте маркираните полета и опитайте отново."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1485,6 +1905,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Corrige los campos resaltados e inténtalo de nuevo."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Korjaa korostetut kentät ja yritä uudelleen."
           }
         },
         "fr": {
@@ -1517,6 +1943,12 @@
             "value": "Corrija os campos destacados e tente novamente."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corectați câmpurile evidențiate și încercați din nou."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1539,6 +1971,12 @@
     },
     "Invalid Schema": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Невалидна схема"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1549,6 +1987,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esquema no válido"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virheellinen skeema"
           }
         },
         "fr": {
@@ -1581,6 +2025,12 @@
             "value": "Esquema inválido"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schemă nevalidă"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1603,6 +2053,12 @@
     },
     "Invalid Schema JSON": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Невалиден JSON на схемата"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1613,6 +2069,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "JSON del esquema no válido"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virheellinen skeeman JSON-esitys"
           }
         },
         "fr": {
@@ -1645,6 +2107,12 @@
             "value": "JSON de esquema inválido"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON nevalid al schemei"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1667,6 +2135,12 @@
     },
     "Item": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Елемент"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1677,6 +2151,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Elemento"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kohde"
           }
         },
         "fr": {
@@ -1709,6 +2189,12 @@
             "value": "Item"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Element"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1731,6 +2217,12 @@
     },
     "Maximum number of files reached.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Достигнат е максималният брой файлове."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1741,6 +2233,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Se ha alcanzado el número máximo de archivos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiedostojen enimmäismäärä on saavutettu."
           }
         },
         "fr": {
@@ -1773,6 +2271,12 @@
             "value": "O número máximo de arquivos foi atingido."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fost atins numărul maxim de fișiere."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1795,6 +2299,12 @@
     },
     "Next": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Напред"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1805,6 +2315,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Siguiente"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuraava"
           }
         },
         "fr": {
@@ -1837,6 +2353,12 @@
             "value": "Seguinte"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înainte"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1859,6 +2381,12 @@
     },
     "Nested repeatable groups are not supported in this renderer yet.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вложените повтарящи се групи все още не се поддържат от този визуализатор."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1869,6 +2397,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los grupos repetibles anidados aún no son compatibles con este renderizador."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sisäkkäisiä toistettavia ryhmiä ei vielä tueta tässä renderöintikomponentissa."
           }
         },
         "fr": {
@@ -1901,6 +2435,12 @@
             "value": "Grupos repetíveis aninhados ainda não são compatíveis com este renderizador."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupurile repetabile imbricate nu sunt încă acceptate de acest modul de redare."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1923,6 +2463,12 @@
     },
     "No Value": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Няма стойност"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1933,6 +2479,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sin valor"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ei arvoa"
           }
         },
         "fr": {
@@ -1965,6 +2517,12 @@
             "value": "Sem valor"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicio valoare"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -1987,6 +2545,12 @@
     },
     "No file selected": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не е избран файл"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1997,6 +2561,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ningún archivo seleccionado"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiedostoa ei ole valittu"
           }
         },
         "fr": {
@@ -2029,6 +2599,12 @@
             "value": "Nenhum arquivo selecionado"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niciun fișier selectat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2051,6 +2627,12 @@
     },
     "No files selected": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не са избрани файлове"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2061,6 +2643,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ningún archivo seleccionado"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiedostoja ei ole valittu"
           }
         },
         "fr": {
@@ -2093,6 +2681,12 @@
             "value": "Nenhum arquivo selecionado"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Niciun fișier selectat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2115,6 +2709,12 @@
     },
     "Object nodes must be rendered as sections.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Възлите на обекти трябва да се изобразяват като раздели."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2125,6 +2725,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los nodos de objeto deben renderizarse como secciones."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objektisolmut on näytettävä osioina."
           }
         },
         "fr": {
@@ -2157,6 +2763,12 @@
             "value": "Os nós de objeto devem ser renderizados como seções."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nodurile de tip obiect trebuie redate ca secțiuni."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2179,6 +2791,12 @@
     },
     "Off": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изкл."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2189,6 +2807,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Desactivado"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pois"
           }
         },
         "fr": {
@@ -2221,6 +2845,12 @@
             "value": "Desativado"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dezactivat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2243,6 +2873,12 @@
     },
     "On": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вкл."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2253,6 +2889,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Activado"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Päällä"
           }
         },
         "fr": {
@@ -2285,6 +2927,12 @@
             "value": "Ativado"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2307,6 +2955,12 @@
     },
     "Only array schemas can create repeatable groups.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Само схемите за масиви могат да създават повтарящи се групи."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2317,6 +2971,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Solo los esquemas de tipo array pueden crear grupos repetibles."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vain taulukkoskeemoista voi luoda toistettavia ryhmiä."
           }
         },
         "fr": {
@@ -2349,6 +3009,12 @@
             "value": "Somente esquemas de array podem criar grupos repetíveis."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numai schemele de tip tablou pot crea grupuri repetabile."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2371,6 +3037,12 @@
     },
     "Only email, uri, date, time, and date-time formats are supported in v1.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Във v1 се поддържат само форматите email, uri, date, time и date-time."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2381,6 +3053,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Solo se admiten los formatos email, uri, date, time y date-time en la versión 1."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versio 1 tukee vain muotoja email, uri, date, time ja date-time."
           }
         },
         "fr": {
@@ -2413,6 +3091,12 @@
             "value": "A v1 oferece suporte somente aos formatos email, uri, date, time e date-time."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "În versiunea 1 sunt acceptate numai formatele email, uri, date, time și date-time."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2435,6 +3119,12 @@
     },
     "Only object schemas can create form sections.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Само схемите за обекти могат да създават раздели във формуляра."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2445,6 +3135,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Solo los esquemas de tipo objeto pueden crear secciones de formulario."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vain objektiskeemoista voi luoda lomakeosioita."
           }
         },
         "fr": {
@@ -2477,6 +3173,12 @@
             "value": "Somente esquemas de objeto podem criar seções de formulário."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numai schemele de tip obiect pot crea secțiuni de formular."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2499,6 +3201,12 @@
     },
     "Opens the file picker.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отваря прозореца за избор на файл."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2509,6 +3217,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abre el selector de archivos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avaa tiedostonvalitsimen."
           }
         },
         "fr": {
@@ -2541,6 +3255,12 @@
             "value": "Abre o seletor de arquivos."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deschide selectorul de fișiere."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2563,6 +3283,12 @@
     },
     "Properties must resolve to schema objects.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свойствата трябва да представляват обекти на схемата."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2573,6 +3299,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Las propiedades deben resolverse como objetos de esquema."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ominaisuuksien täytyy ratketa skeemaobjekteiksi."
           }
         },
         "fr": {
@@ -2605,6 +3337,12 @@
             "value": "As propriedades devem ser resolvidas como objetos de esquema."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proprietățile trebuie să se rezolve la obiecte de schemă."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2627,6 +3365,12 @@
     },
     "Remote Reference": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отдалечена препратка"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2637,6 +3381,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Referencia remota"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etäviittaus"
           }
         },
         "fr": {
@@ -2669,6 +3419,12 @@
             "value": "Referência remota"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referință la distanță"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2691,6 +3447,12 @@
     },
     "Remote reference %@ at %@ is not supported in this renderer.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отдалечената препратка %1$@ в %2$@ не се поддържа от този визуализатор."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2701,6 +3463,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La referencia remota %1$@ en %2$@ no es compatible con este renderizador."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etäviittausta %1$@ kohdassa %2$@ ei tueta tässä renderöintikomponentissa."
           }
         },
         "fr": {
@@ -2733,6 +3501,12 @@
             "value": "A referência remota %1$@ em %2$@ não é compatível com este renderizador."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referința la distanță %1$@ aflată la %2$@ nu este acceptată de acest modul de redare."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2755,6 +3529,12 @@
     },
     "Remove file": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Премахни файла"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2765,6 +3545,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eliminar archivo"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poista tiedosto"
           }
         },
         "fr": {
@@ -2797,6 +3583,12 @@
             "value": "Remover arquivo"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminați fișierul"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2819,6 +3611,12 @@
     },
     "Remove signature": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Премахни подписа"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2829,6 +3627,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eliminar firma"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poista allekirjoitus"
           }
         },
         "fr": {
@@ -2861,6 +3665,12 @@
             "value": "Remover assinatura"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminați semnătura"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2883,6 +3693,12 @@
     },
     "Rendered schema nodes must resolve to objects.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изобразените възли на схемата трябва да представляват обекти."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2893,6 +3709,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los nodos renderizados del esquema deben resolverse como objetos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Näytettävien skeemasolmujen on ratkettava objekteiksi."
           }
         },
         "fr": {
@@ -2925,6 +3747,12 @@
             "value": "Os nós de esquema renderizados devem ser resolvidos como objetos."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nodurile de schemă redate trebuie să se rezolve la obiecte."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -2947,6 +3775,12 @@
     },
     "Replace File": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Замени файла"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2957,6 +3791,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reemplazar archivo"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaihda tiedosto"
           }
         },
         "fr": {
@@ -2989,6 +3829,12 @@
             "value": "Substituir arquivo"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Înlocuiți fișierul"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3011,6 +3857,12 @@
     },
     "Save Signature": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запази подписа"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3021,6 +3873,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Guardar firma"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tallenna allekirjoitus"
           }
         },
         "fr": {
@@ -3053,6 +3911,12 @@
             "value": "Salvar assinatura"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvați semnătura"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3075,6 +3939,12 @@
     },
     "Saved signature": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запазен подпис"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3085,6 +3955,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Firma guardada"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tallennettu allekirjoitus"
           }
         },
         "fr": {
@@ -3117,6 +3993,12 @@
             "value": "Assinatura salva"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semnătură salvată"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3139,6 +4021,12 @@
     },
     "Saving": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запазване"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3149,6 +4037,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Guardando"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tallennetaan"
           }
         },
         "fr": {
@@ -3181,6 +4075,12 @@
             "value": "Salvando"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se salvează"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3203,6 +4103,12 @@
     },
     "Sign here": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подпишете се тук"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3213,6 +4119,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Firma aquí"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allekirjoita tähän"
           }
         },
         "fr": {
@@ -3245,6 +4157,12 @@
             "value": "Assine aqui"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semnați aici"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3267,6 +4185,12 @@
     },
     "Signature drawing area": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Област за рисуване на подпис"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3277,6 +4201,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Área de dibujo de la firma"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allekirjoituksen piirtoalue"
           }
         },
         "fr": {
@@ -3309,6 +4239,12 @@
             "value": "Área de desenho da assinatura"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zonă pentru desenarea semnăturii"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3331,6 +4267,12 @@
     },
     "Signature image could not be created.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изображението на подписа не можа да бъде създадено."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3341,6 +4283,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se pudo crear la imagen de la firma."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allekirjoituskuvaa ei voitu luoda."
           }
         },
         "fr": {
@@ -3373,6 +4321,12 @@
             "value": "Não foi possível criar a imagem da assinatura."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imaginea semnăturii nu a putut fi creată."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3395,6 +4349,12 @@
     },
     "Signature is saving.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подписът се запазва."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3405,6 +4365,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La firma se está guardando."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allekirjoitusta tallennetaan."
           }
         },
         "fr": {
@@ -3437,6 +4403,12 @@
             "value": "A assinatura está sendo salva."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semnătura se salvează."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3459,6 +4431,12 @@
     },
     "The file is uploading.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файлът се качва."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3469,6 +4447,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "El archivo se está subiendo."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiedostoa lähetetään."
           }
         },
         "fr": {
@@ -3501,6 +4485,12 @@
             "value": "O arquivo está sendo enviado."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fișierul se încarcă."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3523,6 +4513,12 @@
     },
     "The form changed before the file finished uploading.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Формулярът се промени, преди качването на файла да завърши."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3533,6 +4529,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "El formulario cambió antes de que terminara la carga del archivo."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lomake muuttui ennen kuin tiedoston lähetys valmistui."
           }
         },
         "fr": {
@@ -3565,6 +4567,12 @@
             "value": "O formulário foi alterado antes que o envio do arquivo terminasse."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formularul s-a modificat înainte de finalizarea încărcării fișierului."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3587,6 +4595,12 @@
     },
     "The form changed before the files finished uploading.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Формулярът се промени, преди качването на файловете да завърши."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3597,6 +4611,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "El formulario cambió antes de que terminara la carga de los archivos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lomake muuttui ennen kuin tiedostojen lähetys valmistui."
           }
         },
         "fr": {
@@ -3629,6 +4649,12 @@
             "value": "O formulário foi alterado antes que o envio dos arquivos terminasse."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formularul s-a modificat înainte de finalizarea încărcării fișierelor."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3651,6 +4677,12 @@
     },
     "The form changed before the signature finished saving.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Формулярът се промени, преди запазването на подписа да завърши."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3661,6 +4693,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "El formulario cambió antes de que terminara de guardarse la firma."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lomake muuttui ennen kuin allekirjoituksen tallennus valmistui."
           }
         },
         "fr": {
@@ -3693,6 +4731,12 @@
             "value": "O formulário foi alterado antes que a assinatura terminasse de ser salva."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formularul s-a modificat înainte de finalizarea salvării semnăturii."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3715,6 +4759,12 @@
     },
     "The form data couldn’t be opened. %@": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Данните от формуляра не можаха да бъдат отворени. %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3725,6 +4775,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se pudieron abrir los datos del formulario. %@"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lomakkeen tietoja ei voitu avata. %@"
           }
         },
         "fr": {
@@ -3757,6 +4813,12 @@
             "value": "Não foi possível abrir os dados do formulário. %@"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datele formularului nu au putut fi deschise. %@"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3779,6 +4841,12 @@
     },
     "The instance JSON must decode to an object.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON на екземпляра трябва да се декодира като обект."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3789,6 +4857,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "El JSON de la instancia debe decodificarse como un objeto."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instanssin JSON-tietojen on purkauduttava objektiksi."
           }
         },
         "fr": {
@@ -3821,6 +4895,12 @@
             "value": "O JSON da instância deve ser decodificado como um objeto."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON-ul instanței trebuie decodificat într-un obiect."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3843,6 +4923,12 @@
     },
     "The local reference %@ could not be resolved from %@.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Локалната препратка %1$@ не можа да бъде разрешена спрямо %2$@."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3853,6 +4939,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se pudo resolver la referencia local %1$@ desde %2$@."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paikallista viittausta %1$@ ei voitu ratkaista kohteesta %2$@."
           }
         },
         "fr": {
@@ -3885,6 +4977,12 @@
             "value": "Não foi possível resolver a referência local %1$@ a partir de %2$@."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referința locală %1$@ nu a putut fi rezolvată din %2$@."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3907,6 +5005,12 @@
     },
     "The schema could not be compiled for validation.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Схемата не можа да бъде компилирана за валидиране."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3917,6 +5021,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se pudo compilar el esquema para validarlo."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skeemaa ei voitu kääntää validointia varten."
           }
         },
         "fr": {
@@ -3949,6 +5059,12 @@
             "value": "Não foi possível compilar o esquema para validação."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schema nu a putut fi compilată pentru validare."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -3971,6 +5087,12 @@
     },
     "The schema root must be a JSON object.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Коренът на схемата трябва да бъде JSON обект."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3981,6 +5103,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La raíz del esquema debe ser un objeto JSON."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skeeman juuren on oltava JSON-objekti."
           }
         },
         "fr": {
@@ -4013,6 +5141,12 @@
             "value": "A raiz do esquema deve ser um objeto JSON."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rădăcina schemei trebuie să fie un obiect JSON."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4035,6 +5169,12 @@
     },
     "This array shape is not supported in the native renderer yet.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тази структура на масива все още не се поддържа от нативния визуализатор."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4045,6 +5185,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esta estructura de array aún no es compatible con el renderizador nativo."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tätä taulukkomuotoa ei vielä tueta natiivissa renderöintikomponentissa."
           }
         },
         "fr": {
@@ -4077,6 +5223,12 @@
             "value": "Esta estrutura de array ainda não é compatível com o renderizador nativo."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Această formă de tablou nu este încă acceptată de modulul de redare nativ."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4099,6 +5251,12 @@
     },
     "This field is not editable.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Това поле не може да се редактира."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4109,6 +5267,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este campo no se puede editar."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tätä kenttää ei voi muokata."
           }
         },
         "fr": {
@@ -4141,6 +5305,12 @@
             "value": "Este campo não é editável."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acest câmp nu poate fi editat."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4163,6 +5333,12 @@
     },
     "This field is required.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Това поле е задължително."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4173,6 +5349,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este campo es obligatorio."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tämä kenttä on pakollinen."
           }
         },
         "fr": {
@@ -4205,6 +5387,12 @@
             "value": "Este campo é obrigatório."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acest câmp este obligatoriu."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4227,6 +5415,12 @@
     },
     "This field shape is not supported in the native renderer yet.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тази структура на полето все още не се поддържа от нативния визуализатор."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4237,6 +5431,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esta estructura de campo aún no es compatible con el renderizador nativo."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tätä kenttämuotoa ei vielä tueta natiivissa renderöintikomponentissa."
           }
         },
         "fr": {
@@ -4269,6 +5469,12 @@
             "value": "Esta estrutura de campo ainda não é compatível com o renderizador nativo."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Această formă de câmp nu este încă acceptată de modulul de redare nativ."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4291,6 +5497,12 @@
     },
     "This form isn’t supported yet.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Този формуляр все още не се поддържа."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4301,6 +5513,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este formulario aún no es compatible."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tätä lomaketta ei vielä tueta."
           }
         },
         "fr": {
@@ -4333,6 +5551,12 @@
             "value": "Este formulário ainda não é compatível."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acest formular nu este încă acceptat."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4355,6 +5579,12 @@
     },
     "This keyword changes the form structure in a way the renderer does not support yet.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тази ключова дума променя структурата на формуляра по начин, който визуализаторът все още не поддържа."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4365,6 +5595,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esta palabra clave modifica la estructura del formulario de una forma que el renderizador aún no admite."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tämä avainsana muuttaa lomakkeen rakennetta tavalla, jota renderöintikomponentti ei vielä tue."
           }
         },
         "fr": {
@@ -4397,6 +5633,12 @@
             "value": "Esta palavra-chave altera a estrutura do formulário de uma forma que o renderizador ainda não oferece suporte."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acest cuvânt-cheie modifică structura formularului într-un mod pe care modulul de redare nu îl acceptă încă."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4419,6 +5661,12 @@
     },
     "This removes all uploaded file URLs from this field.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Това премахва от полето URL адресите на всички качени файлове."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4429,6 +5677,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esto elimina de este campo todas las URL de archivos subidos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tämä poistaa kaikki lähetettyjen tiedostojen URL-osoitteet tästä kentästä."
           }
         },
         "fr": {
@@ -4461,6 +5715,12 @@
             "value": "Isto remove deste campo todas as URLs dos arquivos enviados."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elimină din acest câmp toate adresele URL ale fișierelor încărcate."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4483,6 +5743,12 @@
     },
     "Type '%@' at %@ is not supported in this renderer.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Типът „%1$@“ в %2$@ не се поддържа от този визуализатор."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4493,6 +5759,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "El tipo '%1$@' en %2$@ no es compatible con este renderizador."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tyyppiä '%1$@' kohdassa %2$@ ei tueta tässä renderöintikomponentissa."
           }
         },
         "fr": {
@@ -4525,6 +5797,12 @@
             "value": "O tipo '%1$@' em %2$@ não é compatível com este renderizador."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipul „%1$@” la %2$@ nu este acceptat de acest modul de redare."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4547,6 +5825,12 @@
     },
     "Type declarations must be strings or nullable primitive unions.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Декларациите на типове трябва да бъдат низове или обединения от примитивни типове, допускащи null."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4557,6 +5841,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Las declaraciones de tipo deben ser cadenas o uniones de tipos primitivos que admitan valores nulos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tyyppimääritysten on oltava merkkijonoja tai primitiivityyppien unioneja, jotka sallivat null-arvon."
           }
         },
         "fr": {
@@ -4589,6 +5879,12 @@
             "value": "As declarações de tipo devem ser strings ou uniões de tipos primitivos anuláveis."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Declarațiile de tip trebuie să fie șiruri sau uniuni de tipuri primitive care permit valori nule."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4611,6 +5907,12 @@
     },
     "Union types are only supported for nullable primitives.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обединените типове се поддържат само за примитивни типове, допускащи null."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4621,6 +5923,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Los tipos de unión solo se admiten para tipos primitivos que admitan valores nulos."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unionityyppejä tuetaan vain null-arvon salliville primitiivityypeille."
           }
         },
         "fr": {
@@ -4653,6 +5961,12 @@
             "value": "Os tipos de união são compatíveis apenas com tipos primitivos anuláveis."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipurile uniune sunt acceptate numai pentru tipurile primitive care permit valori nule."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4675,6 +5989,12 @@
     },
     "Unresolved Reference": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неразрешена препратка"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4685,6 +6005,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Referencia sin resolver"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ratkaisematon viittaus"
           }
         },
         "fr": {
@@ -4717,6 +6043,12 @@
             "value": "Referência não resolvida"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referință nerezolvată"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4739,6 +6071,12 @@
     },
     "Unsaved signature drawing": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Незапазен ръкописен подпис"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4749,6 +6087,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dibujo de firma sin guardar"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tallentamaton allekirjoituspiirros"
           }
         },
         "fr": {
@@ -4781,6 +6125,12 @@
             "value": "Desenho de assinatura não salvo"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desen de semnătură nesalvat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4803,6 +6153,12 @@
     },
     "Unsupported Keyword": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неподдържана ключова дума"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4813,6 +6169,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Palabra clave no compatible"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avainsanaa ei tueta"
           }
         },
         "fr": {
@@ -4845,6 +6207,12 @@
             "value": "Palavra-chave não compatível"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuvânt-cheie neacceptat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4867,6 +6235,12 @@
     },
     "Unsupported Schema Shape": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неподдържана структура на схемата"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4877,6 +6251,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estructura de esquema no compatible"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skeeman muotoa ei tueta"
           }
         },
         "fr": {
@@ -4909,6 +6289,12 @@
             "value": "Estrutura de esquema não compatível"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formă de schemă neacceptată"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4931,6 +6317,12 @@
     },
     "Unsupported Type": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неподдържан тип"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4941,6 +6333,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tipo no compatible"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tyyppiä ei tueta"
           }
         },
         "fr": {
@@ -4973,6 +6371,12 @@
             "value": "Tipo não compatível"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tip neacceptat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -4995,6 +6399,12 @@
     },
     "Untitled JSON Form": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JSON формуляр без заглавие"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5005,6 +6415,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Formulario JSON sin título"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimetön JSON-lomake"
           }
         },
         "fr": {
@@ -5037,6 +6453,12 @@
             "value": "Formulário JSON sem título"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formular JSON fără titlu"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5059,6 +6481,12 @@
     },
     "Upload did not return a URL.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Качването не върна URL адрес."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5069,6 +6497,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La carga no devolvió ninguna URL."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähetys ei palauttanut URL-osoitetta."
           }
         },
         "fr": {
@@ -5101,6 +6535,12 @@
             "value": "O envio não retornou uma URL."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încărcarea nu a returnat nicio adresă URL."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5123,6 +6563,12 @@
     },
     "Upload did not return any URLs.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Качването не върна URL адреси."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5133,6 +6579,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La carga no devolvió ninguna URL."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähetys ei palauttanut yhtään URL-osoitetta."
           }
         },
         "fr": {
@@ -5165,6 +6617,12 @@
             "value": "O envio não retornou nenhuma URL."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încărcarea nu a returnat nicio adresă URL."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5187,6 +6645,12 @@
     },
     "Upload unavailable": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Качването не е достъпно"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5197,6 +6661,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carga no disponible"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähetys ei ole käytettävissä"
           }
         },
         "fr": {
@@ -5229,6 +6699,12 @@
             "value": "Envio indisponível"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încărcare indisponibilă"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5251,6 +6727,12 @@
     },
     "Upload unavailable because no upload handler is configured.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Качването не е достъпно, защото не е конфигуриран обработчик за качване."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5261,6 +6743,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La carga no está disponible porque no hay ningún controlador de carga configurado."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähetys ei ole käytettävissä, koska lähetyskäsittelijää ei ole määritetty."
           }
         },
         "fr": {
@@ -5293,6 +6781,12 @@
             "value": "O envio está indisponível porque nenhum manipulador de upload foi configurado."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încărcarea nu este disponibilă deoarece nu este configurată nicio funcție de gestionare a încărcării."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5315,6 +6809,12 @@
     },
     "Upload unavailable.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Качването не е достъпно."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5325,6 +6825,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "La carga no está disponible."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähetys ei ole käytettävissä."
           }
         },
         "fr": {
@@ -5357,6 +6863,12 @@
             "value": "Envio indisponível."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încărcarea nu este disponibilă."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5379,6 +6891,12 @@
     },
     "Uploading": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Качване"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5389,6 +6907,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subiendo"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähetetään"
           }
         },
         "fr": {
@@ -5421,6 +6945,12 @@
             "value": "Enviando"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se încarcă"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5443,6 +6973,12 @@
     },
     "Uploads the drawn signature and stores the returned URL.": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Качва нарисувания подпис и съхранява върнатия URL адрес."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5453,6 +6989,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carga la firma dibujada y guarda la URL devuelta."
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lähettää piirretyn allekirjoituksen ja tallentaa palautetun URL-osoitteen."
           }
         },
         "fr": {
@@ -5485,6 +7027,12 @@
             "value": "Envia a assinatura desenhada e armazena a URL retornada."
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Încarcă semnătura desenată și stochează adresa URL returnată."
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5507,6 +7055,12 @@
     },
     "false": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "невярно"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5517,6 +7071,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "falso"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "epätosi"
           }
         },
         "fr": {
@@ -5549,6 +7109,12 @@
             "value": "falso"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "fals"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5571,6 +7137,12 @@
     },
     "true": {
       "localizations": {
+        "bg": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "вярно"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5581,6 +7153,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "verdadero"
+          }
+        },
+        "fi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tosi"
           }
         },
         "fr": {
@@ -5613,6 +7191,12 @@
             "value": "verdadeiro"
           }
         },
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "adevărat"
+          }
+        },
         "ru": {
           "stringUnit": {
             "state": "translated",
@@ -5635,6 +7219,12 @@
     },
       "Value State": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Състояние на стойността"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -5645,6 +7235,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Estado del valor"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Arvon tila"
             }
           },
           "fr": {
@@ -5677,6 +7273,12 @@
               "value": "Estado do valor"
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Starea valorii"
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -5699,6 +7301,12 @@
       },
       "Value": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Стойност"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -5709,6 +7317,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Valor"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Arvo"
             }
           },
           "fr": {
@@ -5741,6 +7355,12 @@
               "value": "Valor"
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Valoare"
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -5763,6 +7383,12 @@
       },
       "Not Set": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Не е зададено"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -5773,6 +7399,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "No establecido"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Ei asetettu"
             }
           },
           "fr": {
@@ -5805,6 +7437,12 @@
               "value": "Não definido"
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Nesetat"
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -5827,6 +7465,12 @@
       },
       "No items added yet.": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Все още няма добавени елементи."
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -5837,6 +7481,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Aún no se han añadido elementos."
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Kohteita ei ole vielä lisätty."
             }
           },
           "fr": {
@@ -5869,6 +7519,12 @@
               "value": "Nenhum item adicionado ainda."
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Nu a fost adăugat încă niciun element."
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -5891,6 +7547,12 @@
       },
       "Add": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Добави"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -5901,6 +7563,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Agregar"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Lisää"
             }
           },
           "fr": {
@@ -5933,6 +7601,12 @@
               "value": "Adicionar"
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Adăugați"
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -5955,6 +7629,12 @@
       },
       "Remove": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Премахни"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -5965,6 +7645,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Eliminar"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Poista"
             }
           },
           "fr": {
@@ -5997,6 +7683,12 @@
               "value": "Remover"
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Eliminați"
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -6019,6 +7711,12 @@
       },
       "Minimum items:": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Минимален брой елементи:"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -6029,6 +7727,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Mínimo de elementos:"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Vähimmäismäärä:"
             }
           },
           "fr": {
@@ -6061,6 +7765,12 @@
               "value": "Mínimo de itens:"
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Număr minim de elemente:"
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -6083,6 +7793,12 @@
       },
       "Maximum items:": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Максимален брой елементи:"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -6093,6 +7809,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "Máximo de elementos:"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Enimmäismäärä:"
             }
           },
           "fr": {
@@ -6125,6 +7847,12 @@
               "value": "Máximo de itens:"
             }
           },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Număr maxim de elemente:"
+            }
+          },
           "ru": {
             "stringUnit": {
               "state": "translated",
@@ -6147,6 +7875,12 @@
       },
       "%@ at %@: %@": {
         "localizations": {
+          "bg": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "%1$@ в %2$@: %3$@"
+            }
+          },
           "en": {
             "stringUnit": {
               "state": "translated",
@@ -6157,6 +7891,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "%1$@ en %2$@: %3$@"
+            }
+          },
+          "fi": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "%1$@ kohdassa %2$@: %3$@"
             }
           },
           "fr": {
@@ -6187,6 +7927,12 @@
             "stringUnit": {
               "state": "translated",
               "value": "%1$@ em %2$@: %3$@"
+            }
+          },
+          "ro": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "%1$@ la %2$@: %3$@"
             }
           },
           "ru": {
