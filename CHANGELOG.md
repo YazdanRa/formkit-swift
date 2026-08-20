@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.0](https://github.com/YazdanRa/formkit-swift/compare/v1.3.2...v1.4.0) (2026-08-20)
+
+
+### Features
+
+* **formkit:** expand form rendering support ([1f7a521](https://github.com/YazdanRa/formkit-swift/commit/1f7a52173678baa0fba46af0a11c958709909d8e))
+* **formkit:** expand form rendering support ([8e341ff](https://github.com/YazdanRa/formkit-swift/commit/8e341fff7fe1d0f5cb00379a7faa05b7e3da2030))
+* **renderer:** support explicit property ordering ([#20](https://github.com/YazdanRa/formkit-swift/issues/20)) ([193e733](https://github.com/YazdanRa/formkit-swift/commit/193e733568d47ee862576ee5bc69a87672b14fde))
+
 ## [1.3.2](https://github.com/YazdanRa/formkit-swift/compare/v1.3.1...v1.3.2) (2026-08-18)
 
 
