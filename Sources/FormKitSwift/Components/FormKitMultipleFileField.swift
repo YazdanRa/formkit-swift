@@ -131,7 +131,9 @@ struct FormKitMultipleFileField: View {
             onCompletion: handleImportResult
         )
     }
+}
 
+private extension FormKitMultipleFileField {
     private var currentValues: [FormKitJSONValue] {
         session.arrayValue(for: section) ?? []
     }
@@ -203,7 +205,9 @@ struct FormKitMultipleFileField: View {
             && !section.isDisabled
             && currentValues.count > descriptor.minItems
     }
+}
 
+private extension FormKitMultipleFileField {
     private func handleImportResult(_ result: Result<[URL], Error>) {
         guard let uploadHandler else {
             uploadError = String(localized: "Upload unavailable.", bundle: .module)
@@ -292,7 +296,9 @@ struct FormKitMultipleFileField: View {
     private func displayName(for urlString: String) -> String {
         URL(string: urlString)?.lastPathComponent.formKitNonEmpty ?? urlString
     }
+}
 
+extension FormKitMultipleFileField {
     static func replacingVacancies(
         in values: [FormKitJSONValue],
         with uploads: [FormKitJSONValue],

@@ -137,8 +137,27 @@ public enum FormKitJSONValue: Codable, Equatable, Sendable {
     }
 
     var jsonSchemaValue: JSONSchema.JSONValue {
-        let data = try! JSONEncoder().encode(self)
-        return try! JSONDecoder().decode(JSONSchema.JSONValue.self, from: data)
+        switch self {
+        case .object(let value):
+            return .object(.init(uniqueKeysWithValues: value.map {
+                ($0.key, $0.value.jsonSchemaValue)
+            }))
+        case .array(let value):
+            return .array(value.map(\.jsonSchemaValue))
+        case .string(let value):
+            return .string(value)
+        case .integer(let value):
+            return .integer(value)
+        case .number(let value):
+            if let value = Int(exactly: value) {
+                return .integer(value)
+            }
+            return .number(value)
+        case .boolean(let value):
+            return .boolean(value)
+        case .null:
+            return .null
+        }
     }
 
     var primitive: PrimitiveKind {

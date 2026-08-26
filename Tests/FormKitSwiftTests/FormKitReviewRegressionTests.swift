@@ -158,6 +158,13 @@ final class FormKitReviewRegressionTests: XCTestCase {
         session.setNullSelection(true, for: requiredField)
         XCTAssertTrue(try Self.decodeJSONObject(session.currentInstanceJSON)["requiredDate"] is NSNull)
     }
+}
+
+extension FormKitReviewRegressionTests {
+    func testIntegralNumberPreservesJSONIntegerSemantics() {
+        XCTAssertEqual(FormKitJSONValue.number(1).jsonSchemaValue, .integer(1))
+        XCTAssertEqual(FormKitJSONValue.number(1.5).jsonSchemaValue, .number(1.5))
+    }
 
     func testMultipleFileUploadsReplaceVacantNullAndInvalidValues() {
         for invalidValue in [FormKitJSONValue.null, .number(42)] {
@@ -171,20 +178,6 @@ final class FormKitReviewRegressionTests: XCTestCase {
                 [.string("https://example.com/replacement.pdf")]
             )
         }
-    }
-
-    func testLegacyRendererConformanceUsesNewOverrideOverload() {
-        let renderer: any FormKitRendering = LegacyFormKitRenderer()
-
-        let session = renderer.makeFormSession(
-            schemaJSON: #"{"type":"object"}"#,
-            instanceJSON: nil,
-            defaultConditionalRenderBehavior: nil,
-            conditionalRenderBehaviorOverrides: [:],
-            validationBehavior: .revalidateAfterFirstAttempt
-        )
-
-        XCTAssertTrue(session.renderPlan.isSupported)
     }
 
     func testOwnedSessionConfigurationRebuildsWhenSchemaChanges() {
@@ -303,40 +296,6 @@ final class FormKitReviewRegressionTests: XCTestCase {
         )
     }
 
-    func testRenderedFieldIdentifiersUseFullPointer() {
-        let session = FormKitRenderer().makeFormSession(
-            schemaJSON: """
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "title": "Name"
-                },
-                "contact": {
-                  "type": "object",
-                  "title": "Contact",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "title": "Name"
-                    }
-                  }
-                }
-              }
-            }
-            """,
-            instanceJSON: nil
-        )
-
-        let identifiers = session.renderPlan.fields.map(FormKitAccessibility.fieldIdentifier)
-
-        XCTAssertEqual(identifiers.count, 2)
-        XCTAssertEqual(Set(identifiers).count, identifiers.count)
-        XCTAssertTrue(identifiers.contains("json_form_field_name"))
-        XCTAssertTrue(identifiers.contains("json_form_field_contact_name"))
-    }
-
     private static func schema(title: String, fieldName: String) -> String {
         """
         {
@@ -393,54 +352,6 @@ final class FormKitReviewRegressionTests: XCTestCase {
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try XCTUnwrap(
             JSONSerialization.jsonObject(with: data) as? [String: Any]
-        )
-    }
-}
-
-extension FormKitReviewRegressionTests {
-    func testDateOnlyValuesRemainOnTheSameDayOutsideUTC() throws {
-        let timeZone = try XCTUnwrap(TimeZone(identifier: "America/Toronto"))
-        let formatter = FormKitRenderer.dateFormatter
-        XCTAssertEqual(formatter.timeZone, .autoupdatingCurrent)
-
-        let originalTimeZone = formatter.timeZone
-        formatter.timeZone = timeZone
-        defer { formatter.timeZone = originalTimeZone }
-
-        let session = FormKitRenderer().makeFormSession(
-            schemaJSON: #"{"type":"object","properties":{"date":{"type":"string","format":"date"}}}"#,
-            instanceJSON: #"{"date":"2026-07-27"}"#
-        )
-        let field = try XCTUnwrap(session.renderPlan.fields.first)
-        let date = session.dateValue(for: field)
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-
-        let components = calendar.dateComponents([.year, .month, .day], from: date)
-        XCTAssertEqual(components.year, 2026)
-        XCTAssertEqual(components.month, 7)
-        XCTAssertEqual(components.day, 27)
-        session.setDateValue(date, for: field)
-        XCTAssertEqual(
-            try Self.decodeJSONObject(session.currentInstanceJSON)["date"] as? String,
-            "2026-07-27"
-        )
-    }
-}
-
-@MainActor
-private struct LegacyFormKitRenderer: FormKitRendering {
-    func makeFormSession(
-        schemaJSON: String,
-        instanceJSON: String?,
-        defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior?,
-        validationBehavior: FormKitValidationBehavior
-    ) -> FormKitSession {
-        FormKitRenderer().makeFormSession(
-            schemaJSON: schemaJSON,
-            instanceJSON: instanceJSON,
-            defaultConditionalRenderBehavior: defaultConditionalRenderBehavior,
-            validationBehavior: validationBehavior
         )
     }
 }

@@ -1,5 +1,3 @@
-baseline: .swiftlint.baseline
-
 excluded:
   - .build
 
