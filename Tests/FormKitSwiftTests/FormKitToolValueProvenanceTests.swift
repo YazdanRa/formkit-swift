@@ -33,12 +33,21 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
         XCTAssertEqual(initialContext.currentValues["/requiredBoolean"], .boolean(false))
         XCTAssertFalse(try XCTUnwrap(initialContext.currentValues["/requiredDate"]?.string).isEmpty)
 
+        var explicitObject = try decodeJSONObject(session.instanceJSONOmittingNonArrayDefaults)
+        XCTAssertEqual(explicitObject["initial"] as? Bool, false)
+        XCTAssertNil(explicitObject["requiredEnum"])
+        XCTAssertNil(explicitObject["requiredBoolean"])
+        XCTAssertNil(explicitObject["requiredDate"])
+        XCTAssertNil(explicitObject["schemaDefault"])
+
         let initialJSON = session.currentInstanceJSON
         _ = session.applyToolEdits([
             FormKitToolEdit(pointer: "/requiredEnum", operation: .set, value: .string("Low"))
         ])
         assertSource(.sessionEdit, at: "/requiredEnum", in: session.makeToolContext())
         XCTAssertEqual(session.currentInstanceJSON, initialJSON)
+        explicitObject = try decodeJSONObject(session.instanceJSONOmittingNonArrayDefaults)
+        XCTAssertEqual(explicitObject["requiredEnum"] as? String, "Low")
     }
 
     func testArrayAppendAndRemovalPreservePerValueSources() throws {
@@ -190,6 +199,11 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
             file: file,
             line: line
         )
+    }
+
+    private func decodeJSONObject(_ json: String) throws -> [String: Any] {
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 
     private static let arraySchema = """
