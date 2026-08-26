@@ -409,7 +409,9 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
                     }
                 )
             } != nil
-            let source: FormKitToolValueSource = hasUsableSuppliedValue ? .sessionEdit : .defaultValue
+            let source = hasUsableSuppliedValue
+                ? FormKitToolValueSource.sessionEdit
+                : toolValueSource(for: field) ?? .defaultValue
             return (field.pointer, source)
         })
     }
@@ -436,6 +438,13 @@ public func appendArrayRow(to section: FormKitRenderPlan.SectionDescriptor) {
             into: &instance
         )
         applyInstance(instance)
+        let newRowPrefix = "\(arrayDescriptor.pointer)/\(nextIndex)"
+        for field in orderedFields where
+            (field.pointer == newRowPrefix || field.pointer.hasPrefix("\(newRowPrefix)/")) &&
+            primitiveValue(for: field) != nil
+        {
+            toolValueSourceOverrides[field.pointer] = .defaultValue
+        }
     }
 
 public func removeArrayRow(

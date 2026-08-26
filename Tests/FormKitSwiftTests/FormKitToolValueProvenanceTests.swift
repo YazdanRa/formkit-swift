@@ -65,10 +65,24 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
         assertSource(.initialInstance, at: "/items/0/name", in: removedContext)
         assertSource(.sessionEdit, at: "/items/0/confirmed", in: removedContext)
         assertSource(.defaultValue, at: "/items/1/name", in: removedContext)
+
+        let removedSection = try section(in: session)
+        session.removeArrayRow(
+            try XCTUnwrap(removedSection.arrayDescriptor?.rows.last),
+            from: removedSection
+        )
+        session.appendArrayRow(to: try section(in: session))
+        assertSource(.defaultValue, at: "/items/1/name", in: session.makeToolContext())
     }
 
     func testArrayReplacementDistinguishesExplicitAndGeneratedValues() throws {
-        let session = makeArraySession()
+        let restoredSession = makeArraySession()
+        restoredSession.setArrayValue([.object(["name": .null])], for: try section(in: restoredSession))
+        let restoredContext = restoredSession.makeToolContext()
+        assertSource(.initialInstance, at: "/items/0/name", in: restoredContext)
+        XCTAssertEqual(restoredContext.currentValues["/items/0/name"], .string("First"))
+
+        let session = makeArraySession(instanceJSON: nil)
         session.setArrayValue([.object([:])], for: try section(in: session))
         assertSource(.defaultValue, at: "/items/0/name", in: session.makeToolContext())
         assertSource(.defaultValue, at: "/items/0/confirmed", in: session.makeToolContext())
@@ -86,27 +100,13 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
     }
 
     private func makeArraySession() -> FormKitSession {
+        makeArraySession(instanceJSON: Self.arrayInstance)
+    }
+
+    private func makeArraySession(instanceJSON: String?) -> FormKitSession {
         FormKitRenderer().makeFormSession(
-            schemaJSON: """
-            {
-              "type": "object",
-              "properties": {
-                "items": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": { "type": "string", "default": "Generated" },
-                      "confirmed": { "type": "boolean", "default": false }
-                    }
-                  }
-                }
-              }
-            }
-            """,
-            instanceJSON: """
-            {"items":[{"name":"First","confirmed":false},{"name":"Second","confirmed":false}]}
-            """
+            schemaJSON: Self.arraySchema,
+            instanceJSON: instanceJSON
         )
     }
 
@@ -128,4 +128,26 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
             line: line
         )
     }
+
+    private static let arraySchema = """
+    {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "default": "Generated" },
+              "confirmed": { "type": "boolean", "default": false }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    private static let arrayInstance = """
+    {"items":[{"name":"First","confirmed":false},{"name":"Second","confirmed":false}]}
+    """
 }
