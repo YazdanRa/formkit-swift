@@ -2332,14 +2332,17 @@ final class FormKitRendererTests: XCTestCase {
                   "type": "array",
                   "items": {
                     "type": "object",
-                    "properties": { "name": { "type": "string" } }
+                    "properties": {
+                      "name": { "type": "string", "default": "Generated" },
+                      "confirmed": { "type": "boolean", "default": false }
+                    }
                   }
                 }
               },
               "required": ["initial", "requiredEnum", "requiredBoolean", "requiredDate"]
             }
             """,
-            instanceJSON: #"{"initial":false}"#
+            instanceJSON: #"{"initial":false,"items":[{"name":"First","confirmed":false},{"name":"Second","confirmed":false}]}"#
         )
 
         let initialContext = session.makeToolContext()
@@ -2389,10 +2392,80 @@ final class FormKitRendererTests: XCTestCase {
         let itemsSection = try XCTUnwrap(
             session.renderPlan.sections.first { $0.propertyKey == "items" }
         )
-        session.setArrayValue([.object(["name": .string("Replacement")])], for: itemsSection)
+        let secondConfirmedField = try XCTUnwrap(
+            session.renderPlan.fields.first { $0.pointer == "#/items/1/confirmed" },
+            "Fields: \(session.renderPlan.fields.map(\.pointer))"
+        )
+        session.setBooleanValue(false, for: secondConfirmedField)
+        session.appendArrayRow(to: itemsSection)
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/name" }?.valueSource,
+            .initialInstance
+        )
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/1/name" }?.valueSource,
+            .initialInstance
+        )
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/2/name" }?.valueSource,
+            .defaultValue
+        )
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/2/confirmed" }?.valueSource,
+            .defaultValue
+        )
+
+        let appendedItemsSection = try XCTUnwrap(
+            session.renderPlan.sections.first { $0.propertyKey == "items" }
+        )
+        let firstRow = try XCTUnwrap(appendedItemsSection.arrayDescriptor?.rows.first)
+        session.removeArrayRow(firstRow, from: appendedItemsSection)
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/name" }?.valueSource,
+            .initialInstance
+        )
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/confirmed" }?.valueSource,
+            .sessionEdit
+        )
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/1/name" }?.valueSource,
+            .defaultValue
+        )
+
+        let currentItemsSection = try XCTUnwrap(
+            session.renderPlan.sections.first { $0.propertyKey == "items" }
+        )
+        session.setArrayValue([.object([:])], for: currentItemsSection)
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/name" }?.valueSource,
+            .defaultValue
+        )
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/confirmed" }?.valueSource,
+            .defaultValue
+        )
+
+        let defaultedItemsSection = try XCTUnwrap(
+            session.renderPlan.sections.first { $0.propertyKey == "items" }
+        )
+        session.setArrayValue([.object(["name": .null])], for: defaultedItemsSection)
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/name" }?.valueSource,
+            .defaultValue
+        )
+
+        let fallbackItemsSection = try XCTUnwrap(
+            session.renderPlan.sections.first { $0.propertyKey == "items" }
+        )
+        session.setArrayValue([.object(["name": .string("Replacement")])], for: fallbackItemsSection)
         XCTAssertEqual(
             session.makeToolContext().fields.first { $0.pointer == "/items/0/name" }?.valueSource,
             .sessionEdit
+        )
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/confirmed" }?.valueSource,
+            .defaultValue
         )
     }
 
