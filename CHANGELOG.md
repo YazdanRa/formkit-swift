@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/YazdanRa/formkit-swift/compare/v1.4.0...v1.4.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **tools:** expose form value provenance ([#22](https://github.com/YazdanRa/formkit-swift/issues/22)) ([74fe747](https://github.com/YazdanRa/formkit-swift/commit/74fe747e3a3bf1b66dbdabb79b15833634aa851e))
+
 ## [1.4.0](https://github.com/YazdanRa/formkit-swift/compare/v1.3.2...v1.4.0) (2026-08-20)
 
 
