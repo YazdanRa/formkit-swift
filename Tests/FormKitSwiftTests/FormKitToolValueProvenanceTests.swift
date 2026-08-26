@@ -77,6 +77,11 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
 
     func testArrayReplacementDistinguishesExplicitAndGeneratedValues() throws {
         let restoredSession = makeArraySession()
+        restoredSession.setArrayValue([.object([:])], for: try section(in: restoredSession))
+        let defaultedContext = restoredSession.makeToolContext()
+        assertSource(.defaultValue, at: "/items/0/name", in: defaultedContext)
+        XCTAssertEqual(defaultedContext.currentValues["/items/0/name"], .string("Generated"))
+
         restoredSession.setArrayValue([.object(["name": .null])], for: try section(in: restoredSession))
         let restoredContext = restoredSession.makeToolContext()
         assertSource(.initialInstance, at: "/items/0/name", in: restoredContext)
