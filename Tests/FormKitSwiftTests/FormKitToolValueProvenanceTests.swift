@@ -104,6 +104,64 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
         assertSource(.defaultValue, at: "/items/0/confirmed", in: context)
     }
 
+    func testRematerializingDefaultPreservesUnrelatedSessionAndHiddenValues() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: Self.conditionalSchema,
+            instanceJSON: #"{"mode":"advanced","code":"Legacy","notes":"Original","fallback":"Keep"}"#
+        )
+        let notes = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/notes" })
+        let code = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/code" })
+        session.setStringValue("Edited", for: notes)
+
+        XCTAssertTrue(session.rematerializeDefaultValue(for: code))
+        var context = session.makeToolContext()
+        XCTAssertEqual(context.currentValues["/code"], .string("Current"))
+        assertSource(.defaultValue, at: "/code", in: context)
+        assertSource(.sessionEdit, at: "/notes", in: context)
+
+        let mode = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/mode" })
+        session.setSelectedEnumChoiceID("string:basic", for: mode)
+        context = session.makeToolContext()
+        XCTAssertEqual(context.currentValues["/fallback"], .string("Keep"))
+        assertSource(.initialInstance, at: "/fallback", in: context)
+
+        let currentMode = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/mode" })
+        session.setSelectedEnumChoiceID("string:advanced", for: currentMode)
+        context = session.makeToolContext()
+        XCTAssertEqual(context.currentValues["/code"], .string("Current"))
+        assertSource(.defaultValue, at: "/code", in: context)
+        XCTAssertEqual(context.currentValues["/notes"], .string("Edited"))
+        assertSource(.sessionEdit, at: "/notes", in: context)
+    }
+
+    func testRematerializingDefaultRejectsEditedValue() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: Self.conditionalSchema,
+            instanceJSON: #"{"mode":"advanced","code":"Legacy"}"#
+        )
+        let code = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/code" })
+        session.setStringValue("Confirmed", for: code)
+
+        XCTAssertFalse(session.rematerializeDefaultValue(for: code))
+        XCTAssertEqual(session.makeToolContext().currentValues["/code"], .string("Confirmed"))
+        assertSource(.sessionEdit, at: "/code", in: session.makeToolContext())
+    }
+
+    func testRematerializingDefaultRejectsStaleHiddenField() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: Self.conditionalSchema,
+            instanceJSON: #"{"mode":"advanced","code":"Legacy"}"#
+        )
+        let code = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/code" })
+        let mode = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/mode" })
+        session.setSelectedEnumChoiceID("string:basic", for: mode)
+
+        XCTAssertFalse(session.rematerializeDefaultValue(for: code))
+        let currentMode = try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/mode" })
+        session.setSelectedEnumChoiceID("string:advanced", for: currentMode)
+        XCTAssertEqual(session.makeToolContext().currentValues["/code"], .string("Legacy"))
+    }
+
     private func makeArraySession() -> FormKitSession {
         makeArraySession(instanceJSON: Self.arrayInstance)
     }
@@ -154,5 +212,27 @@ final class FormKitToolValueProvenanceTests: XCTestCase {
 
     private static let arrayInstance = """
     {"items":[{"name":"First","confirmed":false},{"name":"Second","confirmed":false}]}
+    """
+
+    private static let conditionalSchema = """
+    {
+      "type": "object",
+      "properties": {
+        "mode": { "type": "string", "enum": ["basic", "advanced"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["mode"],
+      "if": {
+        "properties": { "mode": { "const": "advanced" } },
+        "required": ["mode"]
+      },
+      "then": {
+        "properties": { "code": { "type": "string", "enum": ["Current", "Legacy"] } },
+        "required": ["code"]
+      },
+      "else": {
+        "properties": { "fallback": { "type": "string" } }
+      }
+    }
     """
 }
