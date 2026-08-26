@@ -2327,7 +2327,14 @@ final class FormKitRendererTests: XCTestCase {
                 "requiredBoolean": { "type": "boolean" },
                 "requiredDate": { "type": "string", "format": "date" },
                 "schemaDefault": { "type": "string", "default": "Standard" },
-                "missing": { "type": "string" }
+                "missing": { "type": "string" },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": { "name": { "type": "string" } }
+                  }
+                }
               },
               "required": ["initial", "requiredEnum", "requiredBoolean", "requiredDate"]
             }
@@ -2378,6 +2385,15 @@ final class FormKitRendererTests: XCTestCase {
         )
         XCTAssertEqual(session.currentInstanceJSON, initialInstanceJSON)
         XCTAssertEqual(editedContext.summary, initialSummary)
+
+        let itemsSection = try XCTUnwrap(
+            session.renderPlan.sections.first { $0.propertyKey == "items" }
+        )
+        session.setArrayValue([.object(["name": .string("Replacement")])], for: itemsSection)
+        XCTAssertEqual(
+            session.makeToolContext().fields.first { $0.pointer == "/items/0/name" }?.valueSource,
+            .sessionEdit
+        )
     }
 
     func testToolEditsApplySetClearAndRejectLockedPointers() throws {

@@ -115,7 +115,10 @@ public func primitiveValue(for field: FormKitFieldDescriptor) -> FormKitFieldDes
             return nil
         }
 
-        if touchedFieldIDs.contains(field.id) {
+        if touchedFieldIDs.contains(field.id) || renderPlan.sections.contains(where: { section in
+            touchedArrayIDs.contains(section.id) &&
+                (field.pointer == section.pointer || field.pointer.hasPrefix("\(section.pointer)/"))
+        }) {
             return .sessionEdit
         }
 
