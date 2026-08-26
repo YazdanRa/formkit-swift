@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/YazdanRa/formkit-swift/compare/v1.4.1...v1.5.0) (2026-08-26)
+
+
+### Features
+
+* **session:** rematerialize current default values ([#25](https://github.com/YazdanRa/formkit-swift/issues/25)) ([9b06879](https://github.com/YazdanRa/formkit-swift/commit/9b068799d7757dee61ded990f965b02ee367f712))
+
 ## [1.4.1](https://github.com/YazdanRa/formkit-swift/compare/v1.4.0...v1.4.1) (2026-08-26)
 
 
