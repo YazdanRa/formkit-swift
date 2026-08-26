@@ -167,6 +167,26 @@ public extension FormKitSession {
         handleFieldEdit(for: field)
     }
 
+    /// Replaces an untouched initial value with the field's current schema or control default.
+    @discardableResult
+    func rematerializeDefaultValue(for suppliedField: FormKitFieldDescriptor) -> Bool {
+        guard let field = fieldsByID[suppliedField.id],
+              field == suppliedField,
+              field.isVisible,
+              field.isInteractive,
+              toolValueSource(for: field) == .initialInstance,
+              let defaultValue = seededValue(for: field, preferInitialInstance: false),
+              primitiveValue(for: field) != defaultValue
+        else {
+            return false
+        }
+
+        fieldValues[field.id] = defaultValue
+        toolValueSourceOverrides[field.pointer] = .defaultValue
+        handleFieldEdit(for: field)
+        return true
+    }
+
     func selectedEnumChoiceID(for field: FormKitFieldDescriptor) -> String? {
         guard let value = primitiveValue(for: field) else {
             return nil
