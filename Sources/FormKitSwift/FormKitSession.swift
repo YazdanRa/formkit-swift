@@ -376,27 +376,9 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
 
         applyInstance(instance)
 
-        let nextValueSources = valueSources ?? Dictionary(
-            uniqueKeysWithValues: orderedFields.compactMap { field in
-                guard field.pointer.hasPrefix(descendantPrefix),
-                      primitiveValue(for: field) != nil
-                else {
-                    return nil
-                }
-                let suppliedValue = instance.value(at: JSONPointer(from: field.pointer))
-                let hasUsableSuppliedValue = suppliedValue.flatMap { rawValue in
-                    primitiveValue(
-                        from: rawValue,
-                        scalarType: field.scalarType,
-                        allowsNull: field.allowsNull,
-                        normalizesEmptyText: !field.enumOptions.contains {
-                            jsonValue(from: $0.value) == rawValue
-                        }
-                    )
-                } != nil
-                let source: FormKitToolValueSource = hasUsableSuppliedValue ? .sessionEdit : .defaultValue
-                return (field.pointer, source)
-            }
+        let nextValueSources = valueSources ?? toolValueSources(
+            afterReplacingArrayIn: instance,
+            descendantPrefix: descendantPrefix
         )
         let visibleValuePointers = Set(
             orderedFields.compactMap { primitiveValue(for: $0) == nil ? nil : $0.pointer }
@@ -404,6 +386,32 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
         toolValueSourceOverrides.merge(
             nextValueSources.filter { visibleValuePointers.contains($0.key) }
         ) { _, new in new }
+    }
+
+    private func toolValueSources(
+        afterReplacingArrayIn instance: FormKitJSONValue,
+        descendantPrefix: String
+    ) -> [String: FormKitToolValueSource] {
+        Dictionary(uniqueKeysWithValues: orderedFields.compactMap { field in
+            guard field.pointer.hasPrefix(descendantPrefix),
+                  primitiveValue(for: field) != nil
+            else {
+                return nil
+            }
+            let suppliedValue = instance.value(at: JSONPointer(from: field.pointer))
+            let hasUsableSuppliedValue = suppliedValue.flatMap { rawValue in
+                primitiveValue(
+                    from: rawValue,
+                    scalarType: field.scalarType,
+                    allowsNull: field.allowsNull,
+                    normalizesEmptyText: !field.enumOptions.contains {
+                        jsonValue(from: $0.value) == rawValue
+                    }
+                )
+            } != nil
+            let source: FormKitToolValueSource = hasUsableSuppliedValue ? .sessionEdit : .defaultValue
+            return (field.pointer, source)
+        })
     }
 
 public func appendArrayRow(to section: FormKitRenderPlan.SectionDescriptor) {
@@ -455,7 +463,10 @@ public func removeArrayRow(
             .reduce(into: [String: FormKitToolValueSource]()) { sources, existingRow in
                 let nextIndex = existingRow.index > row.index ? existingRow.index - 1 : existingRow.index
                 let nextRowPointer = "\(arrayDescriptor.pointer)/\(nextIndex)"
-                for field in orderedFields where field.pointer == existingRow.pointer || field.pointer.hasPrefix("\(existingRow.pointer)/") {
+                for field in orderedFields where
+                    field.pointer == existingRow.pointer ||
+                    field.pointer.hasPrefix("\(existingRow.pointer)/")
+                {
                     guard let source = toolValueSource(for: field) else {
                         continue
                     }
