@@ -53,6 +53,7 @@ public private(set) var formErrorMessage: String?
     private var touchedFieldIDs: Set<String> = []
     private var touchedArrayIDs: Set<String> = []
     private var pendingConcreteFieldIDs: Set<String> = []
+    private var toolValueSourceOverrides: [String: FormKitToolValueSource] = [:]
 
     init(
         renderPlan: FormKitRenderPlan,
@@ -108,6 +109,36 @@ public func primitiveValue(for field: FormKitFieldDescriptor) -> FormKitFieldDes
         }
 
         return seededValue(for: field)
+    }
+
+    func toolValueSource(for field: FormKitFieldDescriptor) -> FormKitToolValueSource? {
+        guard primitiveValue(for: field) != nil else {
+            return nil
+        }
+
+        if touchedFieldIDs.contains(field.id) {
+            return .sessionEdit
+        }
+
+        if let source = toolValueSourceOverrides[field.pointer] {
+            return source
+        }
+
+        guard let initialInstance,
+              let initialValue = initialInstance.value(at: JSONPointer(from: field.pointer)),
+              primitiveValue(
+                from: initialValue,
+                scalarType: field.scalarType,
+                allowsNull: field.allowsNull,
+                normalizesEmptyText: !field.enumOptions.contains {
+                    jsonValue(from: $0.value) == initialValue
+                }
+              ) != nil
+        else {
+            return .defaultValue
+        }
+
+        return .initialInstance
     }
 
 public func isNullSelected(for field: FormKitFieldDescriptor) -> Bool {
@@ -294,6 +325,14 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
         _ value: [FormKitJSONValue]?,
         for section: FormKitRenderPlan.SectionDescriptor
     ) {
+        replaceArrayValue(value, for: section)
+    }
+
+    private func replaceArrayValue(
+        _ value: [FormKitJSONValue]?,
+        for section: FormKitRenderPlan.SectionDescriptor,
+        preserving valueSources: [String: FormKitToolValueSource]? = nil
+    ) {
         guard renderPlan.sections.contains(section),
               section.arrayDescriptor != nil,
               section.shouldSerialize,
@@ -312,6 +351,9 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
         let descendantPrefix = "\(section.pointer)/"
         touchedFieldIDs = touchedFieldIDs.filter {
             $0 != section.pointer && !$0.hasPrefix(descendantPrefix)
+        }
+        toolValueSourceOverrides = toolValueSourceOverrides.filter {
+            $0.key != section.pointer && !$0.key.hasPrefix(descendantPrefix)
         }
         let descendantArrayIDs = Set(
             renderPlan.sections
@@ -333,6 +375,49 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
         }
 
         applyInstance(instance)
+
+        let nextValueSources = valueSources ?? toolValueSources(
+            afterReplacingArrayIn: instance,
+            descendantPrefix: descendantPrefix
+        )
+        let visibleValuePointers = Set(
+            orderedFields.compactMap { primitiveValue(for: $0) == nil ? nil : $0.pointer }
+        )
+        toolValueSourceOverrides.merge(
+            nextValueSources.filter { visibleValuePointers.contains($0.key) }
+        ) { _, new in new }
+    }
+
+    private func toolValueSources(
+        afterReplacingArrayIn instance: FormKitJSONValue,
+        descendantPrefix: String
+    ) -> [String: FormKitToolValueSource] {
+        Dictionary(uniqueKeysWithValues: orderedFields.compactMap { field in
+            guard field.pointer.hasPrefix(descendantPrefix),
+                  primitiveValue(for: field) != nil
+            else {
+                return nil
+            }
+            let suppliedValue = instance.value(at: JSONPointer(from: field.pointer))
+            let hasUsableSuppliedValue = suppliedValue.flatMap { rawValue in
+                primitiveValue(
+                    from: rawValue,
+                    scalarType: field.scalarType,
+                    allowsNull: field.allowsNull,
+                    normalizesEmptyText: !field.enumOptions.contains {
+                        jsonValue(from: $0.value) == rawValue
+                    }
+                )
+            } != nil
+            let source: FormKitToolValueSource = if hasUsableSuppliedValue {
+                .sessionEdit
+            } else if fieldValues[field.id] != nil {
+                .defaultValue
+            } else {
+                toolValueSource(for: field) ?? .defaultValue
+            }
+            return (field.pointer, source)
+        })
     }
 
 public func appendArrayRow(to section: FormKitRenderPlan.SectionDescriptor) {
@@ -357,6 +442,13 @@ public func appendArrayRow(to section: FormKitRenderPlan.SectionDescriptor) {
             into: &instance
         )
         applyInstance(instance)
+        let newRowPrefix = "\(arrayDescriptor.pointer)/\(nextIndex)"
+        for field in orderedFields where
+            (field.pointer == newRowPrefix || field.pointer.hasPrefix("\(newRowPrefix)/")) &&
+            primitiveValue(for: field) != nil
+        {
+            toolValueSourceOverrides[field.pointer] = .defaultValue
+        }
     }
 
 public func removeArrayRow(
@@ -379,10 +471,27 @@ public func removeArrayRow(
             return
         }
 
+        let valueSources = arrayDescriptor.rows
+            .filter { $0.index != row.index }
+            .reduce(into: [String: FormKitToolValueSource]()) { sources, existingRow in
+                let nextIndex = existingRow.index > row.index ? existingRow.index - 1 : existingRow.index
+                let nextRowPointer = "\(arrayDescriptor.pointer)/\(nextIndex)"
+                for field in orderedFields where
+                    field.pointer == existingRow.pointer ||
+                    field.pointer.hasPrefix("\(existingRow.pointer)/")
+                {
+                    guard let source = toolValueSource(for: field) else {
+                        continue
+                    }
+                    let suffix = field.pointer.dropFirst(existingRow.pointer.count)
+                    sources["\(nextRowPointer)\(suffix)"] = source
+                }
+            }
         array.remove(at: row.index)
-        setArrayValue(
+        replaceArrayValue(
             array,
-            for: section
+            for: section,
+            preserving: valueSources
         )
     }
 

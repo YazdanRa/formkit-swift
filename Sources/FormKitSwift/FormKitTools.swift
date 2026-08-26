@@ -22,11 +22,23 @@ public struct FormKitToolContext: Equatable, Sendable {
     }
 }
 
+public enum FormKitToolValueSource: Equatable, Sendable {
+    /// The value was present in the instance used to create the session.
+    case initialInstance
+
+    /// The renderer supplied the value from the schema or a required-control fallback.
+    case defaultValue
+
+    /// The value was set or confirmed after the session was created.
+    case sessionEdit
+}
+
 public struct FormKitToolField: Equatable, Sendable {
     public let pointer: String
     public let title: String
     public let type: String
     public let isRequired: Bool
+    public let valueSource: FormKitToolValueSource?
     public let description: String?
     public let enumOptions: [String]
     public let isLocked: Bool
@@ -37,6 +49,7 @@ public struct FormKitToolField: Equatable, Sendable {
         title: String,
         type: String,
         isRequired: Bool,
+        valueSource: FormKitToolValueSource? = nil,
         description: String? = nil,
         enumOptions: [String] = [],
         isLocked: Bool = false,
@@ -46,6 +59,7 @@ public struct FormKitToolField: Equatable, Sendable {
         self.title = title
         self.type = type
         self.isRequired = isRequired
+        self.valueSource = valueSource
         self.description = description
         self.enumOptions = enumOptions
         self.isLocked = isLocked
@@ -126,6 +140,7 @@ public extension FormKitSession {
                 title: field.title,
                 type: field.isEnum ? "enum" : field.scalarType.rawValue,
                 isRequired: field.isRequired,
+                valueSource: toolValueSource(for: field),
                 description: field.description,
                 enumOptions: field.enumOptions.map(\.title),
                 isLocked: normalizedFocusedPointers.contains(normalizedToolPointer(pointer)),
