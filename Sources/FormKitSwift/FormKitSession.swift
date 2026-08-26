@@ -409,13 +409,12 @@ public func setDateValue(_ date: Date, for field: FormKitFieldDescriptor) {
                     }
                 )
             } != nil
-            let source: FormKitToolValueSource
-            if hasUsableSuppliedValue {
-                source = .sessionEdit
+            let source: FormKitToolValueSource = if hasUsableSuppliedValue {
+                .sessionEdit
             } else if fieldValues[field.id] != nil {
-                source = .defaultValue
+                .defaultValue
             } else {
-                source = toolValueSource(for: field) ?? .defaultValue
+                toolValueSource(for: field) ?? .defaultValue
             }
             return (field.pointer, source)
         })
