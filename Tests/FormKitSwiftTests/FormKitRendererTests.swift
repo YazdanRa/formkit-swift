@@ -2316,6 +2316,70 @@ final class FormKitRendererTests: XCTestCase {
         XCTAssertEqual(context.currentValues["/contact/sendUpdates"], .boolean(false))
     }
 
+    func testToolContextDistinguishesInitialDefaultAndEditedValues() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "initial": { "type": "boolean" },
+                "requiredEnum": { "type": "string", "enum": ["Low", "High"] },
+                "requiredBoolean": { "type": "boolean" },
+                "requiredDate": { "type": "string", "format": "date" },
+                "schemaDefault": { "type": "string", "default": "Standard" },
+                "missing": { "type": "string" }
+              },
+              "required": ["initial", "requiredEnum", "requiredBoolean", "requiredDate"]
+            }
+            """,
+            instanceJSON: #"{"initial":false}"#
+        )
+
+        let initialContext = session.makeToolContext()
+        XCTAssertEqual(
+            initialContext.fields.first { $0.pointer == "/initial" }?.valueSource,
+            .initialInstance
+        )
+        XCTAssertEqual(
+            initialContext.fields.first { $0.pointer == "/requiredEnum" }?.valueSource,
+            .defaultValue
+        )
+        XCTAssertEqual(initialContext.currentValues["/requiredEnum"], .string("Low"))
+        XCTAssertEqual(
+            initialContext.fields.first { $0.pointer == "/requiredBoolean" }?.valueSource,
+            .defaultValue
+        )
+        XCTAssertEqual(initialContext.currentValues["/requiredBoolean"], .boolean(false))
+        XCTAssertEqual(
+            initialContext.fields.first { $0.pointer == "/requiredDate" }?.valueSource,
+            .defaultValue
+        )
+        guard case .string(let requiredDate)? = initialContext.currentValues["/requiredDate"] else {
+            return XCTFail("Expected the required date fallback to be a string.")
+        }
+        XCTAssertFalse(requiredDate.isEmpty)
+        XCTAssertEqual(
+            initialContext.fields.first { $0.pointer == "/schemaDefault" }?.valueSource,
+            .defaultValue
+        )
+        XCTAssertEqual(initialContext.currentValues["/schemaDefault"], .string("Standard"))
+        XCTAssertNil(initialContext.fields.first { $0.pointer == "/missing" }?.valueSource)
+
+        let initialInstanceJSON = session.currentInstanceJSON
+        let initialSummary = initialContext.summary
+        _ = session.applyToolEdits([
+            FormKitToolEdit(pointer: "/requiredEnum", operation: .set, value: .string("Low"))
+        ])
+        let editedContext = session.makeToolContext()
+
+        XCTAssertEqual(
+            editedContext.fields.first { $0.pointer == "/requiredEnum" }?.valueSource,
+            .sessionEdit
+        )
+        XCTAssertEqual(session.currentInstanceJSON, initialInstanceJSON)
+        XCTAssertEqual(editedContext.summary, initialSummary)
+    }
+
     func testToolEditsApplySetClearAndRejectLockedPointers() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: supportedSchema,

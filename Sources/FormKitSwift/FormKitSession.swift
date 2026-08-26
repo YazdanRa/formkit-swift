@@ -110,6 +110,32 @@ public func primitiveValue(for field: FormKitFieldDescriptor) -> FormKitFieldDes
         return seededValue(for: field)
     }
 
+    func toolValueSource(for field: FormKitFieldDescriptor) -> FormKitToolValueSource? {
+        guard primitiveValue(for: field) != nil else {
+            return nil
+        }
+
+        if touchedFieldIDs.contains(field.id) {
+            return .sessionEdit
+        }
+
+        guard let initialInstance,
+              let initialValue = initialInstance.value(at: JSONPointer(from: field.pointer)),
+              primitiveValue(
+                from: initialValue,
+                scalarType: field.scalarType,
+                allowsNull: field.allowsNull,
+                normalizesEmptyText: !field.enumOptions.contains {
+                    jsonValue(from: $0.value) == initialValue
+                }
+              ) != nil
+        else {
+            return .defaultValue
+        }
+
+        return .initialInstance
+    }
+
 public func isNullSelected(for field: FormKitFieldDescriptor) -> Bool {
         primitiveValue(for: field) == .null
     }

@@ -38,6 +38,8 @@ result.context
 
 Tool pointers omit the descriptor's leading `#`. Set edits require a value. Clear edits apply the same nullable and empty-value rules as stock controls.
 
+Each ``FormKitToolField`` exposes an optional ``FormKitToolField/valueSource``. ``FormKitToolValueSource/initialInstance`` means the value was present when the session was created, ``FormKitToolValueSource/defaultValue`` means FormKit supplied a schema or required-control fallback, and ``FormKitToolValueSource/sessionEdit`` means the value was set or confirmed during the current session. A missing value has no source. Host apps can use this provenance without changing the effective values or ``FormKitSession/currentInstanceJSON``.
+
 Pass `baseRevision` to reject an entire stale batch after another mutation changes the session. Pass `lockedPointers` to protect fields owned by the user or another workflow. In a current batch, invalid edits are rejected individually while valid sibling edits can still apply. Rejections are reported in ``FormKitToolEditResult/rejectedEdits``.
 
 The returned context is refreshed after the batch, so it is the appropriate input to the next tool call.

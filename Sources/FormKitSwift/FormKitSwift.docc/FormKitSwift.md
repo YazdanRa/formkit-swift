@@ -75,6 +75,7 @@ Start with ``FormKitView`` for rendering and ``FormKitSession`` when you need co
 
 - ``FormKitToolContext``
 - ``FormKitToolField``
+- ``FormKitToolValueSource``
 - ``FormKitToolEdit``
 - ``FormKitToolEditResult``
 - ``FormKitRejectedEdit``
