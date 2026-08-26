@@ -1,126 +1,5 @@
 import Foundation
 
-public struct FormKitToolContext: Equatable, Sendable {
-    public let revision: Int
-    public let title: String
-    public let summary: String
-    public let fields: [FormKitToolField]
-    public let currentValues: [String: FormKitJSONValue]
-
-    public init(
-        revision: Int,
-        title: String,
-        summary: String,
-        fields: [FormKitToolField],
-        currentValues: [String: FormKitJSONValue]
-    ) {
-        self.revision = revision
-        self.title = title
-        self.summary = summary
-        self.fields = fields
-        self.currentValues = currentValues
-    }
-}
-
-public enum FormKitToolValueSource: Equatable, Sendable {
-    /// The value was present in the instance used to create the session.
-    case initialInstance
-
-    /// The renderer supplied the value from the schema or a required-control fallback.
-    case defaultValue
-
-    /// The value was set or confirmed after the session was created.
-    case sessionEdit
-}
-
-public struct FormKitToolField: Equatable, Sendable {
-    public let pointer: String
-    public let title: String
-    public let type: String
-    public let isRequired: Bool
-    public let valueSource: FormKitToolValueSource?
-    public let description: String?
-    public let enumOptions: [String]
-    public let isLocked: Bool
-    public let validationMessages: [String]
-
-    public init(
-        pointer: String,
-        title: String,
-        type: String,
-        isRequired: Bool,
-        valueSource: FormKitToolValueSource? = nil,
-        description: String? = nil,
-        enumOptions: [String] = [],
-        isLocked: Bool = false,
-        validationMessages: [String] = []
-    ) {
-        self.pointer = pointer
-        self.title = title
-        self.type = type
-        self.isRequired = isRequired
-        self.valueSource = valueSource
-        self.description = description
-        self.enumOptions = enumOptions
-        self.isLocked = isLocked
-        self.validationMessages = validationMessages
-    }
-}
-
-public struct FormKitToolEdit: Equatable, Sendable {
-    public enum Operation: String, Equatable, Sendable {
-        case set
-        case clear
-    }
-
-    public let pointer: String
-    public let operation: Operation
-    public let value: FormKitJSONValue?
-
-    public init(pointer: String, operation: Operation, value: FormKitJSONValue? = nil) {
-        self.pointer = pointer
-        self.operation = operation
-        self.value = value
-    }
-}
-
-public struct FormKitToolEditResult: Equatable, Sendable {
-    public let revision: Int
-    public let summary: String?
-    public let appliedEdits: [FormKitToolEdit]
-    public let rejectedEdits: [FormKitRejectedEdit]
-    public let validationMessages: [String]
-    public let context: FormKitToolContext
-
-    public init(
-        revision: Int,
-        summary: String? = nil,
-        appliedEdits: [FormKitToolEdit],
-        rejectedEdits: [FormKitRejectedEdit] = [],
-        validationMessages: [String] = [],
-        context: FormKitToolContext
-    ) {
-        self.revision = revision
-        self.summary = summary
-        self.appliedEdits = appliedEdits
-        self.rejectedEdits = rejectedEdits
-        self.validationMessages = validationMessages
-        self.context = context
-    }
-}
-
-public struct FormKitRejectedEdit: Equatable, Sendable {
-    public let pointer: String
-    public let reason: String
-    public let message: String
-
-    public init(pointer: String, reason: String, message: String) {
-        self.pointer = pointer
-        self.reason = reason
-        self.message = message
-    }
-}
-
 public extension FormKitSession {
     private enum ToolEditApplicationOutcome {
         case applied(FormKitToolEdit)
@@ -194,41 +73,7 @@ public extension FormKitSession {
         var rejectedEdits: [FormKitRejectedEdit] = []
 
         for edit in edits {
-            guard let field = field(forToolPointer: edit.pointer) else {
-                rejectedEdits.append(
-                    FormKitRejectedEdit(
-                        pointer: edit.pointer,
-                        reason: "field_not_found",
-                        message: "The requested field does not exist in the visible form."
-                    )
-                )
-                continue
-            }
-
-            guard field.isVisible, field.isDisabled == false else {
-                rejectedEdits.append(
-                    FormKitRejectedEdit(
-                        pointer: edit.pointer,
-                        reason: "field_not_visible",
-                        message: "The requested field is not currently visible or editable."
-                    )
-                )
-                continue
-            }
-
-            let publicPointer = publicToolPointer(for: field.pointer)
-            guard !normalizedLockedPointers.contains(normalizedToolPointer(publicPointer)) else {
-                rejectedEdits.append(
-                    FormKitRejectedEdit(
-                        pointer: edit.pointer,
-                        reason: "field_locked",
-                        message: "The requested field is locked."
-                    )
-                )
-                continue
-            }
-
-            switch applyToolEdit(edit, to: field, publicPointer: publicPointer) {
+            switch applyToolEdit(edit, lockedPointers: normalizedLockedPointers) {
             case .applied(let appliedEdit):
                 appliedEdits.append(appliedEdit)
             case .rejected(let rejectedEdit):
@@ -238,7 +83,7 @@ public extension FormKitSession {
 
         return FormKitToolEditResult(
             revision: revision,
-            summary: appliedEdits.isEmpty ? "No edits were applied." : "Applied \(appliedEdits.count) edit\(appliedEdits.count == 1 ? "" : "s").",
+            summary: toolEditSummary(appliedCount: appliedEdits.count),
             appliedEdits: appliedEdits,
             rejectedEdits: rejectedEdits,
             validationMessages: validationMessagesForToolUse(),
@@ -252,91 +97,167 @@ public extension FormKitSession {
 
     private func applyToolEdit(
         _ edit: FormKitToolEdit,
+        lockedPointers: Set<String>
+    ) -> ToolEditApplicationOutcome {
+        guard let field = field(forToolPointer: edit.pointer) else {
+            return rejected(
+                edit,
+                reason: "field_not_found",
+                message: "The requested field does not exist in the visible form."
+            )
+        }
+
+        guard field.isVisible, field.isDisabled == false else {
+            return rejected(
+                edit,
+                reason: "field_not_visible",
+                message: "The requested field is not currently visible or editable."
+            )
+        }
+
+        let publicPointer = publicToolPointer(for: field.pointer)
+        guard !lockedPointers.contains(normalizedToolPointer(publicPointer)) else {
+            return rejected(edit, reason: "field_locked", message: "The requested field is locked.")
+        }
+
+        return applyToolEdit(edit, to: field, publicPointer: publicPointer)
+    }
+
+    private func applyToolEdit(
+        _ edit: FormKitToolEdit,
         to field: FormKitFieldDescriptor,
         publicPointer: String
     ) -> ToolEditApplicationOutcome {
         switch edit.operation {
         case .clear:
-            if field.allowsNull {
-                guard primitiveValue(for: field) != .null else {
-                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
-                }
-
-                clearValue(for: field)
-                return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
+            return applyClearToolEdit(edit, to: field, publicPointer: publicPointer)
+        case .set:
+            guard let value = edit.value else {
+                return rejected(edit, reason: "missing_value", message: "A set operation requires a value.")
             }
 
             if field.isEnum {
-                let hadValue = selectedEnumChoiceID(for: field) != nil
-                guard hadValue else {
-                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
-                }
-
-                setSelectedEnumChoiceID(nil, for: field)
-                return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
+                return applyEnumSetToolEdit(edit, value: value, to: field, publicPointer: publicPointer)
             }
 
-            let hadValue = primitiveValue(for: field).map(hasConcreteToolValue) == true
-            guard hadValue else {
-                return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "no_change", message: "The field is already empty."))
+            return applyScalarSetToolEdit(edit, value: value, to: field, publicPointer: publicPointer)
+        }
+    }
+
+    private func applyClearToolEdit(
+        _ edit: FormKitToolEdit,
+        to field: FormKitFieldDescriptor,
+        publicPointer: String
+    ) -> ToolEditApplicationOutcome {
+        if field.allowsNull {
+            guard primitiveValue(for: field) != .null else {
+                return rejected(edit, reason: "no_change", message: "The field is already empty.")
             }
 
             clearValue(for: field)
             return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
-
-        case .set:
-            guard let value = edit.value else {
-                return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "missing_value", message: "A set operation requires a value."))
-            }
-
-            if field.isEnum {
-                guard case .string(let rawChoice) = value else {
-                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "Enum fields require a string value."))
-                }
-                guard let choice = field.enumOptions.first(where: { option in
-                    option.title.caseInsensitiveCompare(rawChoice) == .orderedSame
-                        || primitiveTitle(option.value).caseInsensitiveCompare(rawChoice) == .orderedSame
-                }) else {
-                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "invalid_choice", message: "The supplied value is not a valid option for this field."))
-                }
-                setSelectedEnumChoiceID(choice.id, for: field)
-                return appliedSetEdit(for: field, pointer: publicPointer)
-            }
-
-            switch field.scalarType {
-            case .string, .email, .uri, .date, .time, .dateTime:
-                guard case .string(let text) = value else {
-                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "This field requires a string value."))
-                }
-                setStringValue(text, for: field)
-                return appliedSetEdit(for: field, pointer: publicPointer)
-
-            case .integer, .number:
-                switch value {
-                case .integer(let number):
-                    setStringValue(String(number), for: field)
-                    return appliedSetEdit(for: field, pointer: publicPointer)
-                case .number(let number):
-                    let text = number.rounded(.towardZero) == number
-                        ? String(Int(number))
-                        : String(number)
-                    setStringValue(text, for: field)
-                    return appliedSetEdit(for: field, pointer: publicPointer)
-                case .string(let text):
-                    setStringValue(text, for: field)
-                    return appliedSetEdit(for: field, pointer: publicPointer)
-                default:
-                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "This field requires a numeric value."))
-                }
-
-            case .boolean:
-                guard case .boolean(let boolValue) = value else {
-                    return .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: "type_mismatch", message: "This field requires a boolean value."))
-                }
-                setBooleanValue(boolValue, for: field)
-                return appliedSetEdit(for: field, pointer: publicPointer)
-            }
         }
+
+        if field.isEnum {
+            guard selectedEnumChoiceID(for: field) != nil else {
+                return rejected(edit, reason: "no_change", message: "The field is already empty.")
+            }
+
+            setSelectedEnumChoiceID(nil, for: field)
+            return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
+        }
+
+        guard primitiveValue(for: field).map(hasConcreteToolValue) == true else {
+            return rejected(edit, reason: "no_change", message: "The field is already empty.")
+        }
+
+        clearValue(for: field)
+        return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
+    }
+
+    private func applyEnumSetToolEdit(
+        _ edit: FormKitToolEdit,
+        value: FormKitJSONValue,
+        to field: FormKitFieldDescriptor,
+        publicPointer: String
+    ) -> ToolEditApplicationOutcome {
+        guard case .string(let rawChoice) = value else {
+            return rejected(edit, reason: "type_mismatch", message: "Enum fields require a string value.")
+        }
+        guard let choice = field.enumOptions.first(where: { option in
+            option.title.caseInsensitiveCompare(rawChoice) == .orderedSame
+                || primitiveTitle(option.value).caseInsensitiveCompare(rawChoice) == .orderedSame
+        }) else {
+            return rejected(
+                edit,
+                reason: "invalid_choice",
+                message: "The supplied value is not a valid option for this field."
+            )
+        }
+
+        setSelectedEnumChoiceID(choice.id, for: field)
+        return appliedSetEdit(for: field, pointer: publicPointer)
+    }
+
+    private func applyScalarSetToolEdit(
+        _ edit: FormKitToolEdit,
+        value: FormKitJSONValue,
+        to field: FormKitFieldDescriptor,
+        publicPointer: String
+    ) -> ToolEditApplicationOutcome {
+        switch field.scalarType {
+        case .string, .email, .uri, .date, .time, .dateTime:
+            guard case .string(let text) = value else {
+                return rejected(edit, reason: "type_mismatch", message: "This field requires a string value.")
+            }
+            setStringValue(text, for: field)
+        case .integer, .number:
+            return applyNumericSetToolEdit(edit, value: value, to: field, publicPointer: publicPointer)
+        case .boolean:
+            guard case .boolean(let boolValue) = value else {
+                return rejected(edit, reason: "type_mismatch", message: "This field requires a boolean value.")
+            }
+            setBooleanValue(boolValue, for: field)
+        }
+
+        return appliedSetEdit(for: field, pointer: publicPointer)
+    }
+
+    private func applyNumericSetToolEdit(
+        _ edit: FormKitToolEdit,
+        value: FormKitJSONValue,
+        to field: FormKitFieldDescriptor,
+        publicPointer: String
+    ) -> ToolEditApplicationOutcome {
+        switch value {
+        case .integer(let number):
+            setStringValue(String(number), for: field)
+        case .number(let number):
+            let text = number.rounded(.towardZero) == number
+                ? String(Int(number))
+                : String(number)
+            setStringValue(text, for: field)
+        case .string(let text):
+            setStringValue(text, for: field)
+        default:
+            return rejected(edit, reason: "type_mismatch", message: "This field requires a numeric value.")
+        }
+
+        return appliedSetEdit(for: field, pointer: publicPointer)
+    }
+
+    private func rejected(
+        _ edit: FormKitToolEdit,
+        reason: String,
+        message: String
+    ) -> ToolEditApplicationOutcome {
+        .rejected(FormKitRejectedEdit(pointer: edit.pointer, reason: reason, message: message))
+    }
+
+    private func toolEditSummary(appliedCount: Int) -> String {
+        appliedCount == 0
+            ? "No edits were applied."
+            : "Applied \(appliedCount) edit\(appliedCount == 1 ? "" : "s")."
     }
 
     private func appliedSetEdit(

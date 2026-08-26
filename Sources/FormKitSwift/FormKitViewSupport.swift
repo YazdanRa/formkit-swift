@@ -13,7 +13,38 @@ enum FormKitFocusSupport {
         session: FormKitSession,
         options: FormKitOptions
     ) -> FormKitResolvedComponents {
-        let arraySections = session.renderPlan.sections.reduce(into: [String: AnyView]()) { result, section in
+        let arraySections = resolvedArraySections(session: session, options: options)
+        let fields = resolvedFields(session: session, arraySections: arraySections)
+        let fieldStates = Dictionary(
+            uniqueKeysWithValues: fields.map { ($0.id, options.fieldState($0)) }
+        )
+        let fieldInputs = resolvedFieldInputs(
+            fields: fields,
+            fieldStates: fieldStates,
+            session: session,
+            options: options
+        )
+        let focusableFieldIDs = resolvedFocusableFieldIDs(
+            fields: fields,
+            fieldStates: fieldStates,
+            fieldInputs: fieldInputs,
+            options: options
+        )
+
+        return FormKitResolvedComponents(
+            fieldInputs: fieldInputs,
+            arraySections: arraySections,
+            fieldStates: fieldStates,
+            focusableFieldIDs: focusableFieldIDs
+        )
+    }
+
+    @MainActor
+    private static func resolvedArraySections(
+        session: FormKitSession,
+        options: FormKitOptions
+    ) -> [String: AnyView] {
+        return session.renderPlan.sections.reduce(into: [String: AnyView]()) { result, section in
             guard section.isVisible, let descriptor = section.arrayDescriptor else {
                 return
             }
@@ -33,59 +64,74 @@ enum FormKitFocusSupport {
                 result[section.id] = arraySection
             }
         }
+    }
+
+    @MainActor
+    private static func resolvedFields(
+        session: FormKitSession,
+        arraySections: [String: AnyView]
+    ) -> [FormKitFieldDescriptor] {
         let replacedRowPointers = Set(
             session.renderPlan.sections
                 .filter { arraySections[$0.id] != nil }
                 .flatMap { $0.arrayDescriptor?.rows.map(\.pointer) ?? [] }
         )
-        let fields = session.renderPlan.fields.filter { field in
+        return session.renderPlan.fields.filter { field in
             field.isVisible && !replacedRowPointers.contains {
                 field.pointer == $0 || field.pointer.hasPrefix("\($0)/")
             }
         }
-        let fieldStates = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, options.fieldState($0)) })
-        let fieldInputs: [String: AnyView] = if options.components.field == nil {
-            fields.reduce(into: [:]) { result, field in
-                let state = fieldStates[field.id] ?? .normal
-                let context = FormKitFieldComponentContext(
-                    session: session,
-                    field: field,
-                    errors: session.errorMessages(for: field),
-                    state: state,
-                    isEditingLocked: options.mode == .readOnly || state == .locked,
-                    style: options.style,
-                    uploadHandler: options.uploadHandler
-                )
-                if let input = options.components.fieldInput?(context)
-                    ?? FormKitComponentRegistry.fieldInput(for: context)
-                {
-                    result[field.id] = input
-                }
+    }
+
+    @MainActor
+    private static func resolvedFieldInputs(
+        fields: [FormKitFieldDescriptor],
+        fieldStates: [String: FormKitFieldVisualState],
+        session: FormKitSession,
+        options: FormKitOptions
+    ) -> [String: AnyView] {
+        guard options.components.field == nil else {
+            return [:]
+        }
+
+        return fields.reduce(into: [:]) { result, field in
+            let state = fieldStates[field.id] ?? .normal
+            let context = FormKitFieldComponentContext(
+                session: session,
+                field: field,
+                errors: session.errorMessages(for: field),
+                state: state,
+                isEditingLocked: options.mode == .readOnly || state == .locked,
+                style: options.style,
+                uploadHandler: options.uploadHandler
+            )
+            if let input = options.components.fieldInput?(context)
+                ?? FormKitComponentRegistry.fieldInput(for: context)
+            {
+                result[field.id] = input
             }
-        } else {
-            [:]
+        }
+    }
+
+    private static func resolvedFocusableFieldIDs(
+        fields: [FormKitFieldDescriptor],
+        fieldStates: [String: FormKitFieldVisualState],
+        fieldInputs: [String: AnyView],
+        options: FormKitOptions
+    ) -> Set<String> {
+        guard options.mode == .editable, options.components.field == nil else {
+            return []
         }
 
-        let focusableFieldIDs: Set<String> = if options.mode == .editable, options.components.field == nil {
-            Set(fields.compactMap { field in
-                guard field.supportsStockTextInputFocus,
-                      fieldStates[field.id] != .locked,
-                      fieldInputs[field.id] == nil
-                else {
-                    return nil
-                }
-                return field.id
-            })
-        } else {
-            []
-        }
-
-        return FormKitResolvedComponents(
-            fieldInputs: fieldInputs,
-            arraySections: arraySections,
-            fieldStates: fieldStates,
-            focusableFieldIDs: focusableFieldIDs
-        )
+        return Set(fields.compactMap { field in
+            guard field.supportsStockTextInputFocus,
+                  fieldStates[field.id] != .locked,
+                  fieldInputs[field.id] == nil
+            else {
+                return nil
+            }
+            return field.id
+        })
     }
 
     static func normalizedFieldID(

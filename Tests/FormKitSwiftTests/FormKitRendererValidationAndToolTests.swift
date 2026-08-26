@@ -1,0 +1,101 @@
+import XCTest
+@testable import FormKitSwift
+
+extension FormKitRendererTests {
+    func testToolContextExposesVisibleFieldsAndCurrentValues() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: supportedSchema,
+            instanceJSON: populatedInstance
+        )
+
+        let context = session.makeToolContext(focusedPointers: ["/contact/email"])
+
+        XCTAssertEqual(context.title, "Project Intake")
+        XCTAssertEqual(context.revision, 0)
+        XCTAssertEqual(context.fields.map(\.pointer), [
+            "/contact/fullName",
+            "/contact/email",
+            "/contact/website",
+            "/contact/sendUpdates",
+            "/visitDate",
+            "/priority"
+        ])
+        XCTAssertTrue(try XCTUnwrap(context.fields.first { $0.pointer == "/contact/email" }).isLocked)
+        XCTAssertEqual(context.currentValues["/contact/fullName"], .string("Taylor Jordan"))
+        XCTAssertEqual(context.currentValues["/contact/sendUpdates"], .boolean(false))
+    }
+
+    func testToolEditsApplySetClearAndRejectLockedPointers() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: supportedSchema,
+            instanceJSON: populatedInstance
+        )
+
+        let result = session.applyToolEdits(
+            [
+                .init(pointer: "/contact/fullName", operation: .set, value: .string("Avery Stone")),
+                .init(pointer: "/contact/website", operation: .clear),
+                .init(pointer: "/contact/email", operation: .set, value: .string("locked@example.com"))
+            ],
+            baseRevision: 0,
+            lockedPointers: ["/contact/email"]
+        )
+
+        XCTAssertEqual(result.revision, 2)
+        XCTAssertEqual(result.appliedEdits.map(\.pointer), ["/contact/fullName", "/contact/website"])
+        XCTAssertEqual(result.rejectedEdits.map(\.reason), ["field_locked"])
+        XCTAssertEqual(session.stringValue(for: tryUnwrapField("fullName", in: session)), "Avery Stone")
+        XCTAssertEqual(session.stringValue(for: tryUnwrapField("website", in: session)), "")
+    }
+
+    func testToolEditsRejectRevisionConflictWithoutChangingForm() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: supportedSchema,
+            instanceJSON: populatedInstance
+        )
+
+        let result = session.applyToolEdits(
+            [.init(pointer: "/contact/fullName", operation: .set, value: .string("Avery Stone"))],
+            baseRevision: 9
+        )
+
+        XCTAssertEqual(result.revision, 0)
+        XCTAssertTrue(result.appliedEdits.isEmpty)
+        XCTAssertEqual(result.rejectedEdits.map(\.reason), ["revision_conflict"])
+        XCTAssertEqual(session.stringValue(for: tryUnwrapField("fullName", in: session)), "Taylor Jordan")
+    }
+}
+
+extension FormKitRendererTests {
+    func testOnDemandValidationDoesNotRevalidateAfterFieldEdits() throws {
+        let schema =
+            """
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                }
+              },
+              "required": ["name"]
+            }
+            """
+
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: "{}",
+            validationBehavior: .onDemandOnly
+        )
+        let nameField = tryUnwrapField("name", in: session)
+
+        XCTAssertFalse(session.validate())
+        XCTAssertEqual(session.errorMessages(for: nameField), ["This field is required."])
+
+        session.setStringValue("Taylor", for: nameField)
+
+        XCTAssertTrue(session.errorMessages(for: nameField).isEmpty)
+        XCTAssertNil(session.validationStatusMessage)
+        XCTAssertTrue(session.validate())
+    }
+}

@@ -4,7 +4,10 @@ import XCTest
 @MainActor
 final class FormKitComponentTests: XCTestCase {
     func testUIComponentAnnotationsPropagateToFieldsAndSections() throws {
-        let session = FormKitRenderer().makeFormSession(schemaJSON: Self.componentSchema, instanceJSON: nil)
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: FormKitComponentTestFixtures.componentSchema,
+            instanceJSON: nil
+        )
 
         XCTAssertEqual(field(named: "license", in: session)?.uiComponent, .fileField)
         XCTAssertEqual(field(named: "signature", in: session)?.uiComponent, .signaturePad)
@@ -58,53 +61,10 @@ final class FormKitComponentTests: XCTestCase {
     }
 
     func testComponentRegistryResolvesOnlyCompatibleArrayComponents() throws {
-        let schema =
-            """
-            {
-              "type": "object",
-              "properties": {
-                "files": {
-                  "type": "array",
-                  "x-formkit-ui-component": "multiple-file-field",
-                  "items": {
-                    "type": "string",
-                    "format": "uri"
-                  }
-                },
-                "numbers": {
-                  "type": "array",
-                  "x-formkit-ui-component": "multiple-file-field",
-                  "items": {
-                    "type": "number"
-                  }
-                },
-                "enumFiles": {
-                  "type": "array",
-                  "x-formkit-ui-component": "multiple-file-field",
-                  "items": {
-                    "type": "string",
-                    "enum": ["a.pdf", "b.pdf"]
-                  }
-                },
-                "constFiles": {
-                  "type": "array",
-                  "x-formkit-ui-component": "multiple-file-field",
-                  "items": {
-                    "type": "string",
-                    "const": "required.pdf"
-                  }
-                },
-                "generic": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "uri"
-                  }
-                }
-              }
-            }
-            """
-        let session = FormKitRenderer().makeFormSession(schemaJSON: schema, instanceJSON: nil)
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: FormKitComponentTestFixtures.arrayCompatibilitySchema,
+            instanceJSON: nil
+        )
         let filesSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "files" }))
         let numbersSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "numbers" }))
         let enumSection = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.propertyKey == "enumFiles" }))
@@ -119,7 +79,10 @@ final class FormKitComponentTests: XCTestCase {
     }
 
     func testSectionArrayValueSetterReplacesAndClearsArrayValues() throws {
-        let session = FormKitRenderer().makeFormSession(schemaJSON: Self.multipleFileSchema, instanceJSON: nil)
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: FormKitComponentTestFixtures.multipleFileSchema,
+            instanceJSON: nil
+        )
         let section = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.title == "Attachments" }))
         let startingRevision = session.revision
 
@@ -316,78 +279,14 @@ final class FormKitComponentTests: XCTestCase {
         return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 
-    private static let multipleFileSchema =
-        """
-        {
-          "title": "Uploads",
-          "type": "object",
-          "properties": {
-            "attachments": {
-              "type": "array",
-              "title": "Attachments",
-              "x-formkit-ui-component": "multiple-file-field",
-              "items": {
-                "type": "string",
-                "format": "uri",
-                "title": "Attachment"
-              }
-            }
-          }
-        }
-        """
-
-    private static let componentSchema =
-        """
-        {
-          "title": "Uploads",
-          "type": "object",
-          "properties": {
-            "license": {
-              "type": "string",
-              "format": "uri",
-              "title": "License",
-              "x-formkit-ui-component": " FILE-FIELD "
-            },
-            "signature": {
-              "$ref": "#/$defs/signature"
-            },
-            "attachments": {
-              "type": "array",
-              "title": "Attachments",
-              "x-formkit-ui-component": "multiple-file-field",
-              "items": {
-                "type": "string",
-                "format": "uri",
-                "title": "Attachment"
-              }
-            },
-            "itemAnnotatedAttachments": {
-              "type": "array",
-              "title": "Item Annotated Attachments",
-              "minItems": 1,
-              "items": {
-                "type": "string",
-                "format": "uri",
-                "title": "Item Attachment",
-                "x-formkit-ui-component": "signature-pad"
-              }
-            }
-          },
-          "$defs": {
-            "signature": {
-              "type": "string",
-              "format": "uri",
-              "title": "Signature",
-              "x-formkit-ui-component": "signature-pad"
-            }
-          }
-        }
-        """
 }
 
 extension FormKitComponentTests {
     func testMultipleFileComponentReceivesConfiguredLabels() throws {
-        let session = FormKitRenderer().makeFormSession(schemaJSON: Self.multipleFileSchema, instanceJSON: nil)
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: FormKitComponentTestFixtures.multipleFileSchema,
+            instanceJSON: nil
+        )
         let section = try XCTUnwrap(session.renderPlan.sections.first(where: { $0.title == "Attachments" }))
         let labels = FormKitLabels(minimumItemsPrefix: "At least", maximumItemsPrefix: "At most")
         let component = FormKitMultipleFileField(
