@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/YazdanRa/formkit-swift/compare/v1.5.0...v1.6.0) (2026-08-27)
+
+
+### Features
+
+* **session:** expose non-array default projection ([#27](https://github.com/YazdanRa/formkit-swift/issues/27)) ([04ad2fb](https://github.com/YazdanRa/formkit-swift/commit/04ad2fb19ebd1416931c93b91c1d3cf210dfa90a))
+
 ## [1.5.0](https://github.com/YazdanRa/formkit-swift/compare/v1.4.1...v1.5.0) (2026-08-26)
 
 
