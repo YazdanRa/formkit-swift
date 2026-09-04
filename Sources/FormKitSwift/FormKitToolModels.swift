@@ -35,6 +35,7 @@ public struct FormKitToolField: Equatable, Sendable {
     public let pointer: String
     public let title: String
     public let type: String
+    public let valueFormat: String?
     public let isRequired: Bool
     public let valueSource: FormKitToolValueSource?
     public let description: String?
@@ -46,6 +47,7 @@ public struct FormKitToolField: Equatable, Sendable {
         pointer: String,
         title: String,
         type: String,
+        valueFormat: String? = nil,
         isRequired: Bool,
         valueSource: FormKitToolValueSource? = nil,
         description: String? = nil,
@@ -56,6 +58,7 @@ public struct FormKitToolField: Equatable, Sendable {
         self.pointer = pointer
         self.title = title
         self.type = type
+        self.valueFormat = valueFormat
         self.isRequired = isRequired
         self.valueSource = valueSource
         self.description = description

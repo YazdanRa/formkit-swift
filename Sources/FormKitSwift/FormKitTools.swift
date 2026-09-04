@@ -18,6 +18,7 @@ public extension FormKitSession {
                 pointer: pointer,
                 title: field.title,
                 type: field.isEnum ? "enum" : field.scalarType.rawValue,
+                valueFormat: FormKitRenderer.toolValueFormat(for: field.scalarType),
                 isRequired: field.isRequired,
                 valueSource: toolValueSource(for: field),
                 description: field.description,
@@ -206,11 +207,27 @@ public extension FormKitSession {
         publicPointer: String
     ) -> ToolEditApplicationOutcome {
         switch field.scalarType {
-        case .string, .email, .uri, .date, .time, .dateTime:
+        case .string, .email, .uri:
             guard case .string(let text) = value else {
                 return rejected(edit, reason: "type_mismatch", message: "This field requires a string value.")
             }
             setStringValue(text, for: field)
+        case .date, .time, .dateTime:
+            guard case .string(let text) = value else {
+                return rejected(edit, reason: "type_mismatch", message: "This field requires a string value.")
+            }
+            guard let normalizedValue = FormKitRenderer.normalizedToolTemporalValue(
+                from: text,
+                type: field.scalarType
+            ) else {
+                let format = FormKitRenderer.toolValueFormat(for: field.scalarType) ?? "the field's required format"
+                return rejected(
+                    edit,
+                    reason: "invalid_format",
+                    message: "Use \(format)."
+                )
+            }
+            setStringValue(normalizedValue, for: field)
         case .integer, .number:
             return applyNumericSetToolEdit(edit, value: value, to: field, publicPointer: publicPointer)
         case .boolean:
