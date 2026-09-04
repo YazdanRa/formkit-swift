@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/YazdanRa/formkit-swift/compare/v1.6.0...v1.6.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* **tools:** normalize temporal values ([#29](https://github.com/YazdanRa/formkit-swift/issues/29)) ([7f573d1](https://github.com/YazdanRa/formkit-swift/commit/7f573d14f25b6668deac2379952494a3f8e71666))
+
 ## [1.6.0](https://github.com/YazdanRa/formkit-swift/compare/v1.5.0...v1.6.0) (2026-08-27)
 
 
