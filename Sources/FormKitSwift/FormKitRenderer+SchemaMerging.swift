@@ -33,11 +33,20 @@ extension FormKitRenderer {
         _ base: MaterializedJSONSchemaObject,
         _ overlay: MaterializedJSONSchemaObject
     ) -> MaterializedJSONSchemaObject {
-        var baseObject = base.object
-        if includesHiddenToolFields, baseObject[Self.internalConditionalStateKey] == nil {
-            baseObject[Self.internalConditionalStateKey] = .string(FormKitConditionalRenderState.active.rawValue)
+        var activeBase = activeConditionalOverlay(base).object
+        if includesHiddenToolFields, var properties = activeBase["properties"]?.object {
+            let required = Set(base.object["required"]?.array?.compactMap(\.string) ?? [])
+            // Predeclared fields required only by this inactive branch retain their conditional visibility.
+            for key in overlay.object["required"]?.array?.compactMap(\.string) ?? [] where !required.contains(key) {
+                if let property = base.object["properties"]?.object?[key]?.object,
+                   property[Self.internalConditionalStateKey] == nil
+                {
+                    properties[key] = .object(property)
+                }
+            }
+            activeBase["properties"] = .object(properties)
         }
-        let mergedObject = mergeInactiveSchemaObjects(baseObject, overlay.object)
+        let mergedObject = mergeInactiveSchemaObjects(activeBase, overlay.object)
         let mergedPropertyOrder = mergePropertyOrder(
             base.propertyOrder,
             overlay.propertyOrder,

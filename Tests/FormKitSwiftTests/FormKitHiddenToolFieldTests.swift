@@ -150,6 +150,74 @@ final class FormKitHiddenToolFieldTests: XCTestCase {
         XCTAssertTrue(field.enumOptions.isEmpty)
     }
 
+    func testPredeclaredConditionallyRequiredFieldKeepsItsVisibility() throws {
+        let schema = #"""
+        {
+          "type": "object",
+          "properties": {"enabled": {"type": "boolean"}, "code": {"type": "string"}},
+          "if": {"properties": {"enabled": {"const": true}}, "required": ["enabled"]},
+          "then": {"required": ["code"]}
+        }
+        """#
+        for includesHidden in [false, true] {
+            let session = FormKitRenderer(includesHiddenToolFields: includesHidden).makeFormSession(
+                schemaJSON: schema, instanceJSON: #"{"enabled":false}"#
+            )
+            XCTAssertFalse(try XCTUnwrap(session.renderPlan.fields.first { $0.pointer == "#/code" }).isVisible)
+            let result = session.applyToolEdits([.init(pointer: "/enabled", operation: .set, value: .boolean(true))])
+            let revealed = try XCTUnwrap(result.context.fields.first { $0.pointer == "/code" })
+            XCTAssertTrue(revealed.isVisible)
+            XCTAssertTrue(revealed.isRequired)
+        }
+    }
+
+    func testInactiveBranchCannotHideOrConstrainUnconditionalProperties() throws {
+        let schema = #"""
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "details": {"type": "string"},
+            "nested": {"type": "object", "properties": {"note": {"type": "string"}}},
+            "entries": {"type": "array", "items": {
+              "type": "object", "properties": {"note": {"type": "string"}}
+            }}
+          },
+          "if": {"properties": {"enabled": {"const": true}}, "required": ["enabled"]},
+          "then": {},
+          "else": {"properties": {
+            "details": {"type": "string", "maxLength": 1, "enum": ["A"], "default": "A"},
+            "nested": {"type": "object", "properties": {"note": {"enum": ["A"]}}},
+            "entries": {"type": "array", "items": {
+              "type": "object", "properties": {"note": {"enum": ["A"]}}
+            }},
+            "hiddenOnly": {"type": "string"}
+          }}
+        }
+        """#
+        let session = FormKitRenderer(includesHiddenToolFields: true).makeFormSession(
+            schemaJSON: schema,
+            instanceJSON: #"{"enabled":true,"entries":[{}]}"#
+        )
+        XCTAssertTrue(session.renderPlan.isSupported)
+        let pointers = ["/details", "/nested/note", "/entries/0/note"]
+        for pointer in pointers {
+            let field = try XCTUnwrap(session.makeToolContext().fields.first { $0.pointer == pointer })
+            XCTAssertTrue(field.isVisible, pointer)
+            XCTAssertEqual(field.type, "string", pointer)
+            XCTAssertTrue(field.enumOptions.isEmpty, pointer)
+            XCTAssertNil(session.makeToolContext().currentValues[pointer], pointer)
+        }
+        let hidden = try XCTUnwrap(session.makeToolContext().fields.first { $0.pointer == "/hiddenOnly" })
+        XCTAssertFalse(hidden.isVisible)
+        let result = session.applyToolEdits(pointers.map {
+            .init(pointer: $0, operation: .set, value: .string("Unrestricted answer"))
+        })
+        XCTAssertTrue(result.rejectedEdits.isEmpty)
+        XCTAssertEqual(result.appliedEdits.count, pointers.count)
+        XCTAssertTrue(session.validate())
+    }
+
     func testRemovingOrReplacingRowsDoesNotRestoreAnotherRowsHiddenContainers() throws {
         let schema = #"""
         {
