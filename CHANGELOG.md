@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/YazdanRa/formkit-swift/compare/v1.6.1...v1.6.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* **renderer:** keep wrapped dropdowns leading aligned ([#31](https://github.com/YazdanRa/formkit-swift/issues/31)) ([d0bdee1](https://github.com/YazdanRa/formkit-swift/commit/d0bdee1a362d63962fbc7eb3ecbb96293c10aff7))
+
 ## [1.6.1](https://github.com/YazdanRa/formkit-swift/compare/v1.6.0...v1.6.1) (2026-09-04)
 
 
