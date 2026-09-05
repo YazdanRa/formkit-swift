@@ -132,7 +132,7 @@ extension FormKitRenderer {
             if instanceKeys.contains(key) {
                 state.effectiveSchema = mergeSchemaObjects(
                     state.effectiveSchema,
-                    overlay,
+                    activeConditionalOverlay(overlay),
                     includeRequired: true
                 )
             } else if let inactive = inactiveRenderableSchemaObject(
@@ -214,7 +214,7 @@ extension FormKitRenderer {
         if isActive {
             state.effectiveSchema = mergeSchemaObjects(
                 state.effectiveSchema,
-                overlay,
+                activeConditionalOverlay(overlay),
                 includeRequired: true
             )
         } else if let inactive = inactiveRenderableSchemaObject(
@@ -267,7 +267,7 @@ extension FormKitRenderer {
         for candidate in candidates where selection.indices.contains(candidate.index) {
             merged = mergeSchemaObjects(
                 merged,
-                candidate.overlay,
+                activeConditionalOverlay(candidate.overlay),
                 includeRequired: selection.includeRequired
             )
         }

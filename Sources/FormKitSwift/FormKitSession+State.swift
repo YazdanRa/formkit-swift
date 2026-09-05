@@ -19,6 +19,11 @@ extension FormKitSession {
         }
     }
 
+    func shouldSerialize(_ field: FormKitFieldDescriptor) -> Bool {
+        field.shouldSerialize || (includesHiddenToolFields && !field.isVisible
+            && (toolValueSource(for: field) == .initialInstance || toolValueSource(for: field) == .sessionEdit))
+    }
+
     func makeInstanceJSONValue() -> FormKitJSONValue {
         var rootObject: [String: FormKitJSONValue] = [:]
         let requiredSectionPointers = Set(
@@ -35,7 +40,7 @@ extension FormKitSession {
         }
 
         let arraySections = renderPlan.sections
-            .filter(\.shouldSerialize)
+            .filter(shouldSerializeArray)
             .filter { !$0.isOwnedByArrayRow }
             .compactMap { section -> (FormKitRenderPlan.SectionDescriptor, FormKitArraySectionDescriptor)? in
                 guard let descriptor = section.arrayDescriptor else {
@@ -60,8 +65,10 @@ extension FormKitSession {
             }
         }
 
+        restoreHiddenObjectContainers(into: &rootObject)
+
         for field in orderedFields {
-            guard field.shouldSerialize else {
+            guard shouldSerialize(field) else {
                 continue
             }
 
@@ -77,6 +84,22 @@ extension FormKitSession {
         }
 
         return .object(rootObject)
+    }
+
+    private func shouldSerializeArray(_ section: FormKitRenderPlan.SectionDescriptor) -> Bool {
+        section.shouldSerialize || (includesHiddenToolFields && !section.isVisible
+            && (suppliedInstance?.value(at: JSONPointer(from: section.pointer))?.array != nil
+                || touchedArrayIDs.contains(section.id)
+                || touchedFieldIDs.contains { $0.hasPrefix(section.pointer + "/") }))
+    }
+
+    private func restoreHiddenObjectContainers(into rootObject: inout [String: FormKitJSONValue]) {
+        guard includesHiddenToolFields else { return }
+        for section in renderPlan.sections where !section.isVisible {
+            if suppliedInstance?.value(at: JSONPointer(from: section.pointer))?.object != nil {
+                ensureObjectExists(at: section.pointer, in: &rootObject)
+            }
+        }
     }
 
     func refreshRenderPlan() {
@@ -192,7 +215,7 @@ extension FormKitSession {
         usesNullFallback: Bool = true
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
         if preferInitialInstance,
-           let initialInstance,
+           let initialInstance = includesHiddenToolFields ? suppliedInstance : initialInstance,
            let initialValue = initialInstance.value(at: JSONPointer(from: field.pointer)),
            let seededFromInstance = primitiveValue(
             from: initialValue,

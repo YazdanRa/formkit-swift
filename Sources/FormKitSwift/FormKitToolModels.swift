@@ -36,6 +36,7 @@ public struct FormKitToolField: Equatable, Sendable {
     public let title: String
     public let type: String
     public let valueFormat: String?
+    public let isVisible: Bool
     public let isRequired: Bool
     public let valueSource: FormKitToolValueSource?
     public let description: String?
@@ -49,6 +50,7 @@ public struct FormKitToolField: Equatable, Sendable {
         type: String,
         valueFormat: String? = nil,
         isRequired: Bool,
+        isVisible: Bool = true,
         valueSource: FormKitToolValueSource? = nil,
         description: String? = nil,
         enumOptions: [String] = [],
@@ -60,6 +62,7 @@ public struct FormKitToolField: Equatable, Sendable {
         self.type = type
         self.valueFormat = valueFormat
         self.isRequired = isRequired
+        self.isVisible = isVisible
         self.valueSource = valueSource
         self.description = description
         self.enumOptions = enumOptions

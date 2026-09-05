@@ -17,10 +17,16 @@ public internal(set) var formErrorMessage: String?
     public internal(set) var revision = 0
 
     @ObservationIgnored
+    let includesHiddenToolFields: Bool
+
+    @ObservationIgnored
     let validator: Schema?
 
     @ObservationIgnored
     let initialInstance: FormKitJSONValue?
+
+    @ObservationIgnored
+    var suppliedInstance: FormKitJSONValue?
 
     @ObservationIgnored
     let renderPlanProvider: (FormKitJSONValue?) -> FormKitRenderPlan
@@ -57,6 +63,7 @@ public internal(set) var formErrorMessage: String?
 
     init(
         renderPlan: FormKitRenderPlan,
+        includesHiddenToolFields: Bool = false,
         validator: Schema?,
         initialInstance: FormKitJSONValue?,
         initialFieldValues: [String: FormKitFieldDescriptor.PrimitiveValue?],
@@ -68,9 +75,11 @@ public internal(set) var formErrorMessage: String?
             FormKitJSONValue?
         ) -> [String: FormKitFieldDescriptor.PrimitiveValue?]
     ) {
+        self.includesHiddenToolFields = includesHiddenToolFields
         self.renderPlan = Self.failClosed(renderPlan)
         self.validator = validator
         self.initialInstance = initialInstance
+        self.suppliedInstance = includesHiddenToolFields ? initialInstance : nil
         self.validationBehavior = validationBehavior
         self.refreshesRenderPlanOnFieldEdit = refreshesRenderPlanOnFieldEdit
         self.renderPlanProvider = renderPlanProvider

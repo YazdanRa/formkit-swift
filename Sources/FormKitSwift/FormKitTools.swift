@@ -8,11 +8,9 @@ public extension FormKitSession {
 
     func makeToolContext(focusedPointers: Set<String> = []) -> FormKitToolContext {
         let normalizedFocusedPointers = Set(focusedPointers.map(normalizedToolPointer))
-        let visibleFields = renderPlan.fieldOrder.compactMap { fieldID in
-            renderPlan.fields.first(where: { $0.id == fieldID && $0.isVisible })
-        }
+        let toolFields = orderedFields.filter { $0.isVisible || includesHiddenToolFields }
 
-        let fields = visibleFields.map { field in
+        let fields = toolFields.map { field in
             let pointer = publicToolPointer(for: field.pointer)
             return FormKitToolField(
                 pointer: pointer,
@@ -20,16 +18,17 @@ public extension FormKitSession {
                 type: field.isEnum ? "enum" : field.scalarType.rawValue,
                 valueFormat: FormKitRenderer.toolValueFormat(for: field.scalarType),
                 isRequired: field.isRequired,
+                isVisible: field.isVisible,
                 valueSource: toolValueSource(for: field),
                 description: field.description,
                 enumOptions: field.enumOptions.map(\.title),
-                isLocked: normalizedFocusedPointers.contains(normalizedToolPointer(pointer)),
+                isLocked: field.isDisabled || normalizedFocusedPointers.contains(normalizedToolPointer(pointer)),
                 validationMessages: errorMessages(for: field)
             )
         }
 
         let currentValues: [String: FormKitJSONValue] = Dictionary(
-            uniqueKeysWithValues: visibleFields.compactMap { field in
+            uniqueKeysWithValues: toolFields.compactMap { field in
                 guard let value = toolValue(for: field) else {
                     return nil
                 }
@@ -104,11 +103,11 @@ public extension FormKitSession {
             return rejected(
                 edit,
                 reason: "field_not_found",
-                message: "The requested field does not exist in the visible form."
+                message: "The requested field does not exist in the available form context."
             )
         }
 
-        guard field.isVisible, field.isDisabled == false else {
+        guard field.isVisible || includesHiddenToolFields, field.isDisabled == false else {
             return rejected(
                 edit,
                 reason: "field_not_visible",
@@ -293,12 +292,12 @@ public extension FormKitSession {
     private func field(forToolPointer pointer: String) -> FormKitFieldDescriptor? {
         let normalizedPointer = normalizedToolPointer(pointer)
         return renderPlan.fields.first {
-            $0.isVisible && normalizedToolPointer($0.pointer) == normalizedPointer
+            ($0.isVisible || includesHiddenToolFields) && normalizedToolPointer($0.pointer) == normalizedPointer
         }
     }
 
     private func toolValue(for field: FormKitFieldDescriptor) -> FormKitJSONValue? {
-        guard let primitive = primitiveValue(for: field) else {
+        guard field.isVisible || shouldSerialize(field), let primitive = primitiveValue(for: field) else {
             return nil
         }
         return toolValue(from: primitive)
@@ -349,7 +348,7 @@ public extension FormKitSession {
         currentValues: [String: FormKitJSONValue]
     ) -> String {
         let missingRequiredTitles = fields.compactMap { field -> String? in
-            guard field.isRequired else {
+            guard field.isVisible, field.isRequired else {
                 return nil
             }
             if case .string(let value) = currentValues[field.pointer],

@@ -100,7 +100,8 @@ extension FormKitRenderer {
         }
         return FormKitRenderer(
             defaultConditionalRenderBehavior: effectiveDefault,
-            conditionalRenderBehaviorOverrides: effectiveOverrides
+            conditionalRenderBehaviorOverrides: effectiveOverrides,
+            includesHiddenToolFields: includesHiddenToolFields
         )
     }
 
@@ -173,6 +174,7 @@ extension FormKitRenderer {
         let propertyOrderIndex = assembly.decodedSchema.propertyOrderIndex
         let session = FormKitSession(
             renderPlan: assembly.renderPlan,
+            includesHiddenToolFields: includesHiddenToolFields,
             validator: assembly.validator,
             initialInstance: assembly.decodedInstance.value,
             initialFieldValues: seedFieldValues(

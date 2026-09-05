@@ -2,6 +2,32 @@ import Foundation
 import JSONSchema
 
 extension FormKitRenderer {
+    func activeConditionalOverlay(_ schema: MaterializedJSONSchemaObject) -> MaterializedJSONSchemaObject {
+        guard includesHiddenToolFields else { return schema }
+        return MaterializedJSONSchemaObject(
+            object: markingActiveConditionalSchema(schema.object),
+            propertyOrder: schema.propertyOrder
+        )
+    }
+
+    private func markingActiveConditionalSchema(
+        _ schema: [String: FormKitJSONValue]
+    ) -> [String: FormKitJSONValue] {
+        var marked = schema
+        if marked[Self.internalConditionalStateKey] == nil {
+            marked[Self.internalConditionalStateKey] = .string(FormKitConditionalRenderState.active.rawValue)
+        }
+        if let properties = marked["properties"]?.object {
+            marked["properties"] = .object(properties.mapValues { value in
+                value.object.map { .object(markingActiveConditionalSchema($0)) } ?? value
+            })
+        }
+        if let items = marked["items"]?.object {
+            marked["items"] = .object(markingActiveConditionalSchema(items))
+        }
+        return marked
+    }
+
     func inactiveRenderableSchemaObject(
         from schemaObject: MaterializedJSONSchemaObject,
         pointerTokens: [String],
@@ -159,11 +185,11 @@ extension FormKitRenderer {
         let hasRenderableChildren = transformed["properties"]?.object?.isEmpty == false
             || transformed["items"] != nil
 
-        guard renderBehavior != .hide || hasRenderableChildren else {
+        guard includesHiddenToolFields || renderBehavior != .hide || hasRenderableChildren else {
             return nil
         }
 
-        if renderBehavior != .hide {
+        if includesHiddenToolFields || renderBehavior != .hide {
             transformed[Self.internalConditionalStateKey] = .string(
                 FormKitConditionalRenderState.inactive.rawValue
             )
