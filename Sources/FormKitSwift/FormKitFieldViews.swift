@@ -190,7 +190,7 @@ extension FormKitContainerView {
             }
         }
         .disabled(locked)
-        .frame(maxWidth: .infinity, alignment: .trailing)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityIdentifier("\(fieldIdentifier(for: field))_picker")
     }
 
@@ -230,7 +230,7 @@ extension FormKitContainerView {
         }
         .pickerStyle(.menu)
         .disabled(locked)
-        .frame(maxWidth: .infinity, alignment: .trailing)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityIdentifier("\(fieldIdentifier(for: field))_picker")
     }
 

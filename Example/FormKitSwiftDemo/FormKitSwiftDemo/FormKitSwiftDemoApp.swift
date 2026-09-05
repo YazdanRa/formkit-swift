@@ -8,6 +8,8 @@ struct FormKitSwiftDemoApp: App {
                 ControlledFocusDemoView()
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_ROW_REMOVAL") {
                 ControlledFocusDemoView(showsArray: true)
+            } else if ProcessInfo.processInfo.arguments.contains("-UITEST_PICKER_LAYOUT") {
+                PickerLayoutDemoView()
             } else {
                 DemoContentView()
             }
