@@ -150,6 +150,60 @@ final class FormKitHiddenToolFieldTests: XCTestCase {
         XCTAssertTrue(field.enumOptions.isEmpty)
     }
 
+    func testNestedConditionalRequirementsKeepHiddenFieldsAndActiveSiblings() throws {
+        let schema = #"""
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "details": {"type": "object", "properties": {
+              "code": {"type": "string"}, "note": {"type": "string"}
+            }},
+            "entries": {"type": "array", "items": {"type": "object", "properties": {
+              "code": {"type": "string"}, "note": {"type": "string"}
+            }}}
+          },
+          "if": {"properties": {"enabled": {"const": true}}, "required": ["enabled"]},
+          "then": {"properties": {
+            "details": {"type": "object", "required": ["code"], "properties": {
+              "code": {"type": "string"}, "note": {"enum": ["A"]}, "hiddenOnly": {"type": "string"}
+            }},
+            "entries": {"type": "array", "items": {"type": "object", "required": ["code"], "properties": {
+              "code": {"type": "string"}, "note": {"enum": ["A"]}, "hiddenOnly": {"type": "string"}
+            }}}
+          }}
+        }
+        """#
+        let session = FormKitRenderer(includesHiddenToolFields: true).makeFormSession(
+            schemaJSON: schema, instanceJSON: #"{"enabled":false,"details":{},"entries":[{}]}"#
+        )
+        XCTAssertTrue(session.renderPlan.isSupported)
+        let initial = session.makeToolContext()
+        for parent in ["/details", "/entries/0"] {
+            for name in ["code", "hiddenOnly"] {
+                let field = try XCTUnwrap(initial.fields.first { $0.pointer == "\(parent)/\(name)" })
+                XCTAssertFalse(field.isVisible, field.pointer)
+            }
+            let sibling = try XCTUnwrap(initial.fields.first { $0.pointer == "\(parent)/note" })
+            XCTAssertTrue(sibling.isVisible)
+            XCTAssertTrue(sibling.enumOptions.isEmpty)
+        }
+        let result = session.applyToolEdits([
+            .init(pointer: "/details/code", operation: .set, value: .string("Supplied early")),
+            .init(pointer: "/entries/0/code", operation: .set, value: .string("Supplied early")),
+            .init(pointer: "/enabled", operation: .set, value: .boolean(true))
+        ])
+        XCTAssertTrue(result.rejectedEdits.isEmpty)
+        for parent in ["/details", "/entries/0"] {
+            let field = try XCTUnwrap(result.context.fields.first { $0.pointer == "\(parent)/code" })
+            XCTAssertTrue(field.isVisible)
+            XCTAssertTrue(field.isRequired)
+            XCTAssertEqual(result.context.currentValues[field.pointer], .string("Supplied early"))
+            let sibling = try XCTUnwrap(result.context.fields.first { $0.pointer == "\(parent)/note" })
+            XCTAssertEqual(sibling.enumOptions, ["A"])
+        }
+    }
+
     func testPredeclaredConditionallyRequiredFieldKeepsItsVisibility() throws {
         let schema = #"""
         {
