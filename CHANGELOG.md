@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.3](https://github.com/YazdanRa/formkit-swift/compare/v1.6.2...v1.6.3) (2026-09-05)
+
+
+### Bug Fixes
+
+* **tools:** preserve supplied hidden field answers ([#33](https://github.com/YazdanRa/formkit-swift/issues/33)) ([365ffd3](https://github.com/YazdanRa/formkit-swift/commit/365ffd3d36184bc61d8da3b1a21db4abcf978e2f))
+
 ## [1.6.2](https://github.com/YazdanRa/formkit-swift/compare/v1.6.1...v1.6.2) (2026-09-05)
 
 
