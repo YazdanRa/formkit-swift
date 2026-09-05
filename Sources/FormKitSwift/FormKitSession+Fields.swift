@@ -45,7 +45,7 @@ public extension FormKitSession {
             return source
         }
 
-        guard let initialInstance,
+        guard let initialInstance = includesHiddenToolFields ? suppliedInstance : initialInstance,
               let initialValue = initialInstance.value(at: JSONPointer(from: field.pointer)),
               primitiveValue(
                 from: initialValue,

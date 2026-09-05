@@ -60,13 +60,16 @@ public extension FormKitRendering {
 /// Experimental bridge from JSON Schema documents to native iOS form metadata.
 @MainActor
 public final class FormKitRenderer: FormKitRendering {
+    let includesHiddenToolFields: Bool
     let defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior
     let conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]
 
     public init(
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior = .hide,
-        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior] = [:]
+        conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior] = [:],
+        includesHiddenToolFields: Bool = false
     ) {
+        self.includesHiddenToolFields = includesHiddenToolFields
         self.defaultConditionalRenderBehavior = defaultConditionalRenderBehavior
         self.conditionalRenderBehaviorOverrides = Self.normalizedConditionalRenderBehaviorOverrides(
             conditionalRenderBehaviorOverrides

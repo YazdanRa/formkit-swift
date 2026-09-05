@@ -34,6 +34,20 @@ result.rejectedEdits
 result.context
 ```
 
+## Supplying Answers For Hidden Fields
+
+Hosts that capture multiple answers together can opt in with `FormKitRenderer(includesHiddenToolFields: true)`.
+The session retains conditional field descriptors and includes hidden fields in tool context with `isVisible = false`.
+The UI continues to honor `.hide`. Hosts should use visibility and requiredness to choose questions, rather than
+restricting which clear user-supplied answers tools can apply. Disabled and locked fields remain protected.
+
+Opted-in sessions accept validated edits to known hidden fields, including edits placed before a controlling answer
+when the supplied value matches that hidden descriptor. When a controller changes a shared field's type or choices,
+apply the controller first and use the refreshed descriptor. Active branch definitions remain authoritative. Initial and session-edited hidden values survive `currentInstanceJSON` and reopening; untouched
+hidden defaults are omitted. Hidden arrays retain row positions using empty objects or null slots where needed,
+without copying untouched default values into those rows. Hidden answers remain subject to the original JSON Schema validation rules.
+The default renderer continues to expose and edit only visible fields.
+
 ## Edit Contract
 
 Tool pointers omit the descriptor's leading `#`. Set edits require a value. Clear edits apply the same nullable and empty-value rules as stock controls.

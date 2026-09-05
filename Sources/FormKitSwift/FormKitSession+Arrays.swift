@@ -32,6 +32,7 @@ public extension FormKitSession {
         } else {
             instance = removingValue(from: instance, path: Self.tokens(from: section.pointer))
         }
+        replaceSuppliedArrayValue(value, at: section.pointer)
 
         let descendantPrefix = "\(section.pointer)/"
         touchedFieldIDs = touchedFieldIDs.filter {
@@ -71,6 +72,18 @@ public extension FormKitSession {
         toolValueSourceOverrides.merge(
             nextValueSources.filter { visibleValuePointers.contains($0.key) }
         ) { _, new in new }
+    }
+
+    private func replaceSuppliedArrayValue(_ value: [FormKitJSONValue]?, at pointer: String) {
+        guard includesHiddenToolFields else { return }
+        // Array replacements remap pointers; hidden answers must not fall back to removed rows.
+        var supplied = suppliedInstance ?? .object([:])
+        if let value {
+            insert(.array(value), at: pointer, into: &supplied)
+        } else {
+            supplied = removingValue(from: supplied, path: Self.tokens(from: pointer))
+        }
+        suppliedInstance = supplied
     }
 
     private func toolValueSources(

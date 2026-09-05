@@ -2,6 +2,53 @@ import Foundation
 import JSONSchema
 
 extension FormKitRenderer {
+    func activeConditionalOverlay(
+        _ schema: MaterializedJSONSchemaObject,
+        inactiveSchema: MaterializedJSONSchemaObject? = nil
+    ) -> MaterializedJSONSchemaObject {
+        guard includesHiddenToolFields else { return schema }
+        return MaterializedJSONSchemaObject(
+            object: markingActiveConditionalSchema(schema.object, inactiveSchema: inactiveSchema?.object ?? [:]),
+            propertyOrder: schema.propertyOrder
+        )
+    }
+
+    private func markingActiveConditionalSchema(
+        _ schema: [String: FormKitJSONValue],
+        inactiveSchema: [String: FormKitJSONValue]
+    ) -> [String: FormKitJSONValue] {
+        var marked = schema
+        if marked[Self.internalConditionalStateKey] == nil {
+            marked[Self.internalConditionalStateKey] = .string(FormKitConditionalRenderState.active.rawValue)
+        }
+        if let properties = marked["properties"]?.object {
+            let required = Set(schema["required"]?.array?.compactMap(\.string) ?? [])
+            let inactiveRequired = Set(inactiveSchema["required"]?.array?.compactMap(\.string) ?? [])
+            var markedProperties = properties
+            for (key, value) in properties {
+                guard let property = value.object else { continue }
+                // Retain the whole subtree when only the inactive branch makes this field required.
+                if inactiveRequired.contains(key), !required.contains(key),
+                   property[Self.internalConditionalStateKey] == nil
+                {
+                    continue
+                }
+                markedProperties[key] = .object(markingActiveConditionalSchema(
+                    property,
+                    inactiveSchema: inactiveSchema["properties"]?.object?[key]?.object ?? [:]
+                ))
+            }
+            marked["properties"] = .object(markedProperties)
+        }
+        if let items = marked["items"]?.object {
+            marked["items"] = .object(markingActiveConditionalSchema(
+                items,
+                inactiveSchema: inactiveSchema["items"]?.object ?? [:]
+            ))
+        }
+        return marked
+    }
+
     func inactiveRenderableSchemaObject(
         from schemaObject: MaterializedJSONSchemaObject,
         pointerTokens: [String],
@@ -159,11 +206,11 @@ extension FormKitRenderer {
         let hasRenderableChildren = transformed["properties"]?.object?.isEmpty == false
             || transformed["items"] != nil
 
-        guard renderBehavior != .hide || hasRenderableChildren else {
+        guard includesHiddenToolFields || renderBehavior != .hide || hasRenderableChildren else {
             return nil
         }
 
-        if renderBehavior != .hide {
+        if includesHiddenToolFields || renderBehavior != .hide {
             transformed[Self.internalConditionalStateKey] = .string(
                 FormKitConditionalRenderState.inactive.rawValue
             )
