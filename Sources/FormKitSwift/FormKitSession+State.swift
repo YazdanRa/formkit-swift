@@ -61,7 +61,7 @@ extension FormKitSession {
             }
 
             for row in descriptor.rows {
-                insert(row.placeholderValue, at: row.pointer, into: &rootObject)
+                insert(arrayRowSeed(row, in: section), at: row.pointer, into: &rootObject)
             }
         }
 
@@ -84,6 +84,33 @@ extension FormKitSession {
         }
 
         return .object(rootObject)
+    }
+
+    private func arrayRowSeed(
+        _ row: FormKitArrayRowDescriptor,
+        in section: FormKitRenderPlan.SectionDescriptor
+    ) -> FormKitJSONValue {
+        guard includesHiddenToolFields else { return row.placeholderValue }
+        // Keep row positions available to later edits without copying hidden schema defaults.
+        var seed = section.isVisible ? row.placeholderValue
+            : suppliedInstance?.value(at: JSONPointer(from: row.pointer))
+                ?? (section.arrayDescriptor?.itemKind == .object ? .object([:]) : .null)
+        let rowPath = Self.tokens(from: row.pointer)
+        for child in renderPlan.sections where !child.isVisible && child.pointer.hasPrefix(row.pointer + "/") {
+            let path = Array(Self.tokens(from: child.pointer).dropFirst(rowPath.count))
+            if let supplied = suppliedInstance?.value(at: JSONPointer(from: child.pointer)) {
+                insert(supplied, at: JSONPointer.pointerString(from: path), into: &seed)
+            } else {
+                seed = removingValue(from: seed, path: path)
+            }
+        }
+        for field in orderedFields where field.pointer == row.pointer || field.pointer.hasPrefix(row.pointer + "/") {
+            guard !shouldSerialize(field)
+                || (touchedFieldIDs.contains(field.id) && primitiveValue(for: field) == nil) else { continue }
+            let path = Array(Self.tokens(from: field.pointer).dropFirst(rowPath.count))
+            seed = path.isEmpty ? .null : removingValue(from: seed, path: path)
+        }
+        return seed
     }
 
     private func shouldSerializeArray(_ section: FormKitRenderPlan.SectionDescriptor) -> Bool {
