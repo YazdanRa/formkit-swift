@@ -38,19 +38,26 @@ extension FormKitContainerView {
         components: FormKitResolvedComponents,
         context: FormKitFieldComponentContext
     ) -> some View {
-        let componentInput = components.fieldInputs[field.id]
+        let componentInput = components.fieldInputs[field.id]?.view
             ?? FormKitComponentRegistry.fieldInput(for: context)
+        let usesLineOptionsChoice = components.fieldInputs[field.id]?.isCustom != true
+            && componentInput != nil && field.uiComponent == .lineOptionsChoice
         let usesStackedLabel = componentInput != nil
             || (!field.isEnum && ![.boolean, .date, .time, .dateTime].contains(field.scalarType))
 
         return VStack(alignment: .leading, spacing: options.style.fieldSpacing) {
-            fieldCardLabel(field, componentInput: componentInput, usesStackedLabel: usesStackedLabel)
+            fieldCardLabel(
+                field,
+                componentInput: componentInput,
+                usesStackedLabel: usesStackedLabel,
+                usesLineOptionsChoice: usesLineOptionsChoice
+            )
             fieldCardInput(
                 componentInput,
-                field: field,
                 renderIndex: renderIndex,
                 context: context,
-                usesStackedLabel: usesStackedLabel
+                usesStackedLabel: usesStackedLabel,
+                usesLineOptionsChoice: usesLineOptionsChoice
             )
             fieldErrors(context.errors, field: field)
         }
@@ -67,9 +74,13 @@ extension FormKitContainerView {
     private func fieldCardLabel(
         _ field: FormKitFieldDescriptor,
         componentInput: AnyView?,
-        usesStackedLabel: Bool
+        usesStackedLabel: Bool,
+        usesLineOptionsChoice: Bool
     ) -> some View {
-        if usesStackedLabel {
+        if usesLineOptionsChoice {
+            Text("\(field.title)\(Text(field.isRequired ? " *" : "").foregroundStyle(options.style.destructive))")
+                .font(.body)
+        } else if usesStackedLabel {
             Text(field.title)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(options.style.secondaryText)
@@ -86,12 +97,28 @@ extension FormKitContainerView {
     @ViewBuilder
     private func fieldCardInput(
         _ componentInput: AnyView?,
-        field: FormKitFieldDescriptor,
         renderIndex: FormKitRenderIndex,
         context: FormKitFieldComponentContext,
-        usesStackedLabel: Bool
+        usesStackedLabel: Bool,
+        usesLineOptionsChoice: Bool
     ) -> some View {
-        if usesStackedLabel {
+        let field = context.field
+        if usesLineOptionsChoice, let componentInput {
+            componentInput
+                .background(
+                    context.isEditingLocked || field.isDisabled
+                        ? options.style.disabledFieldBackground
+                        : options.style.fieldBackground
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 22))
+                .overlay {
+                    // Keep wrapped labels clear of the rounded ends at larger text sizes.
+                    RoundedRectangle(cornerRadius: 22).stroke(
+                        borderColor(for: field, state: context.state, hasErrors: !context.errors.isEmpty),
+                        lineWidth: context.errors.isEmpty && context.state == .normal ? 0 : 1.5
+                    )
+                }
+        } else if usesStackedLabel {
             resolvedFieldInput(
                 componentInput,
                 field: field,

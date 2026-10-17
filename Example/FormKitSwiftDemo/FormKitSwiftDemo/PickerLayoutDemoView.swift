@@ -37,6 +37,12 @@ struct PickerLayoutDemoView: View {
         "date": {
           "type": ["string", "null"], "format": "date", "x-formkit-order": 4,
           "title": "Scheduled Inspection — Confirmed Date for Full System Review"
+        },
+        "condition": {
+          "type": "string", "x-formkit-order": 5,
+          "title": "Overall condition",
+          "x-formkit-ui-component": "line-options-choice",
+          "enum": ["Very good", "Good", "Fair", "Needs work", "Not applicable"]
         }
       }
     }

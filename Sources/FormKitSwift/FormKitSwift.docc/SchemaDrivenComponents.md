@@ -1,6 +1,6 @@
 # Schema-Driven Components
 
-Select package-native file and signature inputs from the schema and connect their side effects to the host.
+Select package-native choice, file, and signature inputs from the schema.
 
 ## Select a Component
 
@@ -10,6 +10,12 @@ Add `x-formkit-ui-component` to a compatible schema:
 {
   "type": "object",
   "properties": {
+    "inspection": {
+      "type": "string",
+      "title": "Linens clean, pressed and free of visible wear",
+      "enum": ["Pass", "Failed", "N/A"],
+      "x-formkit-ui-component": "line-options-choice"
+    },
     "license": {
       "type": "string",
       "format": "uri",
@@ -43,8 +49,11 @@ Supported values and shapes are:
 | `file-field` | Non-enum string field, normally with `format: "uri"` |
 | `multiple-file-field` | Array of strings without item `enum` or `const`, normally with item `format: "uri"` |
 | `signature-pad` | Non-enum string field, normally with `format: "uri"` |
+| `line-options-choice` | Scalar enum field with 2–5 options, including any explicit `null` option |
 
 Unknown or incompatible annotations remain available on descriptors but fall back to stock rendering. Annotation values are trimmed and case-insensitive.
+
+`line-options-choice` displays a single row of equally sized choices on a rounded inset track. It uses the enum's order, labels, and typed values. The selected option uses Liquid Glass on iOS, macOS, and visionOS 26 or later, with a solid fallback on earlier systems or when Reduce Transparency is enabled. Selection changes respect Reduce Motion and are announced to assistive technology. Required fields show an asterisk and retain their selection; optional fields can be cleared by tapping the selected option again. Existing enum defaults, validation, and read-only behavior apply.
 
 ## Provide an Upload Handler
 
