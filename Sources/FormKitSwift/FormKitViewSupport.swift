@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FormKitResolvedComponents {
-    let fieldInputs: [String: AnyView]
+    let fieldInputs: [String: FormKitResolvedFieldInput]
     let arraySections: [String: AnyView]
     let fieldStates: [String: FormKitFieldVisualState]
     let focusableFieldIDs: Set<String>
@@ -89,7 +89,7 @@ enum FormKitFocusSupport {
         fieldStates: [String: FormKitFieldVisualState],
         session: FormKitSession,
         options: FormKitOptions
-    ) -> [String: AnyView] {
+    ) -> [String: FormKitResolvedFieldInput] {
         guard options.components.field == nil else {
             return [:]
         }
@@ -105,10 +105,10 @@ enum FormKitFocusSupport {
                 style: options.style,
                 uploadHandler: options.uploadHandler
             )
-            if let input = options.components.fieldInput?(context)
-                ?? FormKitComponentRegistry.fieldInput(for: context)
-            {
-                result[field.id] = input
+            if let input = options.components.fieldInput?(context) {
+                result[field.id] = FormKitResolvedFieldInput(view: input, isCustom: true)
+            } else if let input = FormKitComponentRegistry.fieldInput(for: context) {
+                result[field.id] = FormKitResolvedFieldInput(view: input, isCustom: false)
             }
         }
     }
@@ -116,7 +116,7 @@ enum FormKitFocusSupport {
     private static func resolvedFocusableFieldIDs(
         fields: [FormKitFieldDescriptor],
         fieldStates: [String: FormKitFieldVisualState],
-        fieldInputs: [String: AnyView],
+        fieldInputs: [String: FormKitResolvedFieldInput],
         options: FormKitOptions
     ) -> Set<String> {
         guard options.mode == .editable, options.components.field == nil else {

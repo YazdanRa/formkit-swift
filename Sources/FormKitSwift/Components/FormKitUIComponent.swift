@@ -12,4 +12,5 @@ public struct FormKitUIComponent: RawRepresentable, Hashable, Sendable {
     public static let fileField = FormKitUIComponent(rawValue: "file-field")
     public static let multipleFileField = FormKitUIComponent(rawValue: "multiple-file-field")
     public static let signaturePad = FormKitUIComponent(rawValue: "signature-pad")
+    public static let lineOptionsChoice = FormKitUIComponent(rawValue: "line-options-choice")
 }

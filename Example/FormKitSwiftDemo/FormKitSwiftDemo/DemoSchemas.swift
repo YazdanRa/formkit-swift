@@ -16,6 +16,7 @@ enum DemoSchemas {
         "status": {
           "type": "string",
           "title": "Status",
+          "x-formkit-ui-component": "line-options-choice",
           "enum": ["Draft", "Needs Review", "Complete"]
         },
         "needs_follow_up": {
