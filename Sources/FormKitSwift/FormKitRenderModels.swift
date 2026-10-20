@@ -145,12 +145,23 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
                 return "null"
             }
         }
+
+        var optionColorKey: String {
+            switch self {
+            case .string(let value): return value
+            case .integer(let value): return String(value)
+            case .number(let value): return Int(exactly: value).map(String.init) ?? String(value)
+            case .boolean(let value): return value ? "true" : "false"
+            case .null: return "null"
+            }
+        }
     }
 
     public struct Choice: Identifiable, Sendable, Equatable {
         public let id: String
         public let title: String
         public let value: PrimitiveValue
+        public let color: FormKitOptionColor?
     }
 
     public let id: String

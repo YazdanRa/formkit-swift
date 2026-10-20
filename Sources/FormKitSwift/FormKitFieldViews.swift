@@ -105,14 +105,7 @@ extension FormKitContainerView {
         let field = context.field
         if usesLineOptionsChoice, let componentInput {
             componentInput
-                .background(
-                    context.isEditingLocked || field.isDisabled
-                        ? options.style.disabledFieldBackground
-                        : options.style.fieldBackground
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 22))
                 .overlay {
-                    // Keep wrapped labels clear of the rounded ends at larger text sizes.
                     RoundedRectangle(cornerRadius: 22).stroke(
                         borderColor(for: field, state: context.state, hasErrors: !context.errors.isEmpty),
                         lineWidth: context.errors.isEmpty && context.state == .normal ? 0 : 1.5

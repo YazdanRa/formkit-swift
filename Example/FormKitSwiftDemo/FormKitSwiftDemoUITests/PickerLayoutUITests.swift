@@ -2,7 +2,7 @@ import XCTest
 
 final class PickerLayoutUITests: XCTestCase {
     @MainActor
-    func testFiveLineOptionsWrapAtAccessibilityTextSize() {
+    func testThreeLineOptionsStackAtAccessibilityTextSize() throws {
         let app = XCUIApplication()
         app.launchArguments = [
             "-UITEST_PICKER_LAYOUT",
@@ -10,17 +10,29 @@ final class PickerLayoutUITests: XCTestCase {
         ]
         app.launch()
 
-        let first = app.buttons["json_form_field_condition_option_string:Very good"]
-        let last = app.buttons["json_form_field_condition_option_string:Not applicable"]
-        for _ in 0..<8 where !first.isHittable {
+        let titles = ["Pass", "Failed", "N/A"]
+        let last = app.buttons["json_form_field_condition_option_string:N/A"]
+        for _ in 0..<8 where !last.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(first.isHittable)
+        var frames: [CGRect] = []
+        for title in titles {
+            let option = app.buttons["json_form_field_condition_option_string:\(title)"]
+            XCTAssertTrue(option.isHittable, title)
+            XCTAssertGreaterThanOrEqual(option.frame.height, 44, title)
+            XCTAssertGreaterThanOrEqual(option.frame.width, 44, title)
+            XCTAssertLessThan(option.frame.height, 180, title)
+            XCTAssertGreaterThanOrEqual(option.frame.minX, 0, title)
+            XCTAssertLessThanOrEqual(option.frame.maxX, app.frame.maxX, title)
+            frames.append(option.frame)
+        }
+        XCTAssertGreaterThan(try XCTUnwrap(frames.last?.minY), try XCTUnwrap(frames.first?.minY))
+        for (index, frame) in frames.enumerated() {
+            for other in frames.dropFirst(index + 1) {
+                XCTAssertFalse(frame.intersects(other))
+            }
+        }
         XCTAssertTrue(last.isHittable)
-        XCTAssertEqual(first.frame.minY, last.frame.minY, accuracy: 1)
-        XCTAssertEqual(first.frame.width, last.frame.width, accuracy: 1)
-        XCTAssertEqual(first.frame.height, last.frame.height, accuracy: 1)
-        XCTAssertGreaterThan(first.frame.height, 44)
         let initialFrame = last.frame
         last.tap()
         XCTAssertTrue(last.isSelected)
@@ -28,6 +40,30 @@ final class PickerLayoutUITests: XCTestCase {
         XCTAssertEqual(last.frame.width, initialFrame.width, accuracy: 1)
         last.tap()
         XCTAssertFalse(last.isSelected)
+    }
+
+    @MainActor
+    func testLineOptionsFollowRightToLeftOrderInNarrowDarkLayout() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-UITEST_PICKER_LAYOUT", "-UITEST_RTL", "-UITEST_DARK"]
+        app.launch()
+
+        let first = app.buttons["json_form_field_condition_option_string:Pass"]
+        let second = app.buttons["json_form_field_condition_option_string:Failed"]
+        let last = app.buttons["json_form_field_condition_option_string:N/A"]
+        for _ in 0..<8 where !last.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(first.isHittable)
+        XCTAssertTrue(second.isHittable)
+        XCTAssertTrue(last.isHittable)
+        XCTAssertGreaterThan(first.frame.minX, second.frame.minX)
+        XCTAssertEqual(first.frame.minY, second.frame.minY, accuracy: 1)
+        XCTAssertLessThanOrEqual(last.frame.maxX, app.frame.maxX)
+        let initialFrame = first.frame
+        first.tap()
+        XCTAssertTrue(first.isSelected)
+        XCTAssertEqual(first.frame, initialFrame)
     }
 
     @MainActor
@@ -45,8 +81,12 @@ final class PickerLayoutUITests: XCTestCase {
         XCTAssertTrue(draft.isSelected)
         XCTAssertEqual(draft.frame.width, review.frame.width, accuracy: 1)
         XCTAssertEqual(draft.frame.width, complete.frame.width, accuracy: 1)
+        XCTAssertEqual(draft.frame.maxX, review.frame.minX, accuracy: 1)
+        XCTAssertEqual(review.frame.maxX, complete.frame.minX, accuracy: 1)
+        XCTAssertLessThan(complete.frame.maxX - draft.frame.minX, app.frame.width - 48)
         XCTAssertEqual(draft.frame.minY, complete.frame.minY, accuracy: 1)
-        XCTAssertGreaterThanOrEqual(draft.frame.height, 44)
+        XCTAssertEqual(draft.frame.height, 44, accuracy: 1)
+        XCTAssertEqual(review.frame.height, 44, accuracy: 1)
 
         let initialHeight = review.frame.height
         review.tap()

@@ -3,46 +3,43 @@ import SwiftUI
 struct FormKitLineOptionsChoice: View {
     let context: FormKitFieldComponentContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
         let selectedID = context.session.selectedEnumChoiceID(for: context.field)
+        let isVertical = dynamicTypeSize.isAccessibilitySize
+        let layout = isVertical ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: 0))
+        let border = context.style.secondaryText.opacity(contrast == .increased ? 0.9 : 0.45)
 
-        HStack(spacing: 4) {
+        layout {
             ForEach(context.field.enumOptions) { choice in
-                let isSelected = selectedID == choice.id
-
-                Button {
+                FormKitLineOptionButton(
+                    choice: choice,
+                    fieldTitle: context.field.title,
+                    identifier: "\(context.field.accessibilityIdentifier)_option_\(choice.id)",
+                    accent: context.style.accent,
+                    isSelected: selectedID == choice.id
+                ) {
                     select(choice)
-                } label: {
-                    Text(choice.title)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(isSelected ? context.style.accent : .primary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                .background {
-                    if isSelected {
-                        FormKitLineOptionSelection(
-                            style: context.style,
-                            isInteractive: !context.isEditingLocked && !context.field.isDisabled
-                        )
+                .overlay(alignment: isVertical ? .bottom : .trailing) {
+                    if choice.id != context.field.enumOptions.last?.id {
+                        Rectangle()
+                            .fill(border)
+                            .frame(width: isVertical ? nil : 1, height: isVertical ? 1 : nil)
                     }
                 }
-                .accessibilityLabel("\(context.field.title), \(choice.title)")
-                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-                .accessibilityIdentifier("\(context.field.accessibilityIdentifier)_option_\(choice.id)")
             }
         }
         .fixedSize(horizontal: false, vertical: true)
-        .padding(4)
-        .background(context.style.secondaryText.opacity(0.08))
+        .clipShape(.rect(cornerRadius: 22))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22).strokeBorder(border, lineWidth: 1)
+        }
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.16), value: selectedID)
         .disabled(context.isEditingLocked || context.field.isDisabled)
+        .opacity(context.isEditingLocked || context.field.isDisabled ? 0.5 : 1)
     }
 
     func select(_ choice: FormKitFieldDescriptor.Choice) {

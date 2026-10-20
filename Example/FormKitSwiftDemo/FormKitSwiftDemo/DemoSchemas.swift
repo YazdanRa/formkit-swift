@@ -17,6 +17,7 @@ enum DemoSchemas {
           "type": "string",
           "title": "Status",
           "x-formkit-ui-component": "line-options-choice",
+          "x-formkit-option-color-map": {"Draft": "#64748B", "Needs Review": "#D97706", "Complete": "#16A34A"},
           "enum": ["Draft", "Needs Review", "Complete"]
         },
         "needs_follow_up": {

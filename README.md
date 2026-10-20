@@ -80,6 +80,33 @@ If the view owns the session, pass the same override map through `FormKitOptions
 
 For deeper customization, set `FormKitOptions.components.field` or `sectionHeader` and render with package-owned context types. Future package-native components can be added behind these same options without leaking host app models.
 
+### Per-Option Colors
+
+Use `line-options-choice` for an enum with 2–3 options, and map each enum value to a hex color with `x-formkit-option-color-map`:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "inspection": {
+      "type": "string",
+      "title": "Terrace or balcony clean and safe",
+      "enum": ["Pass", "Failed", "N/A"],
+      "x-formkit-ui-component": "line-options-choice",
+      "x-formkit-option-color-map": {
+        "Pass": "#16A34A",
+        "Failed": "#DC2626",
+        "N/A": "#64748B"
+      }
+    }
+  }
+}
+```
+
+Only the selected segment uses its mapped color as a solid background, with contrasting black or white text. Unselected segments stay neutral. Colors accept `#RGB` or `#RRGGBB`; keys match enum values exactly. Missing or invalid colors use the host's accent tint. Larger enums use the standard picker.
+
+See [Schema-Driven Components](Sources/FormKitSwift/FormKitSwift.docc/SchemaDrivenComponents.md#set-option-colors) for typed enum keys and custom renderer metadata.
+
 ## Generic Tool APIs
 
 FormKitSwift exposes generic form-tool models, not assistant-specific APIs:

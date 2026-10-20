@@ -219,6 +219,7 @@ extension FormKitRenderer {
 
     func enumOptions(
         from rawValues: [FormKitJSONValue]?,
+        colors: [String: FormKitJSONValue]? = nil,
         scalarType: FormKitFieldDescriptor.ScalarType,
         location: String,
         reasons: inout [FormKitUnsupportedReason]
@@ -246,7 +247,8 @@ extension FormKitRenderer {
                 FormKitFieldDescriptor.Choice(
                     id: primitiveValue.storageKey,
                     title: primitiveValue.title,
-                    value: primitiveValue
+                    value: primitiveValue,
+                    color: colors?[primitiveValue.optionColorKey]?.string.flatMap(FormKitOptionColor.init(hex:))
                 )
             )
         }

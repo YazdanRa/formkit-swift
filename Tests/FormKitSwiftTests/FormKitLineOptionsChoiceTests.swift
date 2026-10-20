@@ -40,7 +40,7 @@ final class FormKitLineOptionsChoiceTests: XCTestCase {
         XCTAssertEqual(invocationCount, 1)
     }
 
-    func testRegistryAcceptsOnlyAnnotatedEnumsWithTwoToFiveChoices() throws {
+    func testRegistryAcceptsOnlyAnnotatedEnumsWithTwoToThreeChoices() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
             {
@@ -62,7 +62,7 @@ final class FormKitLineOptionsChoiceTests: XCTestCase {
 
         for field in session.renderPlan.fields {
             let resolved = FormKitComponentRegistry.fieldInput(for: context(field, in: session))
-            if ["two", "three", "four", "five"].contains(field.propertyKey) {
+            if ["two", "three"].contains(field.propertyKey) {
                 XCTAssertEqual(field.uiComponent, .lineOptionsChoice)
                 XCTAssertNotNil(resolved, field.propertyKey)
             } else {
