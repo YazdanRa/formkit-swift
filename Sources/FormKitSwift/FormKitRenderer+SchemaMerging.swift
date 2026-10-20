@@ -125,6 +125,9 @@ extension FormKitRenderer {
                     )
                 )
 
+            case "x-formkit-option-color-map":
+                merged[key] = mergeOptionColorMaps(merged[key], overlayValue)
+
             default:
                 if let existingObject = merged[key]?.object,
                    let overlayObject = overlayValue.object
@@ -143,6 +146,17 @@ extension FormKitRenderer {
         }
 
         return merged
+    }
+
+    func mergeOptionColorMaps(
+        _ base: FormKitJSONValue?,
+        _ overlay: FormKitJSONValue
+    ) -> FormKitJSONValue {
+        guard let baseObject = base?.object, let overlayObject = overlay.object else {
+            return overlay
+        }
+        // Option names are literal data, even when they match schema keywords.
+        return .object(baseObject.merging(overlayObject) { _, value in value })
     }
 
     func mergeInactiveSchemaObjects(
