@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/YazdanRa/formkit-swift/compare/v1.6.3...v1.7.0) (2026-10-20)
+
+
+### Features
+
+* **components:** add color-mapped segmented choices ([#39](https://github.com/YazdanRa/formkit-swift/issues/39)) ([5f1cb19](https://github.com/YazdanRa/formkit-swift/commit/5f1cb192044e130c5e54e0ef670b208645007971))
+* **components:** add line options choice with Liquid Glass selection ([#36](https://github.com/YazdanRa/formkit-swift/issues/36)) ([9ea2c7c](https://github.com/YazdanRa/formkit-swift/commit/9ea2c7cbdca976cea34b692fbbc4d45f5819bdd9))
+
+
+### Bug Fixes
+
+* **renderer:** merge option color maps by literal keys ([#40](https://github.com/YazdanRa/formkit-swift/issues/40)) ([011720f](https://github.com/YazdanRa/formkit-swift/commit/011720fa56c14f13b50a777edc80d409a168a6fa))
+
 ## [1.6.3](https://github.com/YazdanRa/formkit-swift/compare/v1.6.2...v1.6.3) (2026-09-05)
 
 
