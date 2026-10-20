@@ -5,10 +5,18 @@ struct PickerLayoutDemoView: View {
     var body: some View {
         FormKitView(
             schemaJSON: Self.schema,
-            instanceJSON: #"{"station":"Main gun","traverse":"Pass","elevation":"Pass","enabled":true,"date":null}"#
+            instanceJSON: """
+            {"station":"Main gun","traverse":"Pass","elevation":"Pass","enabled":true,
+             "date":null,"condition":"Failed"}
+            """
         )
         .pickerStyle(.menu)
         .frame(width: 320)
+        .environment(
+            \.layoutDirection,
+            ProcessInfo.processInfo.arguments.contains("-UITEST_RTL") ? .rightToLeft : .leftToRight
+        )
+        .preferredColorScheme(ProcessInfo.processInfo.arguments.contains("-UITEST_DARK") ? .dark : nil)
     }
 
     private static let schema = """
@@ -40,9 +48,10 @@ struct PickerLayoutDemoView: View {
         },
         "condition": {
           "type": "string", "x-formkit-order": 5,
-          "title": "Overall condition",
+          "title": "Terrace or balcony clean and safe",
           "x-formkit-ui-component": "line-options-choice",
-          "enum": ["Very good", "Good", "Fair", "Needs work", "Not applicable"]
+          "x-formkit-option-color-map": {"Pass": "#16A34A", "Failed": "#DC2626", "N/A": "#64748B"},
+          "enum": ["Pass", "Failed", "N/A"]
         }
       }
     }

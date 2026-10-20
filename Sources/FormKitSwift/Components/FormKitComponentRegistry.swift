@@ -8,7 +8,7 @@ enum FormKitComponentRegistry {
         }
 
         switch component {
-        case .lineOptionsChoice where (2...5).contains(context.field.enumOptions.count):
+        case .lineOptionsChoice where (2...3).contains(context.field.enumOptions.count):
             return AnyView(FormKitLineOptionsChoice(context: context))
         case .fileField where isURLField(context.field):
             return AnyView(FormKitFileField(context: context))
