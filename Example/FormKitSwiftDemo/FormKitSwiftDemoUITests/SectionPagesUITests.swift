@@ -2,7 +2,7 @@ import XCTest
 
 final class SectionPagesUITests: XCTestCase {
     @MainActor
-    func testPagesTurnFromTheHeaderFooterAndJumpSheet() {
+    func testPagesTurnFromTheHeaderFooterAndSectionMenu() {
         let app = launch()
         let jump = app.buttons["formkit_page_jump"]
         let lastUserNavigation = app.staticTexts["demo_pages_last_user_navigation"]
@@ -21,7 +21,7 @@ final class SectionPagesUITests: XCTestCase {
         XCTAssertTrue(jump.label.hasPrefix("1 of 3"), jump.label)
 
         jump.tap()
-        let summaryRow = app.buttons["formkit_page_jump_summary"]
+        let summaryRow = app.buttons["Summary"]
         XCTAssertTrue(summaryRow.waitForExistence(timeout: 5))
         summaryRow.tap()
         XCTAssertTrue(app.buttons["formkit_page_row_2"].waitForExistence(timeout: 5))
@@ -42,7 +42,8 @@ final class SectionPagesUITests: XCTestCase {
 
         app.buttons["demo_pages_reveal_lighting"].tap()
 
-        XCTAssertTrue(app.buttons["json_form_field_electrical_lighting_option_string:Pass"].waitForExistence(timeout: 5))
+        let lightingPass = app.buttons["json_form_field_electrical_lighting_option_string:Pass"]
+        XCTAssertTrue(lightingPass.waitForExistence(timeout: 5))
         XCTAssertTrue(jump.label.hasPrefix("3 of 3"), jump.label)
         XCTAssertEqual(app.staticTexts["demo_pages_last_user_navigation"].label, "none")
     }
@@ -54,14 +55,17 @@ final class SectionPagesUITests: XCTestCase {
         XCTAssertTrue(failed.waitForExistence(timeout: 5))
 
         failed.tap()
-        XCTAssertTrue(app.textFields["json_form_field_housekeeping_linens_observation_input"].waitForExistence(timeout: 5))
+        let observation = app.textFields["json_form_field_housekeeping_linens_observation_input"]
+        XCTAssertTrue(observation.waitForExistence(timeout: 5))
 
         app.buttons["formkit_page_jump"].tap()
+        let summaryItem = app.buttons["Summary"]
+        XCTAssertTrue(summaryItem.waitForExistence(timeout: 5))
+        summaryItem.tap()
+
         let firstRow = app.buttons["formkit_page_row_0"]
         XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
         XCTAssertTrue(firstRow.label.contains("Needs attention"), firstRow.label)
-        app.buttons["formkit_page_jump_summary"].tap()
-
         XCTAssertTrue(app.staticTexts["Flagged answers"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Housekeeping › Linens clean and pressed"].exists)
     }
@@ -69,7 +73,7 @@ final class SectionPagesUITests: XCTestCase {
     @MainActor
     private func launch() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-UITEST_SECTION_PAGES"]
+        app.launchArguments = ["-UITEST_SECTION_PAGES", "-SECTION_PAGES_HOST_CONTROLS"]
         app.launch()
         return app
     }

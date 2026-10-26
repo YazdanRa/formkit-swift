@@ -56,7 +56,12 @@ enum FormKitConditionalRuleIndex {
                 return
             }
 
-            collectConditionals(in: object, pointerTokens: pointerTokens, schemaPathTokens: schemaPathTokens, depth: depth)
+            collectConditionals(
+                in: object,
+                pointerTokens: pointerTokens,
+                schemaPathTokens: schemaPathTokens,
+                depth: depth
+            )
             for property in declaredProperties(in: object, schemaPathTokens: schemaPathTokens, depth: depth) {
                 collectObjectRules(
                     property.schema,

@@ -23,51 +23,50 @@ extension FormKitContainerView {
         let currentPage = min(navigator.currentPage, pages.count - 1)
         let labels = options.labels.pages
 
-        return VStack(spacing: 0) {
-            FormKitPageHeader(
-                progress: summary.pages,
-                currentPage: currentPage,
-                isSummaryOpen: navigator.isSummaryOpen,
-                style: options.style,
-                labels: labels,
-                onPrevious: { navigator.previousPage(origin: .user) },
-                onNext: { navigator.nextPage(origin: .user) },
-                onOpenJump: { isPageJumpSheetPresented = true }
-            )
-
-            ScrollViewReader { proxy in
-                Form {
-                    statusSection
-                    if navigator.isSummaryOpen {
-                        FormKitPageSummarySections(
-                            summary: summary,
-                            missingTitles: summary.missingRequired.map(session.qualifiedTitle(for:)),
-                            style: options.style,
-                            labels: labels,
-                            onPick: { navigator.goToPage($0, origin: .user) }
-                        )
-                    } else {
-                        pageContent(
-                            pages[currentPage],
-                            nextTitle: pages.indices.contains(currentPage + 1) ? pages[currentPage + 1].title : nil,
-                            navigator: navigator,
-                            renderIndex: renderIndex,
-                            components: components
-                        )
-                    }
+        return ScrollViewReader { proxy in
+            Form {
+                statusSection
+                if navigator.isSummaryOpen {
+                    FormKitPageSummarySections(
+                        summary: summary,
+                        missingTitles: summary.missingRequired.map(session.qualifiedTitle(for:)),
+                        style: options.style,
+                        labels: labels,
+                        onPick: { navigator.goToPage($0, origin: .user) }
+                    )
+                } else {
+                    pageContent(pages[currentPage], renderIndex: renderIndex, components: components)
+                    FormKitPageContinueButton(
+                        nextTitle: pages.indices.contains(currentPage + 1) ? pages[currentPage + 1].title : nil,
+                        labels: labels,
+                        onContinue: { navigator.nextPage(origin: .user) }
+                    )
                 }
-                // A new page starts at its top.
-                .id(navigator.position)
-                .task(id: navigator.scrollTargetFieldID) {
-                    guard let fieldID = navigator.scrollTargetFieldID else {
-                        return
-                    }
-                    await Task.yield()
-                    withAnimation {
-                        proxy.scrollTo(fieldID, anchor: .center)
-                    }
-                    navigator.scrollTargetFieldID = nil
+            }
+            // A new page starts at its top.
+            .id(navigator.position)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                FormKitPageNavigationBar(
+                    progress: summary.pages,
+                    currentPage: currentPage,
+                    isSummaryOpen: navigator.isSummaryOpen,
+                    style: options.style,
+                    labels: labels,
+                    onPrevious: { navigator.previousPage(origin: .user) },
+                    onNext: { navigator.nextPage(origin: .user) },
+                    onPick: { navigator.goToPage($0, origin: .user) },
+                    onSummary: { navigator.openSummary(origin: .user) }
+                )
+            }
+            .task(id: navigator.scrollTargetFieldID) {
+                guard let fieldID = navigator.scrollTargetFieldID else {
+                    return
                 }
+                await Task.yield()
+                withAnimation {
+                    proxy.scrollTo(fieldID, anchor: .center)
+                }
+                navigator.scrollTargetFieldID = nil
             }
         }
         .onAppear {
@@ -79,31 +78,11 @@ extension FormKitContainerView {
         .onChange(of: navigator.position) { _, position in
             leavePageFocus(for: position, pages: pages)
         }
-        .sheet(isPresented: $isPageJumpSheetPresented) {
-            FormKitPageJumpSheet(
-                progress: summary.pages,
-                currentPage: currentPage,
-                isSummaryOpen: navigator.isSummaryOpen,
-                style: options.style,
-                labels: labels,
-                onPick: { index in
-                    isPageJumpSheetPresented = false
-                    navigator.goToPage(index, origin: .user)
-                },
-                onSummary: {
-                    isPageJumpSheetPresented = false
-                    navigator.openSummary(origin: .user)
-                },
-                onDismiss: { isPageJumpSheetPresented = false }
-            )
-        }
     }
 
     @ViewBuilder
     private func pageContent(
         _ page: FormKitFormPage,
-        nextTitle: String?,
-        navigator: FormKitPageNavigator,
         renderIndex: FormKitRenderIndex,
         components: FormKitResolvedComponents
     ) -> some View {
@@ -115,12 +94,6 @@ extension FormKitContainerView {
         ForEach(renderIndex.pageBlocks(for: page)) { block in
             renderDisplayBlock(block, renderIndex: renderIndex, components: components)
         }
-        FormKitPageFooter(
-            nextTitle: nextTitle,
-            style: options.style,
-            labels: options.labels.pages,
-            onContinue: { navigator.nextPage(origin: .user) }
-        )
     }
 
     /// Keeps a half-typed answer and drops keyboard focus when the focused field is not on the new page.

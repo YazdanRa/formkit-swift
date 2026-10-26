@@ -8,7 +8,6 @@ struct FormKitContainerView: View {
     @FocusState var focusedFieldID: String?
     @State var pendingTextDrafts: [String: String] = [:]
     @State var pendingArraySectionFocusID: String?
-    @State var isPageJumpSheetPresented = false
 
     var isEditingLocked: Bool { options.mode == .readOnly }
 

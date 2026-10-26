@@ -38,10 +38,9 @@ Each top-level object property becomes a page, in `x-formkit-order` order. Top-l
 
 ## What the Pages Show
 
-- A header that stays above the scrolling page: one bar per section, colored by its progress, then previous, a "2 of 6 · Housekeeping" button that opens the jump sheet, and next.
-- The jump sheet lists every section with its status and ends with the summary.
+- A Liquid Glass control floats above the page, under the host's own navigation bar: a round previous button, a capsule showing "2 of 6 · Housekeeping" with one progress bar per section, and a round next button. The capsule opens a menu of every section with its status, followed by the summary. Next on the last section opens the summary.
+- A Liquid Glass button at the foot of each page continues to the next section, or opens the summary from the last one. It is a standard-size button on the trailing edge of the page.
 - Each page shows only its own fields. The section title is left out because the header names it; nested sections keep their titles. The form description shows on the first page.
-- A footer button continues to the next section, or opens the summary from the last one.
 - The summary page lists each section's progress, the flagged answers, and the required fields that are still empty. Tapping a section or a flagged answer goes back to its page.
 
 Text comes from ``FormKitLabels/pages``. Colors come from ``FormKitStyle``.

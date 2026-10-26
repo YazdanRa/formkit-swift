@@ -1,6 +1,6 @@
 import Foundation
 
-/// Text for the page header, jump sheet, footer, and summary of a ``FormKitFormLayout/sectionPages`` form.
+/// Text for the page control, section menu, continue button, and summary of a ``FormKitFormLayout/sectionPages`` form.
 ///
 /// Format strings take positional arguments, so translations can reorder them.
 public struct FormKitPageLabels: Equatable, Sendable {
@@ -22,8 +22,7 @@ public struct FormKitPageLabels: Equatable, Sendable {
         notAnswered: String(localized: "Not answered", bundle: .module),
         needsAttention: String(localized: "Needs attention", bundle: .module),
         flaggedAnswers: String(localized: "Flagged answers", bundle: .module),
-        stillRequired: String(localized: "Still required", bundle: .module),
-        close: String(localized: "Done", bundle: .module)
+        stillRequired: String(localized: "Still required", bundle: .module)
     )
 
     /// The page position, such as "2 of 6". Takes the page number and the page count.
@@ -31,7 +30,7 @@ public struct FormKitPageLabels: Equatable, Sendable {
     public var previousSection: String
     public var nextSection: String
     public var goToSection: String
-    /// The footer button, such as "Continue to Equipment". Takes the next page's title.
+    /// The button at the foot of a page, such as "Continue to Equipment". Takes the next page's title.
     public var continueToFormat: String
     public var reviewSummary: String
     public var summary: String
@@ -42,8 +41,6 @@ public struct FormKitPageLabels: Equatable, Sendable {
     public var needsAttention: String
     public var flaggedAnswers: String
     public var stillRequired: String
-    /// Dismisses the jump sheet.
-    public var close: String
 
     public init(
         positionFormat: String = FormKitPageLabels.localizedDefaults.positionFormat,
@@ -58,8 +55,7 @@ public struct FormKitPageLabels: Equatable, Sendable {
         notAnswered: String = FormKitPageLabels.localizedDefaults.notAnswered,
         needsAttention: String = FormKitPageLabels.localizedDefaults.needsAttention,
         flaggedAnswers: String = FormKitPageLabels.localizedDefaults.flaggedAnswers,
-        stillRequired: String = FormKitPageLabels.localizedDefaults.stillRequired,
-        close: String = FormKitPageLabels.localizedDefaults.close
+        stillRequired: String = FormKitPageLabels.localizedDefaults.stillRequired
     ) {
         self.positionFormat = positionFormat
         self.previousSection = previousSection
@@ -74,7 +70,6 @@ public struct FormKitPageLabels: Equatable, Sendable {
         self.needsAttention = needsAttention
         self.flaggedAnswers = flaggedAnswers
         self.stillRequired = stillRequired
-        self.close = close
     }
 
     func position(page: Int, of count: Int) -> String {

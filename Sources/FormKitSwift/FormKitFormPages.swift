@@ -33,7 +33,7 @@ public struct FormKitFormPage: Identifiable, Sendable, Equatable {
     }
 }
 
-/// How far one page has got, for the progress bars, the jump sheet, and the summary page.
+/// How far one page has got, for the progress bars, the section menu, and the summary page.
 public struct FormKitPageProgress: Identifiable, Sendable, Equatable {
     public enum Status: String, Sendable, Equatable {
         case notStarted = "not_started"
@@ -112,7 +112,8 @@ enum FormKitFormPageBuilder {
             return []
         }
 
-        let topSections = plan.sections.reduce(into: [String: FormKitRenderPlan.SectionDescriptor]()) { result, section in
+        typealias Section = FormKitRenderPlan.SectionDescriptor
+        let topSections = plan.sections.reduce(into: [String: Section]()) { result, section in
             guard section.parentPointer == root.pointer,
                   !section.isOwnedByArrayRow,
                   !section.isArraySection,

@@ -11,7 +11,10 @@ struct FormKitSwiftDemoApp: App {
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_PICKER_LAYOUT") {
                 PickerLayoutDemoView()
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_SECTION_PAGES") {
-                SectionPagesDemoView()
+                SectionPagesDemoView(
+                    scenario: .launchArgument,
+                    showsHostControls: ProcessInfo.processInfo.arguments.contains("-SECTION_PAGES_HOST_CONTROLS")
+                )
             } else {
                 DemoContentView()
             }

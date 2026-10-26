@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// The top of a section-pages form: one bar per section showing how far it has got, and a row with
-/// previous, "2 of 6 · Equipment", and next. The middle button opens the jump sheet. It stays above the
-/// scrolling page so it never scrolls away.
-struct FormKitPageHeader: View {
+/// Page navigation for a section-pages form, built from the same Liquid Glass parts as the system
+/// bars: a round previous button, a capsule showing "1 of 6 · Housekeeping" with the section's progress
+/// bars that opens a menu of every section and the summary, and a round next button. It floats above
+/// the page so the host keeps its own navigation bar and bottom accessories.
+struct FormKitPageNavigationBar: View {
     let progress: [FormKitPageProgress]
     let currentPage: Int
     let isSummaryOpen: Bool
@@ -11,66 +12,89 @@ struct FormKitPageHeader: View {
     let labels: FormKitPageLabels
     let onPrevious: () -> Void
     let onNext: () -> Void
-    let onOpenJump: () -> Void
+    let onPick: (Int) -> Void
+    let onSummary: () -> Void
 
     var body: some View {
-        VStack(spacing: 4) {
-            HStack(spacing: 4) {
-                ForEach(progress) { page in
-                    let isCurrent = !isSummaryOpen && page.page.index == currentPage
-                    Capsule()
-                        .fill(barColor(for: page, isCurrent: isCurrent))
-                        .frame(height: isCurrent ? 6 : 4)
-                }
-            }
-            .frame(height: 6)
-            .padding(.horizontal, 12)
-            .accessibilityHidden(true)
+        HStack(spacing: 8) {
+            stepButton("chevron.backward", label: labels.previousSection, action: onPrevious)
+                .disabled(!isSummaryOpen && currentPage == 0)
+                .accessibilityIdentifier("formkit_page_previous")
 
-            HStack(spacing: 4) {
-                chevronButton("chevron.left", label: labels.previousSection, action: onPrevious)
-                    .disabled(!isSummaryOpen && currentPage == 0)
-                    .accessibilityIdentifier("formkit_page_previous")
-                Button(action: onOpenJump) {
+            Menu {
+                sectionMenu
+            } label: {
+                VStack(spacing: 5) {
                     HStack(spacing: 4) {
                         Text(positionTitle)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
                         Image(systemName: "chevron.down")
-                            .imageScale(.small)
-                            .accessibilityHidden(true)
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.secondary)
                     }
                     .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 12)
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .contentShape(Capsule())
+                    .foregroundStyle(.primary)
+                    progressBars
                 }
-                .buttonStyle(.plain)
-                .overlay(Capsule().stroke(style.secondaryText.opacity(0.35)))
-                .accessibilityHint(labels.goToSection)
-                .accessibilityIdentifier("formkit_page_jump")
-                chevronButton("chevron.right", label: labels.nextSection, action: onNext)
-                    .disabled(isSummaryOpen)
-                    .accessibilityIdentifier("formkit_page_next")
+                .padding(.horizontal, 18)
+                .frame(maxWidth: .infinity, minHeight: 48)
+                .contentShape(Capsule())
+                .modifier(FormKitGlassBackground(shape: Capsule()))
             }
+            // Primary text, like the titles in the system bars, rather than the menu's tint.
+            .tint(.primary)
+            .accessibilityLabel(positionTitle)
+            .accessibilityHint(labels.goToSection)
+            .accessibilityIdentifier("formkit_page_jump")
+
+            stepButton("chevron.forward", label: labels.nextSection, action: onNext)
+                .disabled(isSummaryOpen)
+                .accessibilityIdentifier("formkit_page_next")
         }
-        .padding(.top, 12)
-        .padding([.horizontal, .bottom], 6)
-        .background(style.fieldBackground, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        // Keeps the control compact and centered on wide layouts such as iPad.
+        .frame(maxWidth: 520)
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Self.groupedBackground)
+        .padding(.vertical, 6)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("formkit_page_header")
     }
 
-    /// Matches the grouped form below, so the header reads as a card on the same surface.
-    private static var groupedBackground: Color {
-        #if os(macOS)
-        Color(nsColor: .windowBackgroundColor)
-        #else
-        Color(uiColor: .systemGroupedBackground)
-        #endif
+    @ViewBuilder
+    private var sectionMenu: some View {
+        Section(labels.goToSection) {
+            ForEach(progress) { page in
+                Button {
+                    onPick(page.page.index)
+                } label: {
+                    if !isSummaryOpen, page.page.index == currentPage {
+                        Label(page.page.title, systemImage: "checkmark")
+                    } else {
+                        Text(page.page.title)
+                    }
+                    Text(labels.status(for: page))
+                }
+            }
+        }
+        Section {
+            Button(action: onSummary) {
+                Label(labels.summary, systemImage: isSummaryOpen ? "checkmark" : "list.bullet.clipboard")
+            }
+        }
+    }
+
+    private var progressBars: some View {
+        HStack(spacing: 3) {
+            ForEach(progress) { page in
+                let isCurrent = !isSummaryOpen && page.page.index == currentPage
+                Capsule()
+                    .fill(barColor(for: page, isCurrent: isCurrent))
+                    .frame(height: 3)
+            }
+        }
+        .frame(maxWidth: 220)
+        .accessibilityHidden(true)
     }
 
     private var positionTitle: String {
@@ -84,14 +108,15 @@ struct FormKitPageHeader: View {
         return "\(position) · \(title)"
     }
 
-    private func chevronButton(_ systemImage: String, label: String, action: @escaping () -> Void) -> some View {
+    private func stepButton(_ systemImage: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.body.weight(.semibold))
-                .frame(minWidth: 44, minHeight: 44)
-                .contentShape(Rectangle())
+                .frame(width: 48, height: 48)
+                .contentShape(Circle())
+                .modifier(FormKitGlassBackground(shape: Circle()))
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.plain)
         .accessibilityLabel(label)
     }
 
@@ -104,60 +129,26 @@ struct FormKitPageHeader: View {
     }
 }
 
-/// Every section with its progress, plus the summary. Tapping one goes there.
-struct FormKitPageJumpSheet: View {
-    let progress: [FormKitPageProgress]
-    let currentPage: Int
-    let isSummaryOpen: Bool
-    let style: FormKitStyle
-    let labels: FormKitPageLabels
-    let onPick: (Int) -> Void
-    let onSummary: () -> Void
-    let onDismiss: () -> Void
+/// Liquid Glass where the system has it, and a material on earlier systems.
+private struct FormKitGlassBackground<GlassShape: Shape>: ViewModifier {
+    let shape: GlassShape
+    @Environment(\.isEnabled) private var isEnabled
 
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    ForEach(progress) { page in
-                        FormKitPageRow(
-                            progress: page,
-                            isSelected: !isSummaryOpen && page.page.index == currentPage,
-                            style: style,
-                            labels: labels
-                        ) {
-                            onPick(page.page.index)
-                        }
-                    }
-                }
-                Section {
-                    Button(action: onSummary) {
-                        Label(labels.summary, systemImage: "list.bullet.clipboard")
-                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .listRowBackground(isSummaryOpen ? style.accent.opacity(0.12) : nil)
-                    .accessibilityAddTraits(isSummaryOpen ? .isSelected : [])
-                    .accessibilityIdentifier("formkit_page_jump_summary")
-                }
-            }
-            .navigationTitle(labels.goToSection)
-            #if os(iOS) || os(visionOS)
-                .navigationBarTitleDisplayMode(.inline)
-            #endif
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button(labels.close, action: onDismiss)
-                    }
-                }
+    func body(content: Content) -> some View {
+        let content = content.opacity(isEnabled ? 1 : 0.35)
+        #if os(visionOS)
+        content.background(.regularMaterial, in: shape)
+        #else
+        if #available(iOS 26.0, macOS 26.0, *) {
+            content.glassEffect(.regular.interactive(isEnabled), in: shape)
+        } else {
+            content.background(.regularMaterial, in: shape)
         }
-        .presentationDetents([.medium, .large])
-        .accessibilityIdentifier("formkit_page_jump_sheet")
+        #endif
     }
 }
 
-/// One section in the jump sheet or on the summary page: number, title, and how far it has got.
+/// One section on the summary page: number, title, and how far it has got.
 struct FormKitPageRow: View {
     let progress: FormKitPageProgress
     let isSelected: Bool
@@ -226,32 +217,48 @@ struct FormKitPageStatusView: View {
     }
 }
 
-/// "Continue to Equipment" at the foot of a page, or "Review summary" on the last one.
-struct FormKitPageFooter: View {
+/// "Continue to Equipment" at the foot of a page, or "Review summary" on the last one, as a standard-size
+/// Liquid Glass button on the trailing edge, where the next step reads.
+struct FormKitPageContinueButton: View {
     let nextTitle: String?
-    let style: FormKitStyle
     let labels: FormKitPageLabels
     let onContinue: () -> Void
 
     var body: some View {
         Section {
             Button(action: onContinue) {
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     Text(nextTitle.map(labels.continueTo) ?? labels.reviewSummary)
-                        .lineLimit(1)
-                    Image(systemName: "arrow.right")
+                        .multilineTextAlignment(.center)
+                    Image(systemName: "arrow.forward")
+                        .imageScale(.small)
                         .accessibilityHidden(true)
                 }
-                .font(.body.weight(.semibold))
-                .frame(maxWidth: .infinity, minHeight: 44)
+                .font(.subheadline.weight(.semibold))
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .tint(style.accent)
+            .modifier(FormKitGlassButtonStyle())
+            .controlSize(.regular)
+            .tint(.primary)
+            .frame(maxWidth: .infinity, alignment: .trailing)
             .accessibilityIdentifier("formkit_page_continue")
         }
         .listRowInsets(EdgeInsets())
         .listRowBackground(Color.clear)
+    }
+}
+
+/// The system glass button style where the system has it, and a bordered button on earlier systems.
+private struct FormKitGlassButtonStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(visionOS)
+        content.buttonStyle(.bordered)
+        #else
+        if #available(iOS 26.0, macOS 26.0, *) {
+            content.buttonStyle(.glass)
+        } else {
+            content.buttonStyle(.bordered)
+        }
+        #endif
     }
 }
 
