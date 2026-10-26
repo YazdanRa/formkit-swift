@@ -27,120 +27,134 @@ enum FormKitConditionalRuleIndex {
     private static let maximumDepth = 32
     private static let maximumReferenceHops = 8
 
+    /// Collects the rules in `rootSchema`. Conditions compile against the root, as the renderer's own
+    /// conditional matching does, so local `$ref`s inside an `if` resolve.
     static func rules(in rootSchema: FormKitJSONValue) -> [FormKitConditionalRule] {
+        let context = Context(dialect: .draft2020_12, formatValidators: DefaultFormatValidators.all)
+        guard (try? Schema(rawSchema: rootSchema.jsonSchemaValue, context: context)) != nil else {
+            return []
+        }
+        var collector = Collector(rootSchema: rootSchema, context: context)
+        collector.collectObjectRules(rootSchema, pointerTokens: [], schemaPathTokens: [], depth: 0)
+        return collector.rules
+    }
+
+    private struct Collector {
+        let rootSchema: FormKitJSONValue
+        let context: Context
         var rules: [FormKitConditionalRule] = []
-        collectObjectRules(rootSchema, rootSchema: rootSchema, pointerTokens: [], depth: 0, into: &rules)
-        return rules
-    }
 
-    private static func collectObjectRules(
-        _ schema: FormKitJSONValue,
-        rootSchema: FormKitJSONValue,
-        pointerTokens: [String],
-        depth: Int,
-        into rules: inout [FormKitConditionalRule]
-    ) {
-        guard depth < maximumDepth,
-              let object = resolvedObject(schema, rootSchema: rootSchema)
-        else {
-            return
-        }
-
-        collectConditionals(in: object, rootSchema: rootSchema, pointerTokens: pointerTokens, depth: depth, into: &rules)
-        for (key, property) in declaredProperties(in: object, rootSchema: rootSchema, depth: depth) {
-            collectObjectRules(
-                property,
-                rootSchema: rootSchema,
-                pointerTokens: pointerTokens + [key],
-                depth: depth + 1,
-                into: &rules
-            )
-        }
-    }
-
-    private static func collectConditionals(
-        in object: [String: FormKitJSONValue],
-        rootSchema: FormKitJSONValue,
-        pointerTokens: [String],
-        depth: Int,
-        into rules: inout [FormKitConditionalRule]
-    ) {
-        guard depth < maximumDepth else {
-            return
-        }
-        if let condition = object["if"], let rule = rule(
-            condition: condition,
-            then: object["then"],
-            rootSchema: rootSchema,
-            pointerTokens: pointerTokens
+        mutating func collectObjectRules(
+            _ schema: FormKitJSONValue,
+            pointerTokens: [String],
+            schemaPathTokens: [String],
+            depth: Int
         ) {
-            rules.append(rule)
-        }
-        for item in object["allOf"]?.array ?? [] {
-            guard let itemObject = resolvedObject(item, rootSchema: rootSchema) else {
-                continue
+            guard depth < maximumDepth,
+                  let object = resolvedObject(schema, rootSchema: rootSchema)
+            else {
+                return
             }
-            collectConditionals(
-                in: itemObject,
-                rootSchema: rootSchema,
+
+            collectConditionals(in: object, pointerTokens: pointerTokens, schemaPathTokens: schemaPathTokens, depth: depth)
+            for property in declaredProperties(in: object, schemaPathTokens: schemaPathTokens, depth: depth) {
+                collectObjectRules(
+                    property.schema,
+                    pointerTokens: pointerTokens + [property.key],
+                    schemaPathTokens: property.schemaPathTokens,
+                    depth: depth + 1
+                )
+            }
+        }
+
+        private mutating func collectConditionals(
+            in object: [String: FormKitJSONValue],
+            pointerTokens: [String],
+            schemaPathTokens: [String],
+            depth: Int
+        ) {
+            guard depth < maximumDepth else {
+                return
+            }
+            if let condition = object["if"], let rule = rule(
+                condition: condition,
+                then: object["then"],
                 pointerTokens: pointerTokens,
-                depth: depth + 1,
-                into: &rules
+                conditionPathTokens: schemaPathTokens + ["if"]
+            ) {
+                rules.append(rule)
+            }
+            for (index, item) in (object["allOf"]?.array ?? []).enumerated() {
+                guard let itemObject = resolvedObject(item, rootSchema: rootSchema) else {
+                    continue
+                }
+                collectConditionals(
+                    in: itemObject,
+                    pointerTokens: pointerTokens,
+                    schemaPathTokens: schemaPathTokens + ["allOf", String(index)],
+                    depth: depth + 1
+                )
+            }
+        }
+
+        private func rule(
+            condition: FormKitJSONValue,
+            then: FormKitJSONValue?,
+            pointerTokens: [String],
+            conditionPathTokens: [String]
+        ) -> FormKitConditionalRule? {
+            let conditionObject = resolvedObject(condition, rootSchema: rootSchema) ?? [:]
+            let triggerKeys = (conditionObject["properties"]?.object ?? [:]).keys.sorted()
+            let thenObject = then.flatMap { resolvedObject($0, rootSchema: rootSchema) } ?? [:]
+            let requiredKeys = thenObject["required"]?.array?.compactMap(\.string) ?? []
+            let declaredKeys = (thenObject["properties"]?.object ?? [:]).keys.sorted()
+            var dependentKeys: [String] = []
+            for key in requiredKeys + declaredKeys where !dependentKeys.contains(key) && !triggerKeys.contains(key) {
+                dependentKeys.append(key)
+            }
+            guard !triggerKeys.isEmpty, !dependentKeys.isEmpty else {
+                return nil
+            }
+
+            return FormKitConditionalRule(
+                objectPointer: JSONPointer.pointerString(from: pointerTokens),
+                triggerFieldIDs: triggerKeys.map { JSONPointer.pointerString(from: pointerTokens + [$0]) },
+                dependentFieldIDs: dependentKeys.map { JSONPointer.pointerString(from: pointerTokens + [$0]) },
+                condition: try? Schema(
+                    rawSchema: condition.jsonSchemaValue,
+                    location: JSONPointer(from: JSONPointer.pointerString(from: conditionPathTokens)),
+                    context: context
+                )
             )
         }
-    }
 
-    private static func rule(
-        condition: FormKitJSONValue,
-        then: FormKitJSONValue?,
-        rootSchema: FormKitJSONValue,
-        pointerTokens: [String]
-    ) -> FormKitConditionalRule? {
-        let conditionObject = resolvedObject(condition, rootSchema: rootSchema) ?? [:]
-        let triggerKeys = (conditionObject["properties"]?.object ?? [:]).keys.sorted()
-        let thenObject = then.flatMap { resolvedObject($0, rootSchema: rootSchema) } ?? [:]
-        let requiredKeys = thenObject["required"]?.array?.compactMap(\.string) ?? []
-        let declaredKeys = (thenObject["properties"]?.object ?? [:]).keys.sorted()
-        var dependentKeys: [String] = []
-        for key in requiredKeys + declaredKeys where !dependentKeys.contains(key) && !triggerKeys.contains(key) {
-            dependentKeys.append(key)
-        }
-        guard !triggerKeys.isEmpty, !dependentKeys.isEmpty else {
-            return nil
-        }
-
-        return FormKitConditionalRule(
-            objectPointer: JSONPointer.pointerString(from: pointerTokens),
-            triggerFieldIDs: triggerKeys.map { JSONPointer.pointerString(from: pointerTokens + [$0]) },
-            dependentFieldIDs: dependentKeys.map { JSONPointer.pointerString(from: pointerTokens + [$0]) },
-            condition: try? Schema(
-                rawSchema: condition.jsonSchemaValue,
-                context: Context(dialect: .draft2020_12)
-            )
-        )
-    }
-
-    /// Properties declared directly on the object and inside its `allOf` members.
-    private static func declaredProperties(
-        in object: [String: FormKitJSONValue],
-        rootSchema: FormKitJSONValue,
-        depth: Int
-    ) -> [(String, FormKitJSONValue)] {
-        var properties = (object["properties"]?.object ?? [:]).sorted { $0.key < $1.key }
-        guard depth < maximumDepth else {
+        /// Properties declared directly on the object and inside its `allOf` members.
+        private func declaredProperties(
+            in object: [String: FormKitJSONValue],
+            schemaPathTokens: [String],
+            depth: Int
+        ) -> [(key: String, schema: FormKitJSONValue, schemaPathTokens: [String])] {
+            var properties = (object["properties"]?.object ?? [:])
+                .sorted { $0.key < $1.key }
+                .map { (key: $0.key, schema: $0.value, schemaPathTokens: schemaPathTokens + ["properties", $0.key]) }
+            guard depth < maximumDepth else {
+                return properties
+            }
+            for (index, item) in (object["allOf"]?.array ?? []).enumerated() {
+                guard let itemObject = resolvedObject(item, rootSchema: rootSchema) else {
+                    continue
+                }
+                let itemProperties = declaredProperties(
+                    in: itemObject,
+                    schemaPathTokens: schemaPathTokens + ["allOf", String(index)],
+                    depth: depth + 1
+                )
+                for property in itemProperties where !properties.contains(where: { $0.key == property.key }) {
+                    properties.append(property)
+                }
+            }
             return properties
         }
-        for item in object["allOf"]?.array ?? [] {
-            guard let itemObject = resolvedObject(item, rootSchema: rootSchema) else {
-                continue
-            }
-            for property in declaredProperties(in: itemObject, rootSchema: rootSchema, depth: depth + 1)
-                where !properties.contains(where: { $0.0 == property.0 })
-            {
-                properties.append(property)
-            }
-        }
-        return properties
     }
 
     /// The schema object with local `$ref`s followed and sibling keywords kept.

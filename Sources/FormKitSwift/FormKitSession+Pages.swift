@@ -71,6 +71,9 @@ extension FormKitSession {
         }
         let attentionIDs = Set(missingRequired.map(\.id).filter(openedRequiredIDs.contains))
             .union(fieldErrors.filter { !$0.value.isEmpty }.keys)
+        let invalidArrayPointers = renderPlan.sections
+            .filter { $0.isArraySection && !(arrayErrors[$0.id] ?? []).isEmpty }
+            .map(\.pointer)
 
         let progress = pages.map { page in
             let questions = page.fieldIDs.filter { fieldID in
@@ -81,6 +84,7 @@ extension FormKitSession {
                 answered: questions.count { fieldID in fieldsByID[fieldID].map(hasAnswer(for:)) ?? false },
                 total: questions.count,
                 needsAttention: page.fieldIDs.contains(where: attentionIDs.contains)
+                    || invalidArrayPointers.contains { page.holds(pointer: $0) }
             )
         }
 
@@ -92,10 +96,14 @@ extension FormKitSession {
         )
     }
 
+    /// Whether the field holds a value validation accepts as present. An explicit null counts on a
+    /// nullable field; ``hasAnswer(for:)`` then uses provenance to leave out renderer defaults.
     func hasValue(for field: FormKitFieldDescriptor) -> Bool {
         switch primitiveValue(for: field) {
-        case .none, .null:
+        case .none:
             return false
+        case .null:
+            return field.allowsNull
         case .string(let value):
             return !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .integer, .number, .boolean:

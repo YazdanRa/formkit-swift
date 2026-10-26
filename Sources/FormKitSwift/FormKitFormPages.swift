@@ -24,6 +24,13 @@ public struct FormKitFormPage: Identifiable, Sendable, Equatable {
     public func isSectionField(_ fieldID: String) -> Bool {
         fieldID.hasPrefix(id + "/")
     }
+
+    /// Whether a field or section pointer is shown on this page, inside its section or under a top-level
+    /// property placed on it.
+    func holds(pointer: String) -> Bool {
+        pointer.hasPrefix(id + "/")
+            || loosePointers.contains { pointer == $0 || pointer.hasPrefix($0 + "/") }
+    }
 }
 
 /// How far one page has got, for the progress bars, the jump sheet, and the summary page.
@@ -96,8 +103,8 @@ public struct FormKitFormSummary: Sendable, Equatable {
 }
 
 enum FormKitFormPageBuilder {
-    /// Splits the plan into one page per top-level object section. Returns no pages unless the plan
-    /// asks for ``FormKitFormLayout/sectionPages`` and has at least two such sections.
+    /// Splits the plan into one page per visible top-level object section. Returns no pages unless the
+    /// plan asks for ``FormKitFormLayout/sectionPages`` and has at least two such sections.
     static func pages(for plan: FormKitRenderPlan) -> [FormKitFormPage] {
         guard plan.layout == .sectionPages,
               let root = plan.sections.first(where: { $0.pointer == "#" && !$0.isOwnedByArrayRow })
@@ -120,6 +127,10 @@ enum FormKitFormPageBuilder {
         var loose = PageDraft(section: nil)
         for propertyKey in root.propertyOrder {
             if let section = topSections[propertyKey] {
+                // A section its conditionals hide is neither a page nor loose fields on another one.
+                guard section.isVisible else {
+                    continue
+                }
                 var draft = loose
                 draft.section = section
                 draft.fieldIDs += fieldIDs(under: section.pointer, in: plan)
