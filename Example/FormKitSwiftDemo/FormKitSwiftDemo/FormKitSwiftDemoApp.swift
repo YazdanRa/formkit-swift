@@ -10,6 +10,8 @@ struct FormKitSwiftDemoApp: App {
                 ControlledFocusDemoView(showsArray: true)
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_PICKER_LAYOUT") {
                 PickerLayoutDemoView()
+            } else if ProcessInfo.processInfo.arguments.contains("-UITEST_SECTION_PAGES") {
+                SectionPagesDemoView()
             } else {
                 DemoContentView()
             }

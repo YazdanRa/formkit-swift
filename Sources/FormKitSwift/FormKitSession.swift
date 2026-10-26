@@ -38,6 +38,9 @@ public internal(set) var formErrorMessage: String?
     ) -> [String: FormKitFieldDescriptor.PrimitiveValue?]
 
     @ObservationIgnored
+    let conditionalRules: [FormKitConditionalRule]
+
+    @ObservationIgnored
     let validationBehavior: FormKitValidationBehavior
 
     @ObservationIgnored
@@ -67,6 +70,7 @@ public internal(set) var formErrorMessage: String?
         validator: Schema?,
         initialInstance: FormKitJSONValue?,
         initialFieldValues: [String: FormKitFieldDescriptor.PrimitiveValue?],
+        conditionalRules: [FormKitConditionalRule] = [],
         validationBehavior: FormKitValidationBehavior,
         refreshesRenderPlanOnFieldEdit: Bool,
         renderPlanProvider: @escaping (FormKitJSONValue?) -> FormKitRenderPlan,
@@ -79,6 +83,7 @@ public internal(set) var formErrorMessage: String?
         self.renderPlan = Self.failClosed(renderPlan)
         self.validator = validator
         self.initialInstance = initialInstance
+        self.conditionalRules = conditionalRules
         self.suppliedInstance = includesHiddenToolFields ? initialInstance : nil
         self.validationBehavior = validationBehavior
         self.refreshesRenderPlanOnFieldEdit = refreshesRenderPlanOnFieldEdit

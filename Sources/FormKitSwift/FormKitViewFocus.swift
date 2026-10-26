@@ -32,9 +32,10 @@ extension FormKitContainerView {
             session: session,
             options: options
         ).focusableFieldIDs
+        let pages = pageNavigator == nil ? [] : session.formPages
         let renderIndex = FormKitRenderIndex(
             renderPlan: session.renderPlan,
-            focusableFieldIDs: focusableIDs
+            focusableFieldIDs: focusScope(pages: pages).map(focusableIDs.intersection) ?? focusableIDs
         )
         focusedFieldID = renderIndex.nextFocusableFieldID(after: fieldID)
     }
