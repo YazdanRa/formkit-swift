@@ -6,6 +6,8 @@ import JSONSchema
 /// The render plan only keeps the outcome of conditionals, so section progress and the summary page
 /// use these rules to tell which answers opened follow-up fields.
 struct FormKitConditionalRule {
+    /// The array whose current rows this rule applies to, or `nil` for a concrete object.
+    let arrayPointer: String?
     /// The object the rule is declared in, such as `#` or `#/housekeeping`.
     let objectPointer: String
     /// Fields named in the rule's `if.properties`.
@@ -13,6 +15,20 @@ struct FormKitConditionalRule {
     /// Fields the rule's `then` requires or declares.
     let dependentFieldIDs: [String]
     let condition: Schema?
+
+    func bound(to row: FormKitArrayRowDescriptor) -> FormKitConditionalRule {
+        guard let arrayPointer else { return self }
+        func rowPointer(_ pointer: String) -> String {
+            row.pointer + pointer.dropFirst(arrayPointer.count)
+        }
+        return FormKitConditionalRule(
+            arrayPointer: nil,
+            objectPointer: rowPointer(objectPointer),
+            triggerFieldIDs: triggerFieldIDs.map(rowPointer),
+            dependentFieldIDs: dependentFieldIDs.map(rowPointer),
+            condition: condition
+        )
+    }
 
     func matches(_ instance: FormKitJSONValue) -> Bool {
         guard let condition else {
@@ -48,6 +64,7 @@ enum FormKitConditionalRuleIndex {
             _ schema: FormKitJSONValue,
             pointerTokens: [String],
             schemaPathTokens: [String],
+            arrayPointer: String? = nil,
             depth: Int
         ) {
             guard depth < maximumDepth,
@@ -60,6 +77,7 @@ enum FormKitConditionalRuleIndex {
                 in: object,
                 pointerTokens: pointerTokens,
                 schemaPathTokens: schemaPathTokens,
+                arrayPointer: arrayPointer,
                 depth: depth
             )
             for property in declaredProperties(in: object, schemaPathTokens: schemaPathTokens, depth: depth) {
@@ -67,6 +85,7 @@ enum FormKitConditionalRuleIndex {
                     property.schema,
                     pointerTokens: pointerTokens + [property.key],
                     schemaPathTokens: property.schemaPathTokens,
+                    arrayPointer: arrayPointer,
                     depth: depth + 1
                 )
             }
@@ -76,6 +95,7 @@ enum FormKitConditionalRuleIndex {
             in object: [String: FormKitJSONValue],
             pointerTokens: [String],
             schemaPathTokens: [String],
+            arrayPointer: String?,
             depth: Int
         ) {
             guard depth < maximumDepth else {
@@ -85,9 +105,19 @@ enum FormKitConditionalRuleIndex {
                 condition: condition,
                 then: object["then"],
                 pointerTokens: pointerTokens,
+                arrayPointer: arrayPointer,
                 conditionPathTokens: schemaPathTokens + ["if"]
             ) {
                 rules.append(rule)
+            }
+            if arrayPointer == nil, let items = object["items"] {
+                collectObjectRules(
+                    items,
+                    pointerTokens: pointerTokens,
+                    schemaPathTokens: schemaPathTokens + ["items"],
+                    arrayPointer: JSONPointer.pointerString(from: pointerTokens),
+                    depth: depth + 1
+                )
             }
             for (index, item) in (object["allOf"]?.array ?? []).enumerated() {
                 guard let itemObject = resolvedObject(item, rootSchema: rootSchema) else {
@@ -97,6 +127,7 @@ enum FormKitConditionalRuleIndex {
                     in: itemObject,
                     pointerTokens: pointerTokens,
                     schemaPathTokens: schemaPathTokens + ["allOf", String(index)],
+                    arrayPointer: arrayPointer,
                     depth: depth + 1
                 )
             }
@@ -106,6 +137,7 @@ enum FormKitConditionalRuleIndex {
             condition: FormKitJSONValue,
             then: FormKitJSONValue?,
             pointerTokens: [String],
+            arrayPointer: String?,
             conditionPathTokens: [String]
         ) -> FormKitConditionalRule? {
             let conditionObject = resolvedObject(condition, rootSchema: rootSchema) ?? [:]
@@ -122,6 +154,7 @@ enum FormKitConditionalRuleIndex {
             }
 
             return FormKitConditionalRule(
+                arrayPointer: arrayPointer,
                 objectPointer: JSONPointer.pointerString(from: pointerTokens),
                 triggerFieldIDs: triggerKeys.map { JSONPointer.pointerString(from: pointerTokens + [$0]) },
                 dependentFieldIDs: dependentKeys.map { JSONPointer.pointerString(from: pointerTokens + [$0]) },

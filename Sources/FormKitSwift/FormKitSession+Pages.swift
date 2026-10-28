@@ -52,8 +52,13 @@ public extension FormKitSession {
 
 extension FormKitSession {
     func formSummary(pages: [FormKitFormPage]) -> FormKitFormSummary {
-        let rules = conditionalRules.filter { rule in
-            rule.triggerFieldIDs.contains { fieldsByID[$0] != nil }
+        let visibleFields = orderedFields.filter { $0.isVisible && $0.shouldSerialize }
+        let visibleIDs = Set(visibleFields.map(\.id))
+        let rules = conditionalRules.flatMap { rule in
+            guard let arrayPointer = rule.arrayPointer else { return [rule] }
+            return (arraySectionsByPointer[arrayPointer]?.arrayDescriptor?.rows ?? []).map(rule.bound(to:))
+        }.filter { rule in
+            rule.triggerFieldIDs.contains(where: visibleIDs.contains)
         }
         let instance = makeInstanceJSONValue()
         let activeRules = rules.filter { rule in
@@ -64,8 +69,6 @@ extension FormKitSession {
         let dependentIDs = Set(rules.flatMap(\.dependentFieldIDs))
         let openedRequiredIDs = Set(activeRules.flatMap(\.dependentFieldIDs))
 
-        let visibleFields = orderedFields.filter { $0.isVisible && $0.shouldSerialize }
-        let visibleIDs = Set(visibleFields.map(\.id))
         let missingRequired = visibleFields.filter { field in
             (field.isRequired || openedRequiredIDs.contains(field.id)) && !hasValue(for: field)
         }
@@ -91,7 +94,7 @@ extension FormKitSession {
         return FormKitFormSummary(
             pages: progress,
             general: generalAnswers(outside: pages, visibleFields: visibleFields),
-            flagged: flaggedAnswers(for: activeRules, pages: pages),
+            flagged: flaggedAnswers(for: activeRules, pages: pages, visibleFields: visibleFields),
             missingRequired: missingRequired
         )
     }
@@ -127,35 +130,30 @@ extension FormKitSession {
 
     private func flaggedAnswers(
         for activeRules: [FormKitConditionalRule],
-        pages: [FormKitFormPage]
+        pages: [FormKitFormPage],
+        visibleFields: [FormKitFieldDescriptor]
     ) -> [FormKitFlaggedAnswer] {
-        let fieldOrder = Dictionary(
-            orderedFields.enumerated().map { ($0.element.id, $0.offset) },
-            uniquingKeysWith: { first, _ in first }
-        )
-        var seenFieldIDs = Set<String>()
-        var flagged: [FormKitFlaggedAnswer] = []
+        let visibleIDs = Set(visibleFields.map(\.id))
+        var dependentsByTrigger: [String: Set<String>] = [:]
         for rule in activeRules {
-            guard let field = rule.triggerFieldIDs.lazy.compactMap({ self.fieldsByID[$0] }).first,
-                  seenFieldIDs.insert(field.id).inserted,
+            guard let triggerID = rule.triggerFieldIDs.first(where: visibleIDs.contains) else { continue }
+            dependentsByTrigger[triggerID, default: []].formUnion(rule.dependentFieldIDs)
+        }
+        return visibleFields.compactMap { field in
+            guard let dependentIDs = dependentsByTrigger[field.id],
                   let answer = displayValue(for: field)
             else {
-                continue
+                return nil
             }
-            flagged.append(
-                FormKitFlaggedAnswer(
-                    pageIndex: pages.first { $0.fieldIDs.contains(field.id) }?.index,
-                    field: field,
-                    qualifiedTitle: qualifiedTitle(for: field),
-                    answer: answer,
-                    details: rule.dependentFieldIDs.compactMap { fieldID in
-                        fieldsByID[fieldID].map {
-                            FormKitSummaryAnswer(fieldID: $0.id, title: $0.title, answer: displayValue(for: $0) ?? "")
-                        }
-                    }
-                )
+            return FormKitFlaggedAnswer(
+                pageIndex: pages.first { $0.fieldIDs.contains(field.id) }?.index,
+                field: field,
+                qualifiedTitle: qualifiedTitle(for: field),
+                answer: answer,
+                details: visibleFields.filter { dependentIDs.contains($0.id) }.map {
+                    FormKitSummaryAnswer(fieldID: $0.id, title: $0.title, answer: displayValue(for: $0) ?? "")
+                }
             )
         }
-        return flagged.sorted { (fieldOrder[$0.field.id] ?? .max) < (fieldOrder[$1.field.id] ?? .max) }
     }
 }
