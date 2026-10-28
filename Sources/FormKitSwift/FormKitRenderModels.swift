@@ -50,6 +50,8 @@ public struct FormKitRenderPlan: Sendable, Equatable {
     public let fields: [FormKitFieldDescriptor]
     public let fieldOrder: [String]
     public let unsupportedReasons: [FormKitUnsupportedReason]
+    /// The layout the root schema requests with `x-formkit-layout`.
+    public internal(set) var layout: FormKitFormLayout = .scroll
 
     public var isSupported: Bool {
         unsupportedReasons.isEmpty

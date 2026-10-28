@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		64B636C587D7BFFFA9FBA433 /* SectionPagesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A9DDF86186F33EFD83DD09 /* SectionPagesUITests.swift */; };
+		2DD685BDC1089D46FEE0B099 /* SectionPagesDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE983C473600F33059D3F9E /* SectionPagesDemoView.swift */; };
 		1B5F9869C0830DF9D01FB478 /* ControlledFocusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A9F180633733506391117 /* ControlledFocusUITests.swift */; };
 		3C314ED0781B522DC17B8F99 /* PickerLayoutDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA5C915AEA6AD83C9D1D2FF /* PickerLayoutDemoView.swift */; };
 		4312386199F6F243B59FC66E /* ControlledFocusDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC0C4CEBE2AD09D4FB592A3A /* ControlledFocusDemoView.swift */; };
@@ -28,6 +30,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F7A9DDF86186F33EFD83DD09 /* SectionPagesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionPagesUITests.swift; sourceTree = "<group>"; };
+		3EE983C473600F33059D3F9E /* SectionPagesDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionPagesDemoView.swift; sourceTree = "<group>"; };
 		04AB8C5008A9C47D58CE7475 /* FormKitSwiftDemo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FormKitSwiftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1043E178794005202B65E98D /* formkit-swift */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "formkit-swift"; path = ../..; sourceTree = SOURCE_ROOT; };
 		278DEF029F4DBB5E7BBC7035 /* FormKitSwiftDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormKitSwiftDemoApp.swift; sourceTree = "<group>"; };
@@ -57,6 +61,7 @@
 			children = (
 				E13A9F180633733506391117 /* ControlledFocusUITests.swift */,
 				B3F9156D268F25015FD63EAC /* PickerLayoutUITests.swift */,
+				F7A9DDF86186F33EFD83DD09 /* SectionPagesUITests.swift */,
 			);
 			path = FormKitSwiftDemoUITests;
 			sourceTree = "<group>";
@@ -69,6 +74,7 @@
 				F15F4C9601E92F8A4086731F /* DemoSchemas.swift */,
 				278DEF029F4DBB5E7BBC7035 /* FormKitSwiftDemoApp.swift */,
 				7BA5C915AEA6AD83C9D1D2FF /* PickerLayoutDemoView.swift */,
+				3EE983C473600F33059D3F9E /* SectionPagesDemoView.swift */,
 			);
 			path = FormKitSwiftDemo;
 			sourceTree = "<group>";
@@ -188,6 +194,7 @@
 			files = (
 				1B5F9869C0830DF9D01FB478 /* ControlledFocusUITests.swift in Sources */,
 				5F94A3B21A647214F139A470 /* PickerLayoutUITests.swift in Sources */,
+				64B636C587D7BFFFA9FBA433 /* SectionPagesUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -200,6 +207,7 @@
 				991FDE561C96A64DBB2BAEEB /* DemoSchemas.swift in Sources */,
 				AFDE6FDD8B453844AB213B8B /* FormKitSwiftDemoApp.swift in Sources */,
 				3C314ED0781B522DC17B8F99 /* PickerLayoutDemoView.swift in Sources */,
+				2DD685BDC1089D46FEE0B099 /* SectionPagesDemoView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

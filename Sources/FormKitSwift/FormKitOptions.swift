@@ -111,6 +111,8 @@ public struct FormKitLabels: Equatable, Sendable {
     public var remove: String
     public var minimumItemsPrefix: String
     public var maximumItemsPrefix: String
+    /// Text for ``FormKitFormLayout/sectionPages`` forms.
+    public var pages: FormKitPageLabels
 
     public init(
         valueState: String = FormKitLabels.localizedDefaults.valueState,
@@ -121,7 +123,8 @@ public struct FormKitLabels: Equatable, Sendable {
         addItemPrefix: String = FormKitLabels.localizedDefaults.addItemPrefix,
         remove: String = FormKitLabels.localizedDefaults.remove,
         minimumItemsPrefix: String = FormKitLabels.localizedDefaults.minimumItemsPrefix,
-        maximumItemsPrefix: String = FormKitLabels.localizedDefaults.maximumItemsPrefix
+        maximumItemsPrefix: String = FormKitLabels.localizedDefaults.maximumItemsPrefix,
+        pages: FormKitPageLabels = .localizedDefaults
     ) {
         self.valueState = valueState
         self.value = value
@@ -132,6 +135,7 @@ public struct FormKitLabels: Equatable, Sendable {
         self.remove = remove
         self.minimumItemsPrefix = minimumItemsPrefix
         self.maximumItemsPrefix = maximumItemsPrefix
+        self.pages = pages
     }
 }
 

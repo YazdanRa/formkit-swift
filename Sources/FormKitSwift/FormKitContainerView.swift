@@ -4,6 +4,7 @@ struct FormKitContainerView: View {
     @Bindable var session: FormKitSession
     let externalFocusedFieldID: Binding<String?>?
     let options: FormKitOptions
+    var pageNavigator: FormKitPageNavigator?
     @FocusState var focusedFieldID: String?
     @State var pendingTextDrafts: [String: String] = [:]
     @State var pendingArraySectionFocusID: String?
@@ -12,18 +13,15 @@ struct FormKitContainerView: View {
 
     var body: some View {
         let components = FormKitFocusSupport.resolvedComponents(session: session, options: options)
+        let pages = pageNavigator == nil ? [] : session.formPages
         let renderIndex = FormKitRenderIndex(
             renderPlan: session.renderPlan,
-            focusableFieldIDs: components.focusableFieldIDs
+            focusableFieldIDs: focusScope(pages: pages).map(components.focusableFieldIDs.intersection)
+                ?? components.focusableFieldIDs
         )
 
-        Form {
-            statusSection
-            ForEach(renderIndex.renderableRootBlocks) { block in
-                renderDisplayBlock(block, renderIndex: renderIndex, components: components)
-            }
-        }
-        .scrollDismissesKeyboard(.immediately)
+        formContent(pages: pages, renderIndex: renderIndex, components: components)
+            .scrollDismissesKeyboard(.immediately)
         #if os(iOS) || os(visionOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -145,6 +143,9 @@ struct FormKitContainerView: View {
             requestedFieldID,
             focusableFieldIDs: currentFocusableFieldIDs
         )
+        if let normalizedFieldID {
+            pageNavigator?.revealField(normalizedFieldID, scrollsToField: false)
+        }
 
         if focusedFieldID != normalizedFieldID {
             commitFocusedTextDraft()
@@ -156,7 +157,30 @@ struct FormKitContainerView: View {
     }
 
     @ViewBuilder
-    private var statusSection: some View {
+    private func formContent(
+        pages: [FormKitFormPage],
+        renderIndex: FormKitRenderIndex,
+        components: FormKitResolvedComponents
+    ) -> some View {
+        if let pageNavigator, !pages.isEmpty {
+            pagedForm(
+                navigator: pageNavigator,
+                pages: pages,
+                renderIndex: renderIndex,
+                components: components
+            )
+        } else {
+            Form {
+                statusSection
+                ForEach(renderIndex.renderableRootBlocks) { block in
+                    renderDisplayBlock(block, renderIndex: renderIndex, components: components)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    var statusSection: some View {
         if session.formErrorMessage != nil
             || session.validationStatusMessage != nil
             || !session.renderPlan.isSupported

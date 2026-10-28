@@ -23,6 +23,7 @@ Start with ``FormKitView`` for rendering and ``FormKitSession`` when you need co
 
 - <doc:CustomizationGuide>
 - <doc:SchemaDrivenComponents>
+- <doc:SectionPages>
 - <doc:Accessibility>
 
 ### Generic Tools
@@ -49,6 +50,7 @@ Start with ``FormKitView`` for rendering and ``FormKitSession`` when you need co
 - ``FormKitConditionalRenderBehavior``
 - ``FormKitStyle``
 - ``FormKitLabels``
+- ``FormKitPageLabels``
 - ``FormKitComponents``
 - ``FormKitFieldVisualState``
 - ``FormKitFieldComponentContext``
@@ -63,6 +65,18 @@ Start with ``FormKitView`` for rendering and ``FormKitSession`` when you need co
 - ``FormKitArrayRowDescriptor``
 - ``FormKitUIComponent``
 - ``FormKitConditionalRenderState``
+
+### Section Pages
+
+- ``FormKitFormLayout``
+- ``FormKitPageNavigator``
+- ``FormKitPagePosition``
+- ``FormKitPageNavigationOrigin``
+- ``FormKitFormPage``
+- ``FormKitPageProgress``
+- ``FormKitFormSummary``
+- ``FormKitFlaggedAnswer``
+- ``FormKitSummaryAnswer``
 
 ### Upload Models
 

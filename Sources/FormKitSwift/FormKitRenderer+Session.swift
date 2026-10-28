@@ -181,6 +181,7 @@ extension FormKitRenderer {
                 for: assembly.renderPlan,
                 instance: assembly.decodedInstance.value
             ),
+            conditionalRules: FormKitConditionalRuleIndex.rules(in: renderSchema),
             validationBehavior: assembly.validationBehavior,
             refreshesRenderPlanOnFieldEdit: schemaMayChangeRenderPlanAfterFieldEdit(renderSchema),
             renderPlanProvider: { [renderSchema, propertyOrderIndex] instance in
@@ -292,7 +293,8 @@ extension FormKitRenderer {
             sections: state.reasons.isEmpty ? state.sections.sorted(by: { $0.order < $1.order }) : [],
             fields: state.reasons.isEmpty ? state.fields : [],
             fieldOrder: state.reasons.isEmpty ? fieldOrder : [],
-            unsupportedReasons: state.reasons
+            unsupportedReasons: state.reasons,
+            layout: FormKitFormLayout(schemaValue: rootObject[FormKitFormLayout.schemaKey]?.string)
         )
     }
 

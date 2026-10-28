@@ -156,3 +156,60 @@ struct FormKitRenderIndex {
         return orderedFocusableFieldIDs.dropFirst(currentIndex + 1).first
     }
 }
+
+extension FormKitRenderIndex {
+    /// The display blocks of one section page: top-level fields and arrays placed on it, then the
+    /// page's section expanded with its nested sections. The page's own section title is left out
+    /// because the page header already names it.
+    func pageBlocks(for page: FormKitFormPage) -> [DisplayBlock] {
+        let pageFieldIDs = Set(page.fieldIDs)
+        let loosePointers = Set(page.loosePointers)
+        var blocks: [DisplayBlock] = []
+        for block in visibleRootBlocks {
+            switch block.kind {
+            case let .fieldGroup(sectionID, fieldIDs):
+                let fieldIDsOnPage = fieldIDs.filter(pageFieldIDs.contains)
+                if !fieldIDsOnPage.isEmpty {
+                    blocks.append(
+                        DisplayBlock(
+                            kind: .fieldGroup(sectionID: sectionID, fieldIDs: fieldIDsOnPage),
+                            showSectionHeader: false,
+                            showSectionFooter: false
+                        )
+                    )
+                }
+            case let .section(sectionID):
+                if sectionID == page.sectionID {
+                    blocks += pageSectionBlocks(sectionID)
+                } else if let section = sectionsByID[sectionID], loosePointers.contains(section.pointer) {
+                    blocks += Self.expandingObjectSections(
+                        in: [block],
+                        sectionsByID: sectionsByID,
+                        displayBlocksBySectionID: displayBlocksBySectionID
+                    )
+                }
+            }
+        }
+        return blocks
+    }
+
+    private func pageSectionBlocks(_ sectionID: String) -> [DisplayBlock] {
+        let expanded = Self.expandingObjectSections(
+            in: [DisplayBlock(kind: .section(sectionID), showSectionHeader: false, showSectionFooter: false)],
+            sectionsByID: sectionsByID,
+            displayBlocksBySectionID: displayBlocksBySectionID
+        )
+        return expanded.compactMap { block in
+            guard case let .fieldGroup(blockSectionID, fieldIDs) = block.kind,
+                  blockSectionID == sectionID,
+                  block.showSectionHeader
+            else {
+                return block
+            }
+            guard !fieldIDs.isEmpty || block.showSectionFooter else {
+                return nil
+            }
+            return DisplayBlock(kind: block.kind, showSectionHeader: false, showSectionFooter: block.showSectionFooter)
+        }
+    }
+}
