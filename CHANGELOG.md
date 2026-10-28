@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/YazdanRa/formkit-swift/compare/v1.7.0...v1.8.0) (2026-10-28)
+
+
+### Features
+
+* **layout:** add section-pages form layout ([#41](https://github.com/YazdanRa/formkit-swift/issues/41)) ([2869ac1](https://github.com/YazdanRa/formkit-swift/commit/2869ac1b8f4c898ef1d7f9deaad67692ea9d17d3))
+
 ## [1.7.0](https://github.com/YazdanRa/formkit-swift/compare/v1.6.3...v1.7.0) (2026-10-20)
 
 
