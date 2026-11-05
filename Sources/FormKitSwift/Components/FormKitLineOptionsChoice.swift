@@ -1,14 +1,30 @@
 import SwiftUI
 
 struct FormKitLineOptionsChoice: View {
+    /// Enums outside this range fall back to the standard picker.
+    static let supportedChoiceCounts = 2...6
+    /// Up to this many choices share one row; more stack vertically.
+    static let maxInlineChoices = 3
+    /// A label longer than this stacks the segments vertically, so no segment wraps mid-word.
+    static let maxInlineTitleLength = 14
+
     let context: FormKitFieldComponentContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.colorSchemeContrast) private var contrast
 
+    static func stacksVertically(_ choices: [FormKitFieldDescriptor.Choice], isAccessibilitySize: Bool) -> Bool {
+        isAccessibilitySize
+            || choices.count > maxInlineChoices
+            || choices.contains { $0.title.count > maxInlineTitleLength }
+    }
+
     var body: some View {
         let selectedID = context.session.selectedEnumChoiceID(for: context.field)
-        let isVertical = dynamicTypeSize.isAccessibilitySize
+        let isVertical = Self.stacksVertically(
+            context.field.enumOptions,
+            isAccessibilitySize: dynamicTypeSize.isAccessibilitySize
+        )
         let layout = isVertical ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: 0))
         let border = context.style.secondaryText.opacity(contrast == .increased ? 0.9 : 0.45)
 
@@ -19,7 +35,8 @@ struct FormKitLineOptionsChoice: View {
                     fieldTitle: context.field.title,
                     identifier: "\(context.field.accessibilityIdentifier)_option_\(choice.id)",
                     accent: context.style.accent,
-                    isSelected: selectedID == choice.id
+                    isSelected: selectedID == choice.id,
+                    isStacked: isVertical
                 ) {
                     select(choice)
                 }

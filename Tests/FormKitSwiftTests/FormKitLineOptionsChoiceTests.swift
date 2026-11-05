@@ -40,7 +40,7 @@ final class FormKitLineOptionsChoiceTests: XCTestCase {
         XCTAssertEqual(invocationCount, 1)
     }
 
-    func testRegistryAcceptsOnlyAnnotatedEnumsWithTwoToThreeChoices() throws {
+    func testRegistryAcceptsOnlyAnnotatedEnumsWithTwoToSixChoices() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
             {
@@ -52,6 +52,7 @@ final class FormKitLineOptionsChoiceTests: XCTestCase {
                 "five": {"enum": [1, 2, 3, 4, 5], "x-formkit-ui-component": "line-options-choice"},
                 "one": {"enum": ["A"], "x-formkit-ui-component": "line-options-choice"},
                 "six": {"enum": [1, 2, 3, 4, 5, 6], "x-formkit-ui-component": "line-options-choice"},
+                "seven": {"enum": [1, 2, 3, 4, 5, 6, 7], "x-formkit-ui-component": "line-options-choice"},
                 "text": {"type": "string", "x-formkit-ui-component": "line-options-choice"},
                 "unannotated": {"enum": ["A", "B"]}
               }
@@ -62,14 +63,39 @@ final class FormKitLineOptionsChoiceTests: XCTestCase {
 
         for field in session.renderPlan.fields {
             let resolved = FormKitComponentRegistry.fieldInput(for: context(field, in: session))
-            if ["two", "three"].contains(field.propertyKey) {
+            if ["two", "three", "four", "five", "six"].contains(field.propertyKey) {
                 XCTAssertEqual(field.uiComponent, .lineOptionsChoice)
                 XCTAssertNotNil(resolved, field.propertyKey)
             } else {
                 XCTAssertNil(resolved, field.propertyKey)
             }
         }
-        XCTAssertEqual(session.renderPlan.fields.count, 8)
+        XCTAssertEqual(session.renderPlan.fields.count, 9)
+    }
+
+    func testSegmentsStackForManyChoicesLongLabelsOrAccessibilitySizes() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "short": {"enum": ["Pass", "Failed", "N/A"], "x-formkit-ui-component": "line-options-choice"},
+                "many": {"enum": ["A", "B", "C", "D"], "x-formkit-ui-component": "line-options-choice"},
+                "long": {"enum": ["Yes", "Teppanyaki Restaurant"], "x-formkit-ui-component": "line-options-choice"}
+              }
+            }
+            """,
+            instanceJSON: nil
+        )
+        let fields = Dictionary(uniqueKeysWithValues: session.renderPlan.fields.map { ($0.propertyKey, $0) })
+        let short = try XCTUnwrap(fields["short"]).enumOptions
+        let many = try XCTUnwrap(fields["many"]).enumOptions
+        let long = try XCTUnwrap(fields["long"]).enumOptions
+
+        XCTAssertFalse(FormKitLineOptionsChoice.stacksVertically(short, isAccessibilitySize: false))
+        XCTAssertTrue(FormKitLineOptionsChoice.stacksVertically(short, isAccessibilitySize: true))
+        XCTAssertTrue(FormKitLineOptionsChoice.stacksVertically(many, isAccessibilitySize: false))
+        XCTAssertTrue(FormKitLineOptionsChoice.stacksVertically(long, isAccessibilitySize: false))
     }
 
     func testOptionalSelectionCanBeChangedAndCleared() throws {

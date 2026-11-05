@@ -6,6 +6,8 @@ struct FormKitLineOptionButton: View {
     let identifier: String
     let accent: Color
     let isSelected: Bool
+    /// Stacked rows read as a list: labels lead instead of centring in a segment.
+    var isStacked = false
     let action: () -> Void
 
     var body: some View {
@@ -16,10 +18,10 @@ struct FormKitLineOptionButton: View {
             Text(choice.title)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(isSelected ? selectedText : .primary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 8)
+                .multilineTextAlignment(isStacked ? .leading : .center)
+                .padding(.horizontal, isStacked ? 20 : 8)
                 .padding(.vertical, 8)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isStacked ? .leading : .center)
                 .frame(minWidth: 44, minHeight: 44)
                 .background(tint.opacity(isSelected ? (choice.color == nil ? 0.18 : 1) : 0))
                 .contentShape(Rectangle())
