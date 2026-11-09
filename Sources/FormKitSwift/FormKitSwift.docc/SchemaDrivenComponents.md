@@ -50,11 +50,11 @@ Supported values and shapes are:
 | `file-field` | Non-enum string field, normally with `format: "uri"` |
 | `multiple-file-field` | Array of strings without item `enum` or `const`, normally with item `format: "uri"` |
 | `signature-pad` | Non-enum string field, normally with `format: "uri"` |
-| `line-options-choice` | Scalar enum field with 2–3 options, including any explicit `null` option |
+| `line-options-choice` | Scalar enum field with 2–6 options, including any explicit `null` option |
 
 Unknown or incompatible annotations remain available on descriptors but fall back to stock rendering. Annotation values are trimmed and case-insensitive.
 
-`line-options-choice` displays one slim, rounded outline with 2–3 equal-width segments and dividers. Unselected segments have a neutral background; the selected segment uses a highlighted fill and a selected accessibility trait. At accessibility text sizes the segments stack vertically, keeping labels readable and touch targets at least 44 points. Larger enums use the standard picker. Selection changes respect Reduce Motion. Required fields show an asterisk and retain their selection; optional fields can be cleared by tapping the selected option again. Existing enum defaults, validation, and read-only behavior apply.
+`line-options-choice` displays one slim, rounded outline with 2–6 segments and dividers. Up to three short options share one row of equal-width segments. With more than three options, or when any label is longer than 14 characters, the segments stack vertically as full-width, leading-aligned rows. They also stack at accessibility text sizes, keeping labels readable and touch targets at least 44 points. Unselected segments have a neutral background; the selected segment uses a highlighted fill and a selected accessibility trait. Larger enums use the standard picker. Selection changes respect Reduce Motion. Required fields show an asterisk and retain their selection; optional fields can be cleared by tapping the selected option again. Existing enum defaults, validation, and read-only behavior apply.
 
 ## Set Option Colors
 
@@ -75,7 +75,7 @@ Add `x-formkit-option-color-map` to the same field schema as `enum` and `x-formk
 
 For other scalar enum values, use `true`, `false`, `null`, or numeric strings such as `1` and `1.5`; integral numbers use `1` rather than `1.0`. A string `"null"` and an explicit `null` share the key `"null"`.
 
-Color metadata never changes submitted values and is available to custom renderers through ``FormKitFieldDescriptor/Choice/color``. This selection styling applies to `line-options-choice`; enums outside its 2–3 option limit use the standard picker.
+Color metadata never changes submitted values and is available to custom renderers through ``FormKitFieldDescriptor/Choice/color``. This selection styling applies to `line-options-choice`; enums outside its 2–6 option limit use the standard picker.
 
 ## Provide an Upload Handler
 

@@ -82,7 +82,7 @@ For deeper customization, set `FormKitOptions.components.field` or `sectionHeade
 
 ### Per-Option Colors
 
-Use `line-options-choice` for an enum with 2–3 options, and map each enum value to a hex color with `x-formkit-option-color-map`:
+Use `line-options-choice` for an enum with 2–6 options, and map each enum value to a hex color with `x-formkit-option-color-map`:
 
 ```json
 {
