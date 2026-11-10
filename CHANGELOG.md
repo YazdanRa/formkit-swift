@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/YazdanRa/formkit-swift/compare/v1.8.0...v1.9.0) (2026-11-09)
+
+
+### Features
+
+* **components:** show line options for up to six choices ([#43](https://github.com/YazdanRa/formkit-swift/issues/43)) ([056beac](https://github.com/YazdanRa/formkit-swift/commit/056beac84651002416ae9675c6170f5c22f650d3))
+
 ## [1.8.0](https://github.com/YazdanRa/formkit-swift/compare/v1.7.0...v1.8.0) (2026-10-28)
 
 
