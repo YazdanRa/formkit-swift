@@ -43,7 +43,8 @@ extension FormKitContainerView {
     func borderColor(
         for field: FormKitFieldDescriptor,
         state: FormKitFieldVisualState,
-        hasErrors: Bool
+        hasErrors: Bool,
+        usesStockTextInput: Bool = false
     ) -> Color {
         if hasErrors {
             return options.style.destructive
@@ -57,6 +58,9 @@ extension FormKitContainerView {
         case .locked:
             return options.style.secondaryText
         case .normal:
+            if usesStockTextInput && !field.isDisabled && !isEditingLocked {
+                return .primary.opacity(0.55)
+            }
             return options.style.secondaryText.opacity(0.25)
         }
     }
@@ -120,15 +124,16 @@ enum NullableBooleanSelection: Hashable {
 struct FormKitMessageRow: View {
     let message: String
     let color: Color
+    var isSuccess = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "exclamationmark.circle.fill")
+            Image(systemName: isSuccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                 .foregroundStyle(color)
                 .accessibilityHidden(true)
             Text(message)
                 .font(.caption)
-                .foregroundStyle(color)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
         }
     }

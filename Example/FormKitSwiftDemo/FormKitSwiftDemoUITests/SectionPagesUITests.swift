@@ -2,6 +2,18 @@ import XCTest
 
 final class SectionPagesUITests: XCTestCase {
     @MainActor
+    func testEmptyRequiredTextInputHasAnAccessibleCueBeforeValidation() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-UITEST_SECTION_PAGES", "-AppleLanguages", "(en)"]
+        app.launch()
+
+        let roomNumber = app.textFields["json_form_field_roomNumber_input"]
+        XCTAssertTrue(roomNumber.waitForExistence(timeout: 5))
+        XCTAssertEqual(roomNumber.label, "Room number (required)")
+        XCTAssertFalse(app.staticTexts["This field is required."].exists)
+    }
+
+    @MainActor
     func testPagesTurnFromTheHeaderFooterAndSectionMenu() {
         let app = launch()
         let jump = app.buttons["formkit_page_jump"]
