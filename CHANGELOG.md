@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/YazdanRa/formkit-swift/compare/v1.9.0...v1.9.1) (2026-11-16)
+
+
+### Bug Fixes
+
+* **renderer:** improve text field and validation legibility ([#46](https://github.com/YazdanRa/formkit-swift/issues/46)) ([c9e97cd](https://github.com/YazdanRa/formkit-swift/commit/c9e97cdf828446814618719853218cbb33cc874a))
+
 ## [1.9.0](https://github.com/YazdanRa/formkit-swift/compare/v1.8.0...v1.9.0) (2026-11-09)
 
 
