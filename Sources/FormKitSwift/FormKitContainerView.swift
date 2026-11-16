@@ -188,9 +188,11 @@ struct FormKitContainerView: View {
             Section {
                 VStack(alignment: .leading, spacing: 6) {
                     if let validationStatus = session.validationStatusMessage {
-                        Text(validationStatus)
-                            .font(.caption)
-                            .foregroundStyle(validationStatusColor)
+                        FormKitMessageRow(
+                            message: validationStatus,
+                            color: validationSucceeded ? options.style.success : options.style.destructive,
+                            isSuccess: validationSucceeded
+                        )
                     }
 
                     if let formErrorMessage = session.formErrorMessage {
@@ -211,11 +213,7 @@ struct FormKitContainerView: View {
         }
     }
 
-    private var validationStatusColor: Color {
-        session.formErrorMessage == nil
-            && session.fieldErrors.isEmpty
-            && session.arrayErrors.isEmpty
-            ? options.style.success
-            : options.style.destructive
+    private var validationSucceeded: Bool {
+        session.formErrorMessage == nil && session.fieldErrors.isEmpty && session.arrayErrors.isEmpty
     }
 }

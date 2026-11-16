@@ -78,12 +78,13 @@ extension FormKitContainerView {
         usesLineOptionsChoice: Bool
     ) -> some View {
         if usesLineOptionsChoice {
-            Text("\(field.title)\(Text(field.isRequired ? " *" : "").foregroundStyle(options.style.destructive))")
+            let marker = field.isRequired && field.shouldSerialize ? " *" : ""
+            Text("\(field.title)\(Text(marker).foregroundStyle(options.style.destructive))")
                 .font(.body)
         } else if usesStackedLabel {
-            Text(field.title)
+            Text(componentInput == nil ? textFieldTitle(for: field) : field.title)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(options.style.secondaryText)
+                .foregroundStyle(componentInput == nil ? Color.primary : options.style.secondaryText)
                 .accessibilityHidden(componentInput == nil)
         }
 
@@ -125,7 +126,12 @@ extension FormKitContainerView {
             .overlay(
                 RoundedRectangle(cornerRadius: options.style.cornerRadius, style: .continuous)
                     .stroke(
-                        borderColor(for: field, state: context.state, hasErrors: !context.errors.isEmpty),
+                        borderColor(
+                            for: field,
+                            state: context.state,
+                            hasErrors: !context.errors.isEmpty,
+                            usesStockTextInput: componentInput == nil
+                        ),
                         lineWidth: 1.5
                     )
             )
@@ -268,6 +274,13 @@ extension FormKitContainerView {
         }
     }
 
+    private func textFieldTitle(for field: FormKitFieldDescriptor) -> String {
+        if field.isRequired && field.shouldSerialize {
+            return String(localized: "\(field.title) (required)", bundle: .module)
+        }
+        return field.title
+    }
+
     private func textInput(
         _ field: FormKitFieldDescriptor,
         renderIndex: FormKitRenderIndex,
@@ -276,7 +289,7 @@ extension FormKitContainerView {
         FormKitDebouncedTextInputField(
             fieldID: field.id,
             accessibilityIdentifier: "\(fieldIdentifier(for: field))_input",
-            accessibilityLabel: field.title,
+            accessibilityLabel: textFieldTitle(for: field),
             prompt: fieldPrompt(for: field),
             canonicalText: session.stringValue(for: field),
             submitLabel: renderIndex.nextFocusableFieldID(after: field.id) == nil ? .done : .next,

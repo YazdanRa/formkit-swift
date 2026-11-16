@@ -99,4 +99,6 @@ Host overrides run before package-native component selection. Use an entire `fie
 
 Set ``FormKitMode/readOnly`` to preserve the rendered form while locking mutations. Use ``FormKitLabels`` for host-provided control text and ``FormKitStyle`` for colors and spacing.
 
+Stock text input titles, normal editable outlines, and validation messages use the platform's primary foreground color for legibility. Validation icons and error outlines use the configured status colors. `secondaryText` continues to style supporting text and custom input captions.
+
 For file and signature inputs, provide a host upload handler through ``FormKitOptions/uploadHandler``. See <doc:SchemaDrivenComponents>.
