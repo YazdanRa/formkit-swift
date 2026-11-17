@@ -294,7 +294,8 @@ extension FormKitRenderer {
             fields: state.reasons.isEmpty ? state.fields : [],
             fieldOrder: state.reasons.isEmpty ? fieldOrder : [],
             unsupportedReasons: state.reasons,
-            layout: FormKitFormLayout(schemaValue: rootObject[FormKitFormLayout.schemaKey]?.string)
+            layout: FormKitFormLayout(schemaValue: rootObject[FormKitFormLayout.schemaKey]?.string),
+            pageGroups: FormKitPageGroup.parse(rootObject["x-formkit-pages"])
         )
     }
 

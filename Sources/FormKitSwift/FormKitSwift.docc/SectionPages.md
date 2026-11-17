@@ -36,6 +36,32 @@ Add `x-formkit-layout` to the root schema:
 
 Each top-level object property becomes a page, in `x-formkit-order` order. Top-level fields and arrays outside any section join the page of the section after them, or the last page when no section follows, so "Room number" opens page one. A form with fewer than two top-level sections, or any other `x-formkit-layout` value, keeps the single scrolling form. ``FormKitRenderPlan/layout`` reports the requested ``FormKitFormLayout``.
 
+## Group Flat Answers
+
+An existing flat schema can group its root properties into pages with `x-formkit-pages`. The groups affect presentation while saved answer keys and JSON Pointers keep their existing shape.
+
+```json
+{
+  "type": "object",
+  "x-formkit-layout": "section-pages",
+  "x-formkit-pages": [
+    {"id": "request", "title": "Request", "fields": ["title", "question"]},
+    {"id": "details", "title": "Details", "fields": ["due_date", "comments"]}
+  ],
+  "properties": {
+    "title": {"type": "string"},
+    "question": {"type": "string"},
+    "due_date": {"type": ["string", "null"], "format": "date"},
+    "comments": {"type": "string"}
+  },
+  "required": ["title", "question"]
+}
+```
+
+Each group has a unique `id`, a `title` and `fields` containing literal root property names. Groups follow array order, and their fields follow the schema form order. Naming an object or array includes its complete subtree. Missing properties are ignored, so organization-specific definitions can omit fields. Visible properties without an explicit group join the last page. Empty and hidden-only groups are skipped, while empty arrays keep their Add controls. At least two groups with visible content are needed for paging.
+
+Malformed metadata or duplicate group IDs or property membership keeps the complete scrolling form. With no `x-formkit-pages`, existing object-section paging applies. Older renderers that ignore the new annotation can still display the same flat answers as a scrolling form.
+
 ## What the Pages Show
 
 - A Liquid Glass control floats above the page, under the host's own navigation bar: a round previous button, a capsule showing "2 of 6 · Housekeeping" with one progress bar per section, and a round next button. The capsule opens a menu of every section with its status, followed by the summary. Next on the last section opens the summary.
@@ -51,7 +77,7 @@ Text comes from ``FormKitLabels/pages``. Colors come from ``FormKitStyle``.
 
 - **Answered** counts the section's own visible questions with an answer someone gave. Renderer defaults do not count, and neither do follow-ups or top-level fields placed on the page.
 - **Flagged answers** are answers that satisfied an `if` whose `then` requires or declares other fields, such as "Failed" opening its observation. Rules are read from the object they are declared in, including its `allOf` members and local `$ref` targets.
-- A page **needs attention** when a follow-up an answer opened is still empty, or when a field on it failed validation. A required field nobody has reached yet does not flag the page, so a fresh form does not open in an error state.
+- A page **needs attention** when a required follow-up an answer opened is still empty, or when a field on it failed validation. Optional follow-ups stay optional in the summary. A required field nobody has reached yet does not flag the page, so a fresh form does not open in an error state.
 
 ## Turning Pages from the Host
 

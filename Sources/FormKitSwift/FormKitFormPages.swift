@@ -1,16 +1,16 @@
 import Foundation
 import JSONSchema
 
-/// One page of a ``FormKitFormLayout/sectionPages`` form: a top-level object section and every field
-/// under it, including nested sections.
+/// One page of a ``FormKitFormLayout/sectionPages`` form: a top-level object section, or a schema's
+/// presentation group of whole root properties.
 ///
 /// Top-level fields outside any section join the page of the section after them, or the last page
 /// when no section follows, so a leading "Room number" opens page one.
 public struct FormKitFormPage: Identifiable, Sendable, Equatable {
     public let index: Int
-    /// The top-level section's JSON Pointer, such as `#/housekeeping`.
+    /// The section's JSON Pointer, such as `#/housekeeping`, or `page:` followed by a presentation group ID.
     public let id: String
-    /// The render plan identifier of the page's section.
+    /// The render plan identifier of the page's section, or `#` for a root presentation group.
     public let sectionID: String
     /// The top-level property key, such as `housekeeping`.
     public let propertyKey: String
@@ -22,7 +22,7 @@ public struct FormKitFormPage: Identifiable, Sendable, Equatable {
 
     /// Whether the field belongs to the page's own section rather than sitting on it from the top level.
     public func isSectionField(_ fieldID: String) -> Bool {
-        fieldID.hasPrefix(id + "/")
+        sectionID == "#" ? fieldIDs.contains(fieldID) : fieldID.hasPrefix(id + "/")
     }
 
     /// Whether a field or section pointer is shown on this page, inside its section or under a top-level
@@ -47,7 +47,7 @@ public struct FormKitPageProgress: Identifiable, Sendable, Equatable {
     /// placed on the page are not counted as its questions.
     public let answered: Int
     public let total: Int
-    /// A follow-up an answer opened is still empty, or a field on the page failed validation. A required
+    /// A required follow-up an answer opened is still empty, or a field on the page failed validation. A required
     /// field nobody has reached yet is not flagged, so a fresh form does not open in an error state.
     public let needsAttention: Bool
 
@@ -112,6 +112,16 @@ enum FormKitFormPageBuilder {
             return []
         }
 
+        if let groups = plan.pageGroups {
+            return presentationPages(groups, root: root, plan: plan)
+        }
+        return sectionPages(root: root, plan: plan)
+    }
+
+    private static func sectionPages(
+        root: FormKitRenderPlan.SectionDescriptor,
+        plan: FormKitRenderPlan
+    ) -> [FormKitFormPage] {
         typealias Section = FormKitRenderPlan.SectionDescriptor
         let topSections = plan.sections.reduce(into: [String: Section]()) { result, section in
             guard section.parentPointer == root.pointer,
@@ -168,6 +178,49 @@ enum FormKitFormPageBuilder {
         var section: FormKitRenderPlan.SectionDescriptor?
         var fieldIDs: [String] = []
         var loosePointers: [String] = []
+    }
+
+    private static func presentationPages(
+        _ groups: [FormKitPageGroup],
+        root: FormKitRenderPlan.SectionDescriptor,
+        plan: FormKitRenderPlan
+    ) -> [FormKitFormPage] {
+        let visibleFields = plan.fields.filter(\.isVisible)
+        let visibleFieldIDs = Set(visibleFields.map(\.id))
+        let visibleArrays = plan.sections.filter { $0.isArraySection && $0.isVisible && !$0.isOwnedByArrayRow }
+        let availableProperties = root.propertyOrder.filter { key in
+            let pointer = JSONPointer.pointerString(from: [key])
+            return visibleFields.contains { $0.pointer == pointer || $0.pointer.hasPrefix(pointer + "/") }
+                || visibleArrays.contains { $0.pointer == pointer || $0.pointer.hasPrefix(pointer + "/") }
+        }
+        let available = Set(availableProperties)
+        var assigned: Set<String> = []
+        var drafts: [(group: FormKitPageGroup, keys: [String])] = []
+        for group in groups {
+            let keys = group.fields.filter(available.contains)
+            guard !keys.isEmpty else { continue }
+            assigned.formUnion(keys)
+            drafts.append((group, keys))
+        }
+        guard drafts.count >= 2 else { return [] }
+        drafts[drafts.count - 1].keys += availableProperties.filter { !assigned.contains($0) }
+
+        return drafts.enumerated().map { index, draft in
+            let pointers = draft.keys.map { JSONPointer.pointerString(from: [$0]) }
+            let fieldIDs = plan.fieldOrder.filter { fieldID in
+                visibleFieldIDs.contains(fieldID)
+                    && pointers.contains { fieldID == $0 || fieldID.hasPrefix($0 + "/") }
+            }
+            return FormKitFormPage(
+                index: index,
+                id: "page:" + draft.group.id,
+                sectionID: "#",
+                propertyKey: draft.group.id,
+                title: draft.group.title,
+                fieldIDs: fieldIDs,
+                loosePointers: pointers
+            )
+        }
     }
 
     private static func fieldIDs(under pointer: String, in plan: FormKitRenderPlan) -> [String] {

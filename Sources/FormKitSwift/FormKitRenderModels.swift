@@ -52,6 +52,8 @@ public struct FormKitRenderPlan: Sendable, Equatable {
     public let unsupportedReasons: [FormKitUnsupportedReason]
     /// The layout the root schema requests with `x-formkit-layout`.
     public internal(set) var layout: FormKitFormLayout = .scroll
+    /// Root property presentation groups, or nil when the schema uses object-section pages.
+    var pageGroups: [FormKitPageGroup]?
 
     public var isSupported: Bool {
         unsupportedReasons.isEmpty
