@@ -102,3 +102,27 @@ Set ``FormKitMode/readOnly`` to preserve the rendered form while locking mutatio
 Stock text input titles, normal editable outlines, and validation messages use the platform's primary foreground color for legibility. Validation icons and error outlines use the configured status colors. `secondaryText` continues to style supporting text and custom input captions.
 
 For file and signature inputs, provide a host upload handler through ``FormKitOptions/uploadHandler``. See <doc:SchemaDrivenComponents>.
+
+## People Selection
+
+Use ``FormKitPeoplePicker`` through `fieldInput` for one identifier or `arraySection` for an array of identifiers. The host supplies the project-scoped provider, cached display names and binding. Lookup starts when the sheet opens. Search and explicit pagination request pages from the same provider.
+
+```swift
+FormKitPeoplePicker(
+    title: fieldTitle,
+    selection: .single($selectedPersonID),
+    savedPeople: cachedPeople,
+    isRequired: isRequired,
+    isEditingLocked: isReadOnly,
+    provider: { search, cursor in
+        try await projectDirectory.people(search: search, cursor: cursor)
+    }
+)
+.id(projectCatalogIdentity)
+```
+
+For multiple people, bind `.multiple($selectedPersonIDs)`. Selection changes write identifiers immediately. Done closes the sheet. Optional selection can be cleared, and a required multiple selection keeps its last identifier. Previously saved identifiers remain selected when absent from search results or when lookup fails. Supply their names with `savedPeople` and scope the view identity to the field and project catalog so cached labels belong to that context.
+
+Opening the picker, loading results and failing to resolve a saved identifier do not write the binding. Deliberate clearing writes nil for a scalar or an empty array for multiple selection; the host maps those values to its serialization contract. Learned names survive closing and reopening. Duplicate names display the stable identifier as supporting text and include it in the accessible label.
+
+The `people-picker` component identifier is an opt-in routing marker for host overrides. Match `.peoplePicker` in the field or array descriptor and return the configured view. A field input override keeps the stock caption and validation messages. An array-section override owns its section header and errors using the supplied context. Returning nil retains the standard input. The host controls authorization, offline cache and validation of chosen identifiers.

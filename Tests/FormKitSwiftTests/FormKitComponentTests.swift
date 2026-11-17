@@ -3,6 +3,42 @@ import XCTest
 
 @MainActor
 final class FormKitComponentTests: XCTestCase {
+    func testPeoplePickerMarkerPreservesFlatScalarAndArrayFields() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object",
+              "properties": {
+                "issued_to": { "type": "string", "x-formkit-ui-component": "people-picker" },
+                "assigned_to": {
+                  "type": "array", "items": { "type": "string" },
+                  "x-formkit-ui-component": "people-picker"
+                },
+                "cc": {
+                  "type": "array", "items": { "type": "string" },
+                  "x-formkit-ui-component": "people-picker"
+                }
+              }
+            }
+            """,
+            instanceJSON: """
+            {"issued_to":"company-contact:7","assigned_to":["company-user:8"],"cc":["company-contact:9"]}
+            """
+        )
+
+        XCTAssertEqual(FormKitUIComponent.peoplePicker.rawValue, "people-picker")
+        XCTAssertEqual(tryUnwrapField("issued_to", in: session).uiComponent, .peoplePicker)
+        for key in ["assigned_to", "cc"] {
+            let section = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == key })
+            XCTAssertEqual(section.uiComponent, .peoplePicker)
+        }
+        XCTAssertTrue(session.validate())
+        let instance = try decodeJSONObject(session.currentInstanceJSON)
+        XCTAssertEqual(instance["issued_to"] as? String, "company-contact:7")
+        XCTAssertEqual(instance["assigned_to"] as? [String], ["company-user:8"])
+        XCTAssertEqual(instance["cc"] as? [String], ["company-contact:9"])
+    }
+
     func testUIComponentAnnotationsPropagateToFieldsAndSections() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: FormKitComponentTestFixtures.componentSchema,
