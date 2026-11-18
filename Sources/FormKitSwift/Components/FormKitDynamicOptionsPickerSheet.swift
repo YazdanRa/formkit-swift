@@ -1,45 +1,45 @@
 import SwiftUI
 
-struct FormKitPeoplePickerSheet: View {
+struct FormKitDynamicOptionsPickerSheet: View {
     let title: String
-    let selection: FormKitPeopleSelection
-    let savedPeople: [FormKitPersonOption]
-    let labels: FormKitPeoplePickerLabels
+    let selection: FormKitDynamicSelection
+    let savedOptions: [FormKitDynamicOption]
+    let labels: FormKitDynamicOptionsPickerLabels
     let maximumSelectionCount: Int?
     let isRequired: Bool
     let isEditingLocked: Bool
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
-    @State private var model: FormKitPeoplePickerModel
+    @State private var model: FormKitDynamicOptionsPickerModel
     @State private var pageTask: Task<Void, Never>?
 
     init(
         title: String,
-        selection: FormKitPeopleSelection,
-        savedPeople: [FormKitPersonOption],
-        labels: FormKitPeoplePickerLabels,
+        selection: FormKitDynamicSelection,
+        savedOptions: [FormKitDynamicOption],
+        labels: FormKitDynamicOptionsPickerLabels,
         isRequired: Bool,
         maximumSelectionCount: Int?,
         isEditingLocked: Bool,
-        provider: @escaping FormKitPeopleProvider
+        provider: @escaping FormKitDynamicOptionsProvider
     ) {
         self.title = title
         self.selection = selection
-        self.savedPeople = savedPeople
+        self.savedOptions = savedOptions
         self.labels = labels
         self.isRequired = isRequired
         self.maximumSelectionCount = maximumSelectionCount
         self.isEditingLocked = isEditingLocked
-        _model = State(initialValue: FormKitPeoplePickerModel(provider: provider, labels: labels))
+        _model = State(initialValue: FormKitDynamicOptionsPickerModel(provider: provider, labels: labels))
     }
 
     var body: some View {
         NavigationStack {
             List {
-                if !selectedPeople.isEmpty {
+                if !selectedOptions.isEmpty {
                     Section {
-                        ForEach(selectedPeople) { person in
-                            personRow(person, isSelected: true)
+                        ForEach(selectedOptions) { option in
+                            optionRow(option, isSelected: true)
                         }
                         if !isRequired {
                             Button(String(localized: "Clear selection", bundle: .module)) {
@@ -47,25 +47,25 @@ struct FormKitPeoplePickerSheet: View {
                                 selection.clear(isRequired: isRequired)
                             }
                             .disabled(isEditingLocked)
-                            .accessibilityIdentifier("formkit_people_clear")
+                            .accessibilityIdentifier("formkit_dynamic_clear")
                         }
                     } header: {
-                        Text("Selected people", bundle: .module)
+                        Text("Selected options", bundle: .module)
                     }
                 }
                 Section {
-                    ForEach(model.people.filter { !selection.ids.contains($0.id) }) { person in
-                        personRow(person, isSelected: false)
+                    ForEach(model.options.filter { !selection.ids.contains($0.id) }) { option in
+                        optionRow(option, isSelected: false)
                     }
                     loadingStatus
                 }
             }
-            .searchable(text: $search, prompt: Text("Search people", bundle: .module))
+            .searchable(text: $search, prompt: Text("Search options", bundle: .module))
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "Done", bundle: .module)) { dismiss() }
-                        .accessibilityIdentifier("formkit_people_done")
+                        .accessibilityIdentifier("formkit_dynamic_done")
                 }
             }
             .task(id: search) {
@@ -79,26 +79,26 @@ struct FormKitPeoplePickerSheet: View {
         }
     }
 
-    private var selectedPeople: [FormKitPersonOption] {
+    private var selectedOptions: [FormKitDynamicOption] {
         var seen: Set<String> = []
         return selection.ids.filter { seen.insert($0).inserted }.map { id in
-            labels.person(for: id, savedPeople: savedPeople)
+            labels.option(for: id, savedOptions: savedOptions)
         }
     }
 
-    private func personRow(_ person: FormKitPersonOption, isSelected: Bool) -> some View {
+    private func optionRow(_ option: FormKitDynamicOption, isSelected: Bool) -> some View {
         Button {
             guard !isEditingLocked else { return }
-            selection.choose(person.id, isRequired: isRequired, maximumSelectionCount: maximumSelectionCount)
+            selection.choose(option.id, isRequired: isRequired, maximumSelectionCount: maximumSelectionCount)
             if selection.isSingle {
                 dismiss()
             }
         } label: {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(person.displayName)
+                    Text(option.label)
                         .foregroundStyle(.primary)
-                    if let detail = labels.secondaryLabel(for: person, savedPeople: savedPeople) {
+                    if let detail = labels.secondaryLabel(for: option, savedOptions: savedOptions) {
                         Text(detail)
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -115,29 +115,29 @@ struct FormKitPeoplePickerSheet: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(isEditingLocked || !selection.canChoose(person.id, maximumSelectionCount: maximumSelectionCount))
-        .accessibilityLabel(labels.displayLabel(for: person, savedPeople: savedPeople))
+        .disabled(isEditingLocked || !selection.canChoose(option.id, maximumSelectionCount: maximumSelectionCount))
+        .accessibilityLabel(labels.displayLabel(for: option, savedOptions: savedOptions))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .accessibilityIdentifier("formkit_person_\(person.id)")
+        .accessibilityIdentifier("formkit_dynamic_option_\(option.id)")
     }
 
     @ViewBuilder
     private var loadingStatus: some View {
         if model.isLoading {
-            ProgressView(String(localized: "Loading people", bundle: .module))
+            ProgressView(String(localized: "Loading options", bundle: .module))
         } else if model.hasError {
-            Text("People could not be loaded.", bundle: .module)
+            Text("Options could not be loaded.", bundle: .module)
             Button(String(localized: "Retry", bundle: .module)) {
                 pageTask = Task { await model.retry() }
             }
-            .accessibilityIdentifier("formkit_people_retry")
+            .accessibilityIdentifier("formkit_dynamic_retry")
         } else if model.nextCursor != nil {
             Button(String(localized: "Load more", bundle: .module)) {
                 pageTask = Task { await model.loadMore() }
             }
-            .accessibilityIdentifier("formkit_people_load_more")
-        } else if model.people.isEmpty {
-            Text("No people found", bundle: .module)
+            .accessibilityIdentifier("formkit_dynamic_load_more")
+        } else if model.options.isEmpty {
+            Text("No options found", bundle: .module)
                 .foregroundStyle(.secondary)
         }
     }

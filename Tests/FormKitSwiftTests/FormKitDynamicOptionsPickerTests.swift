@@ -3,89 +3,89 @@ import XCTest
 @testable import FormKitSwift
 
 @MainActor
-final class FormKitPeoplePickerTests: XCTestCase {
+final class FormKitDynamicOptionsPickerTests: XCTestCase {
     func testProviderIsLazyAndPagesDeduplicateWithoutLosingKnownLabels() async {
         var calls: [(String, String?)] = []
-        let model = FormKitPeoplePickerModel { search, cursor in
+        let model = FormKitDynamicOptionsPickerModel { search, cursor in
             calls.append((search, cursor))
             if cursor == nil {
-                return FormKitPeoplePage(people: [self.person("1"), self.person("1")], nextCursor: "next")
+                return FormKitDynamicOptionsPage(options: [self.option("1"), self.option("1")], nextCursor: "next")
             }
-            return FormKitPeoplePage(people: [self.person("1"), self.person("2")], nextCursor: "next")
+            return FormKitDynamicOptionsPage(options: [self.option("1"), self.option("2")], nextCursor: "next")
         }
         XCTAssertTrue(calls.isEmpty)
         await model.startSearch("")
-        XCTAssertEqual(model.people.map(\.id), ["1"])
+        XCTAssertEqual(model.options.map(\.id), ["1"])
         await model.loadMore()
         XCTAssertEqual(calls.count, 2)
         XCTAssertEqual(calls[1].1, "next")
-        XCTAssertEqual(model.people.map(\.id), ["1", "2"])
+        XCTAssertEqual(model.options.map(\.id), ["1", "2"])
         XCTAssertNil(model.nextCursor)
         await model.startSearch("another")
-        XCTAssertEqual(model.knownPeople["2"]?.displayName, "Person 2")
+        XCTAssertEqual(model.knownOptions["2"]?.label, "Option 2")
     }
 
     func testDelayedSearchCannotReplaceNewerResults() async {
-        let requests = PendingPeopleRequests()
-        let model = FormKitPeoplePickerModel(provider: requests.load)
+        let requests = PendingDynamicOptionsRequests()
+        let model = FormKitDynamicOptionsPickerModel(provider: requests.load)
         let oldSearch = Task { await model.startSearch("old") }
         await requests.waitForCount(1)
         let newSearch = Task { await model.startSearch("new") }
         await requests.waitForCount(2)
-        requests.finish(1, page: FormKitPeoplePage(people: [person("new")]))
+        requests.finish(1, page: FormKitDynamicOptionsPage(options: [option("new")]))
         await newSearch.value
-        requests.finish(0, page: FormKitPeoplePage(people: [person("old")], nextCursor: "stale"))
+        requests.finish(0, page: FormKitDynamicOptionsPage(options: [option("old")], nextCursor: "stale"))
         await oldSearch.value
-        XCTAssertEqual(model.people.map(\.id), ["new"])
-        XCTAssertNil(model.knownPeople["old"])
+        XCTAssertEqual(model.options.map(\.id), ["new"])
+        XCTAssertNil(model.knownOptions["old"])
         XCTAssertNil(model.nextCursor)
         XCTAssertFalse(model.isLoading)
     }
 
     func testOldPageAndCancellationCannotAppendToNewSearch() async {
-        let requests = PendingPeopleRequests()
-        let model = FormKitPeoplePickerModel(provider: requests.load)
+        let requests = PendingDynamicOptionsRequests()
+        let model = FormKitDynamicOptionsPickerModel(provider: requests.load)
         let initial = Task { await model.startSearch("first") }
         await requests.waitForCount(1)
-        requests.finish(0, page: FormKitPeoplePage(people: [person("1")], nextCursor: "p2"))
+        requests.finish(0, page: FormKitDynamicOptionsPage(options: [option("1")], nextCursor: "p2"))
         await initial.value
         let pagination = Task { await model.loadMore() }
         await requests.waitForCount(2)
         let replacement = Task { await model.startSearch("second") }
         await requests.waitForCount(3)
-        requests.finish(1, page: FormKitPeoplePage(people: [person("stale")]))
+        requests.finish(1, page: FormKitDynamicOptionsPage(options: [option("stale")]))
         await pagination.value
         XCTAssertTrue(model.isLoading)
         replacement.cancel()
-        requests.finish(2, page: FormKitPeoplePage(people: [person("cancelled")]))
+        requests.finish(2, page: FormKitDynamicOptionsPage(options: [option("cancelled")]))
         await replacement.value
-        XCTAssertTrue(model.people.isEmpty)
-        XCTAssertNil(model.knownPeople["stale"])
-        XCTAssertNil(model.knownPeople["cancelled"])
+        XCTAssertTrue(model.options.isEmpty)
+        XCTAssertNil(model.knownOptions["stale"])
+        XCTAssertNil(model.knownOptions["cancelled"])
         XCTAssertFalse(model.hasError)
         XCTAssertFalse(model.isLoading)
     }
 
     func testRetryUsesFailedPageCursorAndCancelRejectsLateError() async {
-        let requests = PendingPeopleRequests()
-        let model = FormKitPeoplePickerModel(provider: requests.load)
+        let requests = PendingDynamicOptionsRequests()
+        let model = FormKitDynamicOptionsPickerModel(provider: requests.load)
         let initial = Task { await model.startSearch("query") }
         await requests.waitForCount(1)
-        requests.finish(0, page: FormKitPeoplePage(people: [person("1")], nextCursor: "p2"))
+        requests.finish(0, page: FormKitDynamicOptionsPage(options: [option("1")], nextCursor: "p2"))
         await initial.value
         let pagination = Task { await model.loadMore() }
         await requests.waitForCount(2)
         requests.fail(1)
         await pagination.value
         XCTAssertTrue(model.hasError)
-        XCTAssertEqual(model.people.map(\.id), ["1"])
+        XCTAssertEqual(model.options.map(\.id), ["1"])
         let retry = Task { await model.retry() }
         await requests.waitForCount(3)
         XCTAssertEqual(requests.items[2].search, "query")
         XCTAssertEqual(requests.items[2].cursor, "p2")
-        requests.finish(2, page: FormKitPeoplePage(people: [person("2")]))
+        requests.finish(2, page: FormKitDynamicOptionsPage(options: [option("2")]))
         await retry.value
-        XCTAssertEqual(model.people.map(\.id), ["1", "2"])
+        XCTAssertEqual(model.options.map(\.id), ["1", "2"])
         XCTAssertFalse(model.hasError)
         let late = Task { await model.startSearch("late") }
         await requests.waitForCount(4)
@@ -97,7 +97,7 @@ final class FormKitPeoplePickerTests: XCTestCase {
 
     func testSingleSelectionPreservesHistoricalIDAndRequiredClearIsNoOp() {
         var value: String? = "offline-id"
-        let selection = FormKitPeopleSelection.single(Binding(get: { value }, set: { value = $0 }))
+        let selection = FormKitDynamicSelection.single(Binding(get: { value }, set: { value = $0 }))
         XCTAssertEqual(selection.ids, ["offline-id"])
         selection.clear(isRequired: true)
         XCTAssertEqual(value, "offline-id")
@@ -109,7 +109,7 @@ final class FormKitPeoplePickerTests: XCTestCase {
 
     func testMultipleSelectionKeepsOffPageIDsAndRequiredLastItem() {
         var value = ["offline-id", "live-id"]
-        let selection = FormKitPeopleSelection.multiple(Binding(get: { value }, set: { value = $0 }))
+        let selection = FormKitDynamicSelection.multiple(Binding(get: { value }, set: { value = $0 }))
         selection.choose("other-page-id", isRequired: false)
         XCTAssertEqual(value, ["offline-id", "live-id", "other-page-id"])
         selection.choose("live-id", isRequired: false)
@@ -124,108 +124,114 @@ final class FormKitPeoplePickerTests: XCTestCase {
     }
 
     func testLaterPageRefreshesExistingLabelWithoutReorderingIDs() async {
-        let model = FormKitPeoplePickerModel { _, cursor in
+        let model = FormKitDynamicOptionsPickerModel { _, cursor in
             if cursor == nil {
-                return FormKitPeoplePage(people: [self.person("1"), self.person("2")], nextCursor: "more")
+                return FormKitDynamicOptionsPage(options: [self.option("1"), self.option("2")], nextCursor: "more")
             }
-            return FormKitPeoplePage(people: [FormKitPersonOption(id: "1", displayName: "Updated name")])
+            return FormKitDynamicOptionsPage(options: [FormKitDynamicOption(id: "1", label: "Updated name")])
         }
         await model.startSearch("")
         await model.loadMore()
-        XCTAssertEqual(model.people.map(\.id), ["1", "2"])
-        XCTAssertEqual(model.people[0].displayName, "Updated name")
-        XCTAssertEqual(model.knownPeople["1"]?.displayName, "Updated name")
+        XCTAssertEqual(model.options.map(\.id), ["1", "2"])
+        XCTAssertEqual(model.options[0].label, "Updated name")
+        XCTAssertEqual(model.knownOptions["1"]?.label, "Updated name")
     }
 
     func testLearnedHistoricalLabelSurvivesSheetModelReplacementAndProviderFailure() async {
-        let labels = FormKitPeoplePickerLabels()
-        let person = FormKitPersonOption(id: "historical-id", displayName: "Known person")
-        let firstPresentation = FormKitPeoplePickerModel(provider: { _, _ in
-            FormKitPeoplePage(people: [person])
+        let labels = FormKitDynamicOptionsPickerLabels()
+        let option = FormKitDynamicOption(id: "historical-id", label: "Known option")
+        let firstPresentation = FormKitDynamicOptionsPickerModel(provider: { _, _ in
+            FormKitDynamicOptionsPage(options: [option])
         }, labels: labels)
-        XCTAssertEqual(labels.person(for: person.id, savedPeople: []).displayName, person.id)
+        XCTAssertEqual(labels.option(for: option.id, savedOptions: []).label, option.id)
         await firstPresentation.startSearch("")
         firstPresentation.cancel()
-        XCTAssertEqual(labels.person(for: person.id, savedPeople: []).displayName, "Known person")
-        let reopened = FormKitPeoplePickerModel(provider: { _, _ in
+        XCTAssertEqual(labels.option(for: option.id, savedOptions: []).label, "Known option")
+        let reopened = FormKitDynamicOptionsPickerModel(provider: { _, _ in
             throw CancellationError()
         }, labels: labels)
         await reopened.startSearch("")
-        XCTAssertEqual(labels.person(for: person.id, savedPeople: []).displayName, "Known person")
-        let saved = FormKitPersonOption(id: person.id, displayName: "Host refreshed name")
-        XCTAssertEqual(labels.person(for: person.id, savedPeople: [saved]).displayName, "Host refreshed name")
+        XCTAssertEqual(labels.option(for: option.id, savedOptions: []).label, "Known option")
+        let saved = FormKitDynamicOption(id: option.id, label: "Host refreshed name")
+        XCTAssertEqual(
+            labels.option(for: option.id, savedOptions: [saved]).label,
+            "Host refreshed name"
+        )
     }
 
     func testDuplicateNamesUseTypedIDsAcrossPagesAndSavedSelections() async {
-        let first = FormKitPersonOption(id: "company-contact:101", displayName: "Alex Example")
-        let second = FormKitPersonOption(id: "company-contact:102", displayName: "Alex Example")
-        let model = FormKitPeoplePickerModel { _, cursor in
-            FormKitPeoplePage(people: cursor == nil ? [first] : [second], nextCursor: cursor == nil ? "more" : nil)
+        let first = FormKitDynamicOption(id: "company-contact:101", label: "Alex Example")
+        let second = FormKitDynamicOption(id: "company-contact:102", label: "Alex Example")
+        let model = FormKitDynamicOptionsPickerModel { _, cursor in
+            FormKitDynamicOptionsPage(
+                options: cursor == nil ? [first] : [second],
+                nextCursor: cursor == nil ? "more" : nil
+            )
         }
         await model.startSearch("")
-        XCTAssertEqual(model.labels.displayLabel(for: first, savedPeople: []), "Alex Example")
-        XCTAssertTrue(model.labels.isDuplicate(first, savedPeople: [second]))
+        XCTAssertEqual(model.labels.displayLabel(for: first, savedOptions: []), "Alex Example")
+        XCTAssertTrue(model.labels.isDuplicate(first, savedOptions: [second]))
         await model.loadMore()
-        XCTAssertEqual(model.labels.displayLabel(for: first, savedPeople: []), "Alex Example, company-contact:101")
-        XCTAssertEqual(model.labels.displayLabel(for: second, savedPeople: []), "Alex Example, company-contact:102")
-        XCTAssertEqual(model.people.map(\.displayName), ["Alex Example", "Alex Example"])
+        XCTAssertEqual(model.labels.displayLabel(for: first, savedOptions: []), "Alex Example, company-contact:101")
+        XCTAssertEqual(model.labels.displayLabel(for: second, savedOptions: []), "Alex Example, company-contact:102")
+        XCTAssertEqual(model.options.map(\.label), ["Alex Example", "Alex Example"])
         await model.startSearch("another search")
-        XCTAssertTrue(model.labels.isDuplicate(first, savedPeople: []))
+        XCTAssertTrue(model.labels.isDuplicate(first, savedOptions: []))
     }
 
     func testEmptyInitialAndIntermediatePagesRemainPageable() async {
         var cursors: [String?] = []
-        let model = FormKitPeoplePickerModel { _, cursor in
+        let model = FormKitDynamicOptionsPickerModel { _, cursor in
             cursors.append(cursor)
             switch cursor {
             case nil:
-                return FormKitPeoplePage(people: [], nextCursor: "empty-page")
+                return FormKitDynamicOptionsPage(options: [], nextCursor: "empty-page")
             case "empty-page":
-                return FormKitPeoplePage(people: [], nextCursor: "final-page")
+                return FormKitDynamicOptionsPage(options: [], nextCursor: "final-page")
             default:
-                return FormKitPeoplePage(people: [self.person("last")])
+                return FormKitDynamicOptionsPage(options: [self.option("last")])
             }
         }
         await model.startSearch("")
-        XCTAssertTrue(model.people.isEmpty)
+        XCTAssertTrue(model.options.isEmpty)
         XCTAssertEqual(model.nextCursor, "empty-page")
         await model.loadMore()
-        XCTAssertTrue(model.people.isEmpty)
+        XCTAssertTrue(model.options.isEmpty)
         XCTAssertEqual(model.nextCursor, "final-page")
         await model.loadMore()
         XCTAssertEqual(cursors, [nil, "empty-page", "final-page"])
-        XCTAssertEqual(model.people.map(\.id), ["last"])
+        XCTAssertEqual(model.options.map(\.id), ["last"])
         XCTAssertNil(model.nextCursor)
     }
 
     func testStaleSavedLabelDoesNotMaskDuplicateProviderNames() {
-        let labels = FormKitPeoplePickerLabels()
-        let first = FormKitPersonOption(id: "company-contact:101", displayName: "Alex")
-        let second = FormKitPersonOption(id: "company-contact:102", displayName: "Alex")
-        let saved = [FormKitPersonOption(id: first.id, displayName: "Old name")]
+        let labels = FormKitDynamicOptionsPickerLabels()
+        let first = FormKitDynamicOption(id: "company-contact:101", label: "Alex")
+        let second = FormKitDynamicOption(id: "company-contact:102", label: "Alex")
+        let saved = [FormKitDynamicOption(id: first.id, label: "Old name")]
         labels.remember([first, second])
-        XCTAssertEqual(labels.displayLabel(for: first, savedPeople: saved), "Alex, company-contact:101")
-        XCTAssertEqual(labels.displayLabel(for: second, savedPeople: saved), "Alex, company-contact:102")
-        XCTAssertEqual(labels.person(for: first.id, savedPeople: saved).displayName, "Old name")
+        XCTAssertEqual(labels.displayLabel(for: first, savedOptions: saved), "Alex, company-contact:101")
+        XCTAssertEqual(labels.displayLabel(for: second, savedOptions: saved), "Alex, company-contact:102")
+        XCTAssertEqual(labels.option(for: first.id, savedOptions: saved).label, "Old name")
     }
 
-    func testLoadingAndUnavailablePeopleNeverWriteSelectionBindings() async {
+    func testLoadingAndUnavailableOptionsNeverWriteSelectionBindings() async {
         var singleValue: String? = "offline-id"
         var multipleValue = ["offline-id", "historical-id"]
         var writes = 0
-        let single = FormKitPeopleSelection.single(Binding(get: { singleValue }, set: {
+        let single = FormKitDynamicSelection.single(Binding(get: { singleValue }, set: {
             writes += 1
             singleValue = $0
         }))
-        let multiple = FormKitPeopleSelection.multiple(Binding(get: { multipleValue }, set: {
+        let multiple = FormKitDynamicSelection.multiple(Binding(get: { multipleValue }, set: {
             writes += 1
             multipleValue = $0
         }))
-        let model = FormKitPeoplePickerModel { search, _ in
+        let model = FormKitDynamicOptionsPickerModel { search, _ in
             if search == "unavailable" {
                 throw CancellationError()
             }
-            return FormKitPeoplePage(people: [self.person("different-id")])
+            return FormKitDynamicOptionsPage(options: [self.option("different-id")])
         }
         await model.startSearch("")
         await model.startSearch("unavailable")
@@ -235,35 +241,35 @@ final class FormKitPeoplePickerTests: XCTestCase {
         XCTAssertEqual(multiple.ids, ["offline-id", "historical-id"])
     }
 
-    private func person(_ id: String) -> FormKitPersonOption {
-        FormKitPersonOption(id: id, displayName: "Person \(id)")
+    private func option(_ id: String) -> FormKitDynamicOption {
+        FormKitDynamicOption(id: id, label: "Option \(id)")
     }
 }
 
-extension FormKitPeoplePickerTests {
-    func testCompanyDetailIsDisplayOnlyAndDuplicateIDsRemainDistinct() {
-        let first = FormKitPersonOption(id: "opaque-first", displayName: "Alex", detail: "Example Construction")
-        let second = FormKitPersonOption(id: "opaque-second", displayName: "Alex", detail: "Example Mechanical")
-        let labels = FormKitPeoplePickerLabels()
+extension FormKitDynamicOptionsPickerTests {
+    func testDetailIsDisplayOnlyAndDuplicateIDsRemainDistinct() {
+        let first = FormKitDynamicOption(id: "opaque-first", label: "Alex", detail: "Example Construction")
+        let second = FormKitDynamicOption(id: "opaque-second", label: "Alex", detail: "Example Mechanical")
+        let labels = FormKitDynamicOptionsPickerLabels()
         labels.remember([first, second])
-        XCTAssertEqual(labels.secondaryLabel(for: first, savedPeople: []), "Example Construction")
-        XCTAssertEqual(labels.displayLabel(for: first, savedPeople: []), "Alex, Example Construction")
-        XCTAssertEqual(labels.displayLabel(for: second, savedPeople: []), "Alex, Example Mechanical")
+        XCTAssertEqual(labels.secondaryLabel(for: first, savedOptions: []), "Example Construction")
+        XCTAssertEqual(labels.displayLabel(for: first, savedOptions: []), "Alex, Example Construction")
+        XCTAssertEqual(labels.displayLabel(for: second, savedOptions: []), "Alex, Example Mechanical")
         var value: String?
-        let selection = FormKitPeopleSelection.single(Binding(get: { value }, set: { value = $0 }))
+        let selection = FormKitDynamicSelection.single(Binding(get: { value }, set: { value = $0 }))
         selection.choose(second.id, isRequired: false)
         XCTAssertEqual(value, "opaque-second")
-        XCTAssertEqual(second.displayName, "Alex")
-        let saved = FormKitPersonOption(id: second.id, displayName: "Saved Alex", detail: "Saved company")
-        XCTAssertEqual(labels.displayLabel(for: labels.person(for: second.id, savedPeople: [saved]),
-                                          savedPeople: [saved]), "Saved Alex, Saved company")
-        let withoutDetail = FormKitPersonOption(id: first.id, displayName: "Alex", detail: "  ")
-        XCTAssertEqual(labels.displayLabel(for: withoutDetail, savedPeople: []), "Alex, opaque-first")
+        XCTAssertEqual(second.label, "Alex")
+        let saved = FormKitDynamicOption(id: second.id, label: "Saved Alex", detail: "Saved company")
+        XCTAssertEqual(labels.displayLabel(for: labels.option(for: second.id, savedOptions: [saved]),
+                                          savedOptions: [saved]), "Saved Alex, Saved company")
+        let withoutDetail = FormKitDynamicOption(id: first.id, label: "Alex", detail: "  ")
+        XCTAssertEqual(labels.displayLabel(for: withoutDetail, savedOptions: []), "Alex, opaque-first")
     }
 
     func testMaximumSelectionCountBlocksAddsButAllowsDeselection() {
         var value = ["one"]
-        let selection = FormKitPeopleSelection.multiple(Binding(get: { value }, set: { value = $0 }))
+        let selection = FormKitDynamicSelection.multiple(Binding(get: { value }, set: { value = $0 }))
         XCTAssertTrue(selection.canChoose("two", maximumSelectionCount: 2))
         selection.choose("two", isRequired: false, maximumSelectionCount: 2)
         XCTAssertEqual(value, ["one", "two"])
@@ -276,10 +282,10 @@ extension FormKitPeoplePickerTests {
         XCTAssertEqual(value, ["two", "three"])
     }
 
-    func testPublishedFiftyPersonBoundaryAndOversizedHydrationPreserveAllIDs() {
+    func testPublishedFiftyOptionBoundaryAndOversizedHydrationPreserveAllIDs() {
         var value = (1...49).map { "company-user:\($0)" }
         var writes = 0
-        let selection = FormKitPeopleSelection.multiple(Binding(get: { value }, set: {
+        let selection = FormKitDynamicSelection.multiple(Binding(get: { value }, set: {
             writes += 1
             value = $0
         }))
@@ -302,14 +308,14 @@ extension FormKitPeoplePickerTests {
 
     func testSingleIgnoresArrayLimitAndRequiredEmptySelectionNeverAutofills() {
         var value: String?
-        let single = FormKitPeopleSelection.single(Binding(get: { value }, set: { value = $0 }))
+        let single = FormKitDynamicSelection.single(Binding(get: { value }, set: { value = $0 }))
         XCTAssertTrue(single.canChoose("one", maximumSelectionCount: 0))
         XCTAssertNil(value)
         single.choose("one", isRequired: true, maximumSelectionCount: 0)
         XCTAssertEqual(value, "one")
         var empty: [String] = []
         var writes = 0
-        let multiple = FormKitPeopleSelection.multiple(Binding(get: { empty }, set: {
+        let multiple = FormKitDynamicSelection.multiple(Binding(get: { empty }, set: {
             writes += 1
             empty = $0
         }))
@@ -327,18 +333,18 @@ extension FormKitPeoplePickerTests {
 }
 
 @MainActor
-private final class PendingPeopleRequests {
+private final class PendingDynamicOptionsRequests {
     struct Request {
         let search: String
         let cursor: String?
-        let continuation: CheckedContinuation<FormKitPeoplePage, Error>
+        let continuation: CheckedContinuation<FormKitDynamicOptionsPage, Error>
     }
 
     private struct Failure: Error {}
     private(set) var items: [Request] = []
     private var waiters: [(count: Int, continuation: CheckedContinuation<Void, Never>)] = []
 
-    func load(search: String, cursor: String?) async throws -> FormKitPeoplePage {
+    func load(search: String, cursor: String?) async throws -> FormKitDynamicOptionsPage {
         try await withCheckedThrowingContinuation { continuation in
             items.append(Request(search: search, cursor: cursor, continuation: continuation))
             let ready = waiters.filter { items.count >= $0.count }
@@ -356,7 +362,7 @@ private final class PendingPeopleRequests {
         }
     }
 
-    func finish(_ index: Int, page: FormKitPeoplePage) {
+    func finish(_ index: Int, page: FormKitDynamicOptionsPage) {
         items[index].continuation.resume(returning: page)
     }
 

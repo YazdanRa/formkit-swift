@@ -15,6 +15,7 @@ public struct FormKitOptions {
     public var fieldState: @MainActor (FormKitFieldDescriptor) -> FormKitFieldVisualState
     public var components: FormKitComponents
     public var uploadHandler: FormKitUploadHandler?
+    public var dynamicOptions: (@MainActor (FormKitDynamicOptionsContext) -> FormKitDynamicOptionsSource?)?
 
     public init(
         mode: FormKitMode = .editable,
@@ -25,7 +26,8 @@ public struct FormKitOptions {
         labels: FormKitLabels = .init(),
         fieldState: @escaping @MainActor (FormKitFieldDescriptor) -> FormKitFieldVisualState = { _ in .normal },
         components: FormKitComponents = .init(),
-        uploadHandler: FormKitUploadHandler? = nil
+        uploadHandler: FormKitUploadHandler? = nil,
+        dynamicOptions: (@MainActor (FormKitDynamicOptionsContext) -> FormKitDynamicOptionsSource?)? = nil
     ) {
         self.mode = mode
         self.validationBehavior = validationBehavior
@@ -36,6 +38,7 @@ public struct FormKitOptions {
         self.fieldState = fieldState
         self.components = components
         self.uploadHandler = uploadHandler
+        self.dynamicOptions = dynamicOptions
     }
 }
 

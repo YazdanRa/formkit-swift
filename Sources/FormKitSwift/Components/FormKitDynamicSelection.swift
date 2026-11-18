@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Bind a scalar identifier or an ordered array of identifiers to the picker.
 @MainActor
-public enum FormKitPeopleSelection {
+public enum FormKitDynamicSelection {
     case single(Binding<String?>)
     case multiple(Binding<[String]>)
 

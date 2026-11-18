@@ -4,8 +4,8 @@ import SwiftUI
 struct FormKitSwiftDemoApp: App {
     var body: some Scene {
         WindowGroup {
-            if ProcessInfo.processInfo.arguments.contains("-UITEST_PEOPLE_PICKER") {
-                PeoplePickerDemoView()
+            if ProcessInfo.processInfo.arguments.contains("-UITEST_DYNAMIC_OPTIONS") {
+                DynamicOptionsDemoView()
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_CONTROLLED_FOCUS") {
                 ControlledFocusDemoView()
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_ROW_REMOVAL") {

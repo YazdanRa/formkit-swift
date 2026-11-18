@@ -1,84 +1,84 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "Choose people": {
+    "Choose options": {
       "localizations": {
         "bg": {
           "stringUnit": {
             "state": "translated",
-            "value": "Изберете хора"
+            "value": "Изберете опции"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose people"
+            "value": "Choose options"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elegir personas"
+            "value": "Elegir opciones"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Valitse henkilöt"
+            "value": "Valitse vaihtoehdot"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choisir des personnes"
+            "value": "Choisir des options"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Személyek kiválasztása"
+            "value": "Opciók kiválasztása"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scegli persone"
+            "value": "Scegli opzioni"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wybierz osoby"
+            "value": "Wybierz opcje"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escolher pessoas"
+            "value": "Escolher opções"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Alege persoane"
+            "value": "Alegeți opțiuni"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выбрать людей"
+            "value": "Выбрать варианты"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vybrať ľudí"
+            "value": "Vybrať možnosti"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kişi seç"
+            "value": "Seçenekleri seç"
           }
         }
       }
@@ -247,248 +247,248 @@
         }
       }
     },
-    "Loading people": {
+    "Loading options": {
       "localizations": {
         "bg": {
           "stringUnit": {
             "state": "translated",
-            "value": "Зареждане на хора"
+            "value": "Зареждане на опции"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loading people"
+            "value": "Loading options"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cargando personas"
+            "value": "Cargando opciones"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ladataan henkilöitä"
+            "value": "Ladataan vaihtoehtoja"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chargement des personnes"
+            "value": "Chargement des options"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Személyek betöltése"
+            "value": "Opciók betöltése"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Caricamento delle persone"
+            "value": "Caricamento opzioni"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ładowanie osób"
+            "value": "Ładowanie opcji"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "A carregar pessoas"
+            "value": "Carregando opções"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Se încarcă persoanele"
+            "value": "Se încarcă opțiunile"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Загрузка людей"
+            "value": "Загрузка вариантов"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Načítavajú sa ľudia"
+            "value": "Načítavajú sa možnosti"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kişiler yükleniyor"
+            "value": "Seçenekler yükleniyor"
           }
         }
       }
     },
-    "No people found": {
+    "No options found": {
       "localizations": {
         "bg": {
           "stringUnit": {
             "state": "translated",
-            "value": "Няма намерени хора"
+            "value": "Няма намерени опции"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No people found"
+            "value": "No options found"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se encontraron personas"
+            "value": "No se encontraron opciones"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Henkilöitä ei löytynyt"
+            "value": "Vaihtoehtoja ei löytynyt"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aucune personne trouvée"
+            "value": "Aucune option trouvée"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nem találhatók személyek"
+            "value": "Nem találhatók opciók"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nessuna persona trovata"
+            "value": "Nessuna opzione trovata"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nie znaleziono osób"
+            "value": "Nie znaleziono opcji"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nenhuma pessoa encontrada"
+            "value": "Nenhuma opção encontrada"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nu s-au găsit persoane"
+            "value": "Nu s-au găsit opțiuni"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Люди не найдены"
+            "value": "Варианты не найдены"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nenašli sa žiadni ľudia"
+            "value": "Nenašli sa žiadne možnosti"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kişi bulunamadı"
+            "value": "Seçenek bulunamadı"
           }
         }
       }
     },
-    "People could not be loaded.": {
+    "Options could not be loaded.": {
       "localizations": {
         "bg": {
           "stringUnit": {
             "state": "translated",
-            "value": "Хората не можаха да бъдат заредени."
+            "value": "Опциите не можаха да бъдат заредени."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "People could not be loaded."
+            "value": "Options could not be loaded."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se pudieron cargar las personas."
+            "value": "No se pudieron cargar las opciones."
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Henkilöitä ei voitu ladata."
+            "value": "Vaihtoehtoja ei voitu ladata."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Impossible de charger les personnes."
+            "value": "Impossible de charger les options."
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "A személyek betöltése sikertelen."
+            "value": "Az opciókat nem sikerült betölteni."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Impossibile caricare le persone."
+            "value": "Impossibile caricare le opzioni."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nie udało się załadować osób."
+            "value": "Nie udało się załadować opcji."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Não foi possível carregar as pessoas."
+            "value": "Não foi possível carregar as opções."
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Persoanele nu au putut fi încărcate."
+            "value": "Opțiunile nu au putut fi încărcate."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось загрузить людей."
+            "value": "Не удалось загрузить варианты."
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ľudí sa nepodarilo načítať."
+            "value": "Možnosti sa nepodarilo načítať."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kişiler yüklenemedi."
+            "value": "Seçenekler yüklenemedi."
           }
         }
       }
@@ -575,166 +575,166 @@
         }
       }
     },
-    "Search people": {
+    "Search options": {
       "localizations": {
         "bg": {
           "stringUnit": {
             "state": "translated",
-            "value": "Търсене на хора"
+            "value": "Търсене на опции"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search people"
+            "value": "Search options"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Buscar personas"
+            "value": "Buscar opciones"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hae henkilöitä"
+            "value": "Etsi vaihtoehtoja"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rechercher des personnes"
+            "value": "Rechercher des options"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Személyek keresése"
+            "value": "Opciók keresése"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cerca persone"
+            "value": "Cerca opzioni"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Szukaj osób"
+            "value": "Szukaj opcji"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pesquisar pessoas"
+            "value": "Pesquisar opções"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Caută persoane"
+            "value": "Căutați opțiuni"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Поиск людей"
+            "value": "Поиск вариантов"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hľadať ľudí"
+            "value": "Hľadať možnosti"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kişi ara"
+            "value": "Seçenekleri ara"
           }
         }
       }
     },
-    "Selected people": {
+    "Selected options": {
       "localizations": {
         "bg": {
           "stringUnit": {
             "state": "translated",
-            "value": "Избрани хора"
+            "value": "Избрани опции"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Selected people"
+            "value": "Selected options"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Personas seleccionadas"
+            "value": "Opciones seleccionadas"
           }
         },
         "fi": {
           "stringUnit": {
             "state": "translated",
-            "value": "Valitut henkilöt"
+            "value": "Valitut vaihtoehdot"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Personnes sélectionnées"
+            "value": "Options sélectionnées"
           }
         },
         "hu": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kiválasztott személyek"
+            "value": "Kiválasztott opciók"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Persone selezionate"
+            "value": "Opzioni selezionate"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wybrane osoby"
+            "value": "Wybrane opcje"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pessoas selecionadas"
+            "value": "Opções selecionadas"
           }
         },
         "ro": {
           "stringUnit": {
             "state": "translated",
-            "value": "Persoane selectate"
+            "value": "Opțiuni selectate"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выбранные люди"
+            "value": "Выбранные варианты"
           }
         },
         "sk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vybraní ľudia"
+            "value": "Vybrané možnosti"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Seçilen kişiler"
+            "value": "Seçili seçenekler"
           }
         }
       }

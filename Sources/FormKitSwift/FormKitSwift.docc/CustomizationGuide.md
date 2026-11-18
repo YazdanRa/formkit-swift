@@ -103,26 +103,33 @@ Stock text input titles, normal editable outlines, and validation messages use t
 
 For file and signature inputs, provide a host upload handler through ``FormKitOptions/uploadHandler``. See <doc:SchemaDrivenComponents>.
 
-## People Selection
+## Dynamic Options
 
-Use ``FormKitPeoplePicker`` through `fieldInput` for one identifier or `arraySection` for an array of identifiers. The host supplies the project-scoped provider, cached display names and binding. Lookup starts when the sheet opens. Search and explicit pagination request pages from the same provider.
+Annotate a string or an array of strings with `"x-formkit-ui-component": "dynamic-options"`. Supply `FormKitOptions.dynamicOptions` to resolve a host data source for each actual field or array pointer. The registry supplies scalar and array bindings, schema limits, locked state, and validation presentation. A host field or array override still takes precedence; an incompatible schema or unresolved source retains the standard input. Fixed schema enums continue to use `line-options-choice`.
 
 ```swift
-FormKitPeoplePicker(
-    title: fieldTitle,
-    selection: .single($selectedPersonID),
-    savedPeople: cachedPeople,
-    isRequired: isRequired,
-    isEditingLocked: isReadOnly,
-    provider: { search, cursor in
-        try await projectDirectory.people(search: search, cursor: cursor)
-    }
+FormKitView(
+    session: session,
+    options: FormKitOptions(dynamicOptions: { context in
+        FormKitDynamicOptionsSource(
+            savedOptions: directory.cachedOptions(for: context.selectedIDs),
+            provider: { search, cursor in
+                try await directory.options(
+                    at: context.pointer,
+                    search: search,
+                    cursor: cursor
+                )
+            }
+        )
+    })
 )
-.id(projectCatalogIdentity)
+.id(catalogIdentity)
 ```
 
-For multiple people, bind `.multiple($selectedPersonIDs)` and pass the array schema's `maxItems` as `maximumSelectionCount`. At the limit, additional people are disabled while selected people can still be removed. Existing oversized selections remain intact. Selection changes write identifiers immediately. Done closes the sheet. Optional selection can be cleared, and a required multiple selection keeps its last identifier. Previously saved identifiers remain selected when absent from search results or when lookup fails. Supply their names with `savedPeople` and scope the view identity to the field and project catalog so cached labels belong to that context.
+The source factory runs during rendering and should return cached presentation data and a provider without starting work. Lookup starts when the picker opens. The provider owns authorization, networking, search, pagination, caching and any selected-ID hydration; `context.selectedIDs` includes saved identifiers outside the current page. Supply the source's optional `canSelect` callback to recheck current host eligibility when adding an identifier, including when permissions change while the sheet is open. Existing identifiers can still be removed or cleared. No URL or transport is defined by the schema. Different pointers can resolve unrelated sources such as contacts and equipment. The context also exposes the existing field or array-section component context.
 
-Opening the picker, loading results and failing to resolve a saved identifier do not write the binding. Deliberate clearing writes nil for a scalar or an empty array for multiple selection; the host maps those values to its serialization contract. Learned names survive closing and reopening. Supply optional `detail` on each `FormKitPersonOption` for supporting text such as a company name or a readable identifier. The same detail appears in its accessible label and selected summary. Duplicate names without detail use the opaque identifier as a fallback. Only identifiers enter the selection binding.
+An option contains an opaque `id`, visible `label` and optional `detail`. Use detail for supporting text such as a company name or a readable identifier. Rows, accessible labels and selected summaries use the same detail. Duplicate labels without detail use the opaque identifier as a fallback. Only identifiers enter the selection binding. Learned labels survive closing and reopening; supply saved labels through `savedOptions` for offline presentation, and scope the view identity to the form and catalog so cached labels belong to that context.
 
-The `people-picker` component identifier is an opt-in routing marker for host overrides. Match `.peoplePicker` in the field or array descriptor and return the configured view. A field input override keeps the stock caption and validation messages. An array-section override owns its section header and errors using the supplied context. Returning nil retains the standard input. The host controls authorization, offline cache and validation of chosen identifiers.
+For custom presentation, use `FormKitDynamicOptionsPicker` directly with `FormKitDynamicSelection.single($selectedID)` or `.multiple($selectedIDs)`. Pass schema `maxItems` as `maximumSelectionCount`. At the limit additional options are disabled while selected options can still be removed. Existing oversized selections remain intact. Selection writes identifiers immediately; Done closes the sheet. Required multiple selection keeps its last identifier. Requiredness and validity remain schema-owned.
+
+Opening, loading, or failing to resolve a saved identifier never writes selection. Optional clearing writes nil for a scalar or an empty array for multiple selection. The registry emits explicit null for a nullable scalar, omits an optional nonnullable scalar, and emits an empty array for multiple selection. Untouched absence stays absent. Direct picker users own that serialization mapping. Previously saved identifiers stay selected when absent from results or when lookup fails.

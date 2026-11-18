@@ -39,7 +39,7 @@ extension FormKitContainerView {
         context: FormKitFieldComponentContext
     ) -> some View {
         let componentInput = components.fieldInputs[field.id]?.view
-            ?? FormKitComponentRegistry.fieldInput(for: context)
+            ?? FormKitComponentRegistry.fieldInput(for: context, dynamicOptions: options.dynamicOptions)
         let usesLineOptionsChoice = components.fieldInputs[field.id]?.isCustom != true
             && componentInput != nil && field.uiComponent == .lineOptionsChoice
         let usesStackedLabel = componentInput != nil

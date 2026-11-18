@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class FormKitComponentTests: XCTestCase {
-    func testRequiredPeopleRemainInvalidUntilNonemptyIdentifiersAreSelected() throws {
+    func testRequiredDynamicOptionsRemainInvalidUntilNonemptyIdentifiersAreSelected() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
             {
@@ -11,12 +11,12 @@ final class FormKitComponentTests: XCTestCase {
               "properties": {
                 "issued_to": {
                   "type": "string", "minLength": 1,
-                  "x-formkit-ui-component": "people-picker"
+                  "x-formkit-ui-component": "dynamic-options"
                 },
                 "cc": {
                   "type": "array", "minItems": 1, "maxItems": 50,
                   "items": { "type": "string", "minLength": 1 },
-                  "x-formkit-ui-component": "people-picker"
+                  "x-formkit-ui-component": "dynamic-options"
                 }
               }
             }
@@ -37,20 +37,20 @@ final class FormKitComponentTests: XCTestCase {
         XCTAssertFalse(session.validate())
     }
 
-    func testPeoplePickerMarkerPreservesFlatScalarAndArrayFields() throws {
+    func testDynamicOptionsMarkerPreservesFlatScalarAndArrayFields() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
             {
               "type": "object",
               "properties": {
-                "issued_to": { "type": "string", "x-formkit-ui-component": "people-picker" },
+                "issued_to": { "type": "string", "x-formkit-ui-component": "dynamic-options" },
                 "assigned_to": {
                   "type": "array", "items": { "type": "string" },
-                  "x-formkit-ui-component": "people-picker"
+                  "x-formkit-ui-component": "dynamic-options"
                 },
                 "cc": {
                   "type": "array", "items": { "type": "string" },
-                  "x-formkit-ui-component": "people-picker"
+                  "x-formkit-ui-component": "dynamic-options"
                 }
               }
             }
@@ -60,11 +60,11 @@ final class FormKitComponentTests: XCTestCase {
             """
         )
 
-        XCTAssertEqual(FormKitUIComponent.peoplePicker.rawValue, "people-picker")
-        XCTAssertEqual(tryUnwrapField("issued_to", in: session).uiComponent, .peoplePicker)
+        XCTAssertEqual(FormKitUIComponent.dynamicOptions.rawValue, "dynamic-options")
+        XCTAssertEqual(tryUnwrapField("issued_to", in: session).uiComponent, .dynamicOptions)
         for key in ["assigned_to", "cc"] {
             let section = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == key })
-            XCTAssertEqual(section.uiComponent, .peoplePicker)
+            XCTAssertEqual(section.uiComponent, .dynamicOptions)
         }
         XCTAssertTrue(session.validate())
         let instance = try decodeJSONObject(session.currentInstanceJSON)

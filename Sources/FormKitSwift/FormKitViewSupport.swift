@@ -59,7 +59,7 @@ enum FormKitFocusSupport {
                 uploadHandler: options.uploadHandler
             )
             if let arraySection = options.components.arraySection?(context)
-                ?? FormKitComponentRegistry.arraySection(for: context)
+                ?? FormKitComponentRegistry.arraySection(for: context, dynamicOptions: options.dynamicOptions)
             {
                 result[section.id] = arraySection
             }
@@ -107,7 +107,10 @@ enum FormKitFocusSupport {
             )
             if let input = options.components.fieldInput?(context) {
                 result[field.id] = FormKitResolvedFieldInput(view: input, isCustom: true)
-            } else if let input = FormKitComponentRegistry.fieldInput(for: context) {
+            } else if let input = FormKitComponentRegistry.fieldInput(
+                for: context,
+                dynamicOptions: options.dynamicOptions
+            ) {
                 result[field.id] = FormKitResolvedFieldInput(view: input, isCustom: false)
             }
         }

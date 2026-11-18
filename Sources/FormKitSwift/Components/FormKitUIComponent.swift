@@ -12,7 +12,7 @@ public struct FormKitUIComponent: RawRepresentable, Hashable, Sendable {
     public static let fileField = FormKitUIComponent(rawValue: "file-field")
     public static let multipleFileField = FormKitUIComponent(rawValue: "multiple-file-field")
     public static let signaturePad = FormKitUIComponent(rawValue: "signature-pad")
-    /// A host-backed people selector supplied through field or array component overrides.
-    public static let peoplePicker = FormKitUIComponent(rawValue: "people-picker")
+    /// A searchable choice list populated by a host-provided data source.
+    public static let dynamicOptions = FormKitUIComponent(rawValue: "dynamic-options")
     public static let lineOptionsChoice = FormKitUIComponent(rawValue: "line-options-choice")
 }
