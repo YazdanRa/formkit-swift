@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.10.0](https://github.com/YazdanRa/formkit-swift/compare/v1.9.1...v1.10.0) (2026-11-18)
+
+
+### Features
+
+* **components:** support host-populated dynamic options ([#50](https://github.com/YazdanRa/formkit-swift/issues/50)) ([d2c58f3](https://github.com/YazdanRa/formkit-swift/commit/d2c58f3fcab1620933ed048257edd49cdd825bf8))
+* **components:** support text-area presentation ([#52](https://github.com/YazdanRa/formkit-swift/issues/52)) ([6f54982](https://github.com/YazdanRa/formkit-swift/commit/6f54982b3f70cd1d0e5e88d44578c839820cabda))
+* **renderer:** support option label maps ([#51](https://github.com/YazdanRa/formkit-swift/issues/51)) ([9806bd2](https://github.com/YazdanRa/formkit-swift/commit/9806bd2424c69e2ed71e2bfda8a1ce1045856997))
+
+
+### Bug Fixes
+
+* **session:** require explicit enum answers when configured ([#53](https://github.com/YazdanRa/formkit-swift/issues/53)) ([73caa06](https://github.com/YazdanRa/formkit-swift/commit/73caa062daab596b99451568e14461e26705be4e))
+* **summary:** keep optional conditional follow-ups optional ([#49](https://github.com/YazdanRa/formkit-swift/issues/49)) ([c6a487e](https://github.com/YazdanRa/formkit-swift/commit/c6a487e1d427643aae6830136820582a80ec364c))
+
 ## [1.9.1](https://github.com/YazdanRa/formkit-swift/compare/v1.9.0...v1.9.1) (2026-11-16)
 
 
