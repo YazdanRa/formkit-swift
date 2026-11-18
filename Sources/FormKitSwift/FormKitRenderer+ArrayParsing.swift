@@ -63,18 +63,20 @@ extension FormKitRenderer {
         )
         let minItems = max(0, request.schemaObject["minItems"]?.integer ?? 0)
         let placeholder = arrayPlaceholder(itemSchema.object, request: request, state: &state)
+        let itemScalarType = arrayItemScalarType(itemType, schema: itemSchema.object, request: request, state: &state)
+        let usesDynamicOptions = FormKitDynamicOptionsArrayCompatibility.supports(
+            component: uiComponent(from: request.schemaObject), itemKind: itemType == .object ? .object : .scalar,
+            itemScalarType: itemScalarType, itemAllowsNull: itemType.allowsNull,
+            itemHasValueConstraint: itemSchema.object["enum"] != nil || itemSchema.object["const"] != nil
+        )
         defer { state.nextSectionOrder += 1 }
         return PreparedArraySection(
             request: request,
             itemsValue: itemsValue,
             itemSchema: itemSchema.object,
             itemType: itemType,
-            itemScalarType: arrayItemScalarType(
-                itemType,
-                schema: itemSchema.object,
-                request: request,
-                state: &state
-            ),
+            itemScalarType: itemScalarType,
+            usesDynamicOptions: usesDynamicOptions,
             pointer: JSONPointer.pointerString(from: request.pointerTokens),
             order: state.nextSectionOrder,
             title: title,
@@ -84,7 +86,8 @@ extension FormKitRenderer {
             existingItems: existingItems,
             minItems: minItems,
             maxItems: request.schemaObject["maxItems"]?.integer,
-            materializeWhenEmpty: shouldMaterializeEmptyArray(request, minItems: minItems),
+            materializeWhenEmpty: shouldMaterializeEmptyArray(request, minItems: minItems,
+                                                             preservesAbsence: usesDynamicOptions),
             newItemPlaceholder: placeholder
         )
     }
@@ -162,8 +165,11 @@ extension FormKitRenderer {
         )
     }
 
-    func shouldMaterializeEmptyArray(_ request: SchemaParseRequest, minItems: Int) -> Bool {
-        request.instanceValue?.array != nil
+    func shouldMaterializeEmptyArray(_ request: SchemaParseRequest, minItems: Int, preservesAbsence: Bool) -> Bool {
+        if preservesAbsence {
+            return request.instanceValue?.array != nil || request.schemaObject["default"]?.array != nil
+        }
+        return request.instanceValue?.array != nil
             || request.schemaObject["default"]?.array != nil
             || request.isRequiredInParent
             || minItems > 0
@@ -174,7 +180,11 @@ extension FormKitRenderer {
         state: inout RenderPlanBuildState
     ) -> [FormKitArrayRowDescriptor]? {
         var rows: [FormKitArrayRowDescriptor] = []
-        let rowCount = max(section.existingItems.count, section.minItems)
+        let rowCount = if section.usesDynamicOptions {
+            section.existingItems.count
+        } else {
+            max(section.existingItems.count, section.minItems)
+        }
         for index in 0..<rowCount {
             switch makeArrayRow(index, section: section, state: &state) {
             case .row(let row):
@@ -320,11 +330,6 @@ extension FormKitRenderer {
         _ section: PreparedArraySection,
         rows: [FormKitArrayRowDescriptor]
     ) -> FormKitRenderPlan.SectionDescriptor {
-        let itemAllowsNull: Bool = if case .scalar(_, let allowsNull) = section.itemType {
-            allowsNull
-        } else {
-            false
-        }
         return FormKitRenderPlan.SectionDescriptor(
             id: sectionIdentifier(for: section.pointer),
             pointer: section.pointer,
@@ -349,7 +354,7 @@ extension FormKitRenderer {
                 propertyKey: section.request.propertyKey,
                 itemKind: section.itemType == .object ? .object : .scalar,
                 itemScalarType: section.itemScalarType,
-                itemAllowsNull: itemAllowsNull,
+                itemAllowsNull: section.itemType.allowsNull,
                 itemHasValueConstraint: section.itemSchema["enum"] != nil
                     || section.itemSchema["const"] != nil,
                 itemTitle: section.itemTitle,

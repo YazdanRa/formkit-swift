@@ -26,16 +26,7 @@ extension FormKitSession {
 
     func makeInstanceJSONValue() -> FormKitJSONValue {
         var rootObject: [String: FormKitJSONValue] = [:]
-        let requiredSectionPointers = Set(
-            renderPlan.sections
-                .filter(\.isRequired)
-                .filter(\.shouldSerialize)
-                .filter { !$0.isOwnedByArrayRow }
-                .map(\.pointer)
-                .filter { $0 != "#" }
-        )
-
-        for pointer in requiredSectionPointers.sorted(by: { $0.count < $1.count }) {
+        for pointer in objectSectionPointers().sorted(by: { $0.count < $1.count }) {
             ensureObjectExists(at: pointer, in: &rootObject)
         }
 
@@ -68,11 +59,7 @@ extension FormKitSession {
         restoreHiddenObjectContainers(into: &rootObject)
 
         for field in orderedFields {
-            guard shouldSerialize(field) else {
-                continue
-            }
-
-            guard let storedValue = primitiveValue(for: field) else {
+            guard shouldSerialize(field), let storedValue = primitiveValue(for: field) else {
                 continue
             }
 
@@ -84,6 +71,22 @@ extension FormKitSession {
         }
 
         return .object(rootObject)
+    }
+
+    private func objectSectionPointers() -> Set<String> {
+        let required = renderPlan.sections
+            .filter { $0.isRequired && $0.shouldSerialize && !$0.usesDynamicOptions && !$0.isOwnedByArrayRow }
+            .map(\.pointer)
+            .filter { $0 != "#" }
+        let supplied = includesHiddenToolFields ? suppliedInstance : initialInstance
+        let dynamicArrayParents = renderPlan.sections.compactMap { section -> String? in
+            guard section.usesDynamicOptions, section.shouldSerialize,
+                  let parent = section.parentPointer, parent != "#",
+                  supplied?.value(at: JSONPointer(from: parent))?.object != nil
+            else { return nil }
+            return parent
+        }
+        return Set(required).union(dynamicArrayParents)
     }
 
     private func arrayRowSeed(

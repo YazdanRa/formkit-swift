@@ -38,10 +38,7 @@ enum FormKitComponentRegistry {
         dynamicOptions: (@MainActor (FormKitDynamicOptionsContext) -> FormKitDynamicOptionsSource?)? = nil
     ) -> AnyView? {
         if context.section.uiComponent == .dynamicOptions {
-            guard context.descriptor.itemKind == .scalar,
-                  context.descriptor.itemScalarType == .string,
-                  !context.descriptor.itemAllowsNull,
-                  !context.descriptor.itemHasValueConstraint,
+            guard context.section.usesDynamicOptions,
                   let source = dynamicOptions?(.arraySection(context))
             else { return nil }
             return AnyView(FormKitDynamicOptionsArraySection(context: context, source: source))

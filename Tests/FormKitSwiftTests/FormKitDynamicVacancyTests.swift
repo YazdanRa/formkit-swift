@@ -9,7 +9,7 @@ final class FormKitDynamicVacancyTests: XCTestCase {
         let before = session.currentInstanceJSON
         let revision = session.revision
         let section = try XCTUnwrap(session.renderPlan.sections.first { $0.pointer == "#/equipment" })
-        XCTAssertEqual(session.arrayValue(for: section), [.string("")])
+        XCTAssertNil(session.arrayValue(for: section))
         XCTAssertTrue(context.selectedIDs.isEmpty)
         var factoryIDs: [String]?
         let components = FormKitFocusSupport.resolvedComponents(session: session, options: FormKitOptions(
