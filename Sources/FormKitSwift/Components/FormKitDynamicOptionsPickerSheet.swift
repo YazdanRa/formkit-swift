@@ -36,12 +36,12 @@ struct FormKitDynamicOptionsPickerSheet: View {
     var body: some View {
         NavigationStack {
             List {
-                if !selectedOptions.isEmpty {
+                if !selectedOptions.isEmpty || showsClearSelection {
                     Section {
                         ForEach(selectedOptions) { option in
                             optionRow(option, isSelected: true)
                         }
-                        if !isRequired {
+                        if showsClearSelection {
                             Button(String(localized: "Clear selection", bundle: .module)) {
                                 guard !isEditingLocked else { return }
                                 selection.clear(isRequired: isRequired)
@@ -77,6 +77,10 @@ struct FormKitDynamicOptionsPickerSheet: View {
                 model.cancel()
             }
         }
+    }
+
+    var showsClearSelection: Bool {
+        !isRequired && (!selection.isSingle || !selection.ids.isEmpty)
     }
 
     private var selectedOptions: [FormKitDynamicOption] {

@@ -152,6 +152,40 @@ final class DynamicOptionsUITests: XCTestCase {
     }
 
     @MainActor
+    func testRequiredZeroCapacityArrayWritesEmptyOnlyAfterExplicitClear() throws {
+        let app = launch(arguments: ["-DYNAMIC_REGISTRY", "-DYNAMIC_EMPTY_REQUIRED"])
+        let json = app.staticTexts["demo_dynamic_json"]
+        XCTAssertTrue(json.waitForExistence(timeout: 5))
+        let originalJSON = json.label
+        let original = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(originalJSON.utf8)) as? [String: Any])
+        XCTAssertNil(original["equipment"])
+        let picker = app.buttons["Equipment"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 5))
+        picker.tap()
+        XCTAssertTrue(app.staticTexts["No options found"].waitForExistence(timeout: 5))
+        app.buttons["formkit_dynamic_done"].tap()
+        XCTAssertEqual(json.label, originalJSON)
+
+        picker.tap()
+        XCTAssertTrue(app.staticTexts["No options found"].waitForExistence(timeout: 5))
+        let clear = app.buttons["formkit_dynamic_clear"]
+        XCTAssertTrue(clear.waitForExistence(timeout: 5))
+        capture("dynamic-required-empty-array", app: app)
+        clear.tap()
+        app.buttons["formkit_dynamic_done"].tap()
+        waitForJSON("\"equipment\" : [", in: app)
+        let savedJSON = json.label
+        let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(savedJSON.utf8)) as? [String: Any])
+        XCTAssertEqual(saved["equipment"] as? [String], [])
+
+        picker.tap()
+        XCTAssertTrue(app.staticTexts["No options found"].waitForExistence(timeout: 5))
+        XCTAssertTrue(clear.exists)
+        app.buttons["formkit_dynamic_done"].tap()
+        XCTAssertEqual(json.label, savedJSON)
+    }
+
+    @MainActor
     func testHostScopeRemountDismissesSheetAndRejectsOldOptions() {
         let app = launch(arguments: ["-DYNAMIC_SCOPE_CHANGE"])
         let picker = app.buttons["demo_contact_picker"]

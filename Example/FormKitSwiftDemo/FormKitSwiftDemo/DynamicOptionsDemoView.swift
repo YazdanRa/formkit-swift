@@ -25,7 +25,8 @@ struct DynamicOptionsDemoView: View {
         let instance = ProcessInfo.processInfo.arguments.contains("-DYNAMIC_HYDRATE_ON_LOAD")
             ? #"{"request":{"contact":"saved-opaque-contact"}}"# : nil
         _registrySession = State(initialValue: FormKitRenderer().makeFormSession(
-            schemaJSON: Self.registrySchema, instanceJSON: instance
+            schemaJSON: ProcessInfo.processInfo.arguments.contains("-DYNAMIC_EMPTY_REQUIRED")
+                ? Self.emptyRequiredSchema : Self.registrySchema, instanceJSON: instance
         ))
     }
 
@@ -104,6 +105,8 @@ struct DynamicOptionsDemoView: View {
             FormKitDynamicOptionsSource(savedOptions: savedOptions, provider: { search, cursor in
                 try await registryContactPage(search: search, cursor: cursor)
             })
+        case "#/equipment":
+            FormKitDynamicOptionsSource(provider: { _, _ in FormKitDynamicOptionsPage(options: []) })
         case "#/assets/equipment":
             FormKitDynamicOptionsSource(provider: { search, cursor in
                 try await page(equipmentOptions, search: search, cursor: cursor)
@@ -160,6 +163,13 @@ struct DynamicOptionsDemoView: View {
     private enum DemoLookupError: Error {
         case unavailable
     }
+
+    private static let emptyRequiredSchema = #"""
+    {"type":"object","required":["equipment"],"properties":{"equipment":{
+      "type":"array","title":"Equipment","minItems":0,"maxItems":0,"items":{"type":"string"},
+      "x-formkit-ui-component":"dynamic-options"
+    }}}
+    """#
 
     private static let registrySchema = #"""
     {
