@@ -21,7 +21,7 @@ public extension FormKitSession {
                 isVisible: field.isVisible,
                 valueSource: toolValueSource(for: field),
                 description: field.description,
-                enumOptions: field.enumOptions.map(\.title),
+                enumOptions: field.enumOptions.map(\.value.title),
                 isLocked: field.isDisabled || normalizedFocusedPointers.contains(normalizedToolPointer(pointer)),
                 validationMessages: errorMessages(for: field)
             )
@@ -184,8 +184,9 @@ public extension FormKitSession {
         guard case .string(let rawChoice) = value else {
             return rejected(edit, reason: "type_mismatch", message: "Enum fields require a string value.")
         }
-        guard let choice = field.enumOptions.first(where: { option in
-            option.title.caseInsensitiveCompare(rawChoice) == .orderedSame
+        let exactChoice = field.enumOptions.first { primitiveTitle($0.value) == rawChoice }
+        guard let choice = exactChoice ?? field.enumOptions.first(where: { option in
+            option.value.title.caseInsensitiveCompare(rawChoice) == .orderedSame
                 || primitiveTitle(option.value).caseInsensitiveCompare(rawChoice) == .orderedSame
         }) else {
             return rejected(
