@@ -233,6 +233,34 @@ final class FormKitDynamicOptionsRegistryTests: XCTestCase {
 }
 
 extension FormKitDynamicOptionsRegistryTests {
+    func testNullableArrayItemsKeepNullEntriesAndUseStockFallback() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: #"""
+            {"type":"object","properties":{
+              "equipment":{"type":"array","items":{"type":["string","null"]},
+                           "x-formkit-ui-component":"dynamic-options"}
+            }}
+            """#,
+            instanceJSON: #"{"equipment":[null,"equipment:1"]}"#
+        )
+        XCTAssertTrue(session.renderPlan.isSupported)
+        let section = try XCTUnwrap(session.renderPlan.sections.first { $0.pointer == "#/equipment" })
+        let context = try arrayContext(section, session: session)
+        XCTAssertTrue(context.descriptor.itemAllowsNull)
+        let before = session.currentInstanceJSON
+        let revision = session.revision
+        var factoryCalls = 0
+        let component = FormKitComponentRegistry.arraySection(for: context, dynamicOptions: { _ in
+            factoryCalls += 1
+            return FormKitDynamicOptionsSource { _, _ in FormKitDynamicOptionsPage(options: []) }
+        })
+        XCTAssertNil(component)
+        XCTAssertEqual(factoryCalls, 0)
+        XCTAssertEqual(session.arrayValue(for: section), [.null, .string("equipment:1")])
+        XCTAssertEqual(session.currentInstanceJSON, before)
+        XCTAssertEqual(session.revision, revision)
+    }
+
     func testScalarEligibilityRechecksAtWriteAndStillAllowsRetentionAndClear() throws {
         let eligibility = DynamicOptionEligibility()
         let source = FormKitDynamicOptionsSource(canSelect: eligibility.canSelect, provider: { _, _ in

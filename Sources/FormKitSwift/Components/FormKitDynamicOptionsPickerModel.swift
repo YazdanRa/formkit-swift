@@ -103,8 +103,14 @@ final class FormKitDynamicOptionsPickerLabels {
     }
 
     func secondaryLabel(for option: FormKitDynamicOption, savedOptions: [FormKitDynamicOption]) -> String? {
-        if let detail = option.detail, !detail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return detail
+        if let detail = option.detail?.trimmingCharacters(in: .whitespacesAndNewlines), !detail.isEmpty {
+            let sharesPresentation: (FormKitDynamicOption) -> Bool = { other in
+                other.id != option.id && other.label == option.label
+                    && other.detail?.trimmingCharacters(in: .whitespacesAndNewlines) == detail
+            }
+            let duplicate = options.values.contains(where: sharesPresentation)
+                || savedOptions.contains(where: sharesPresentation)
+            return duplicate ? "\(detail), \(option.id)" : detail
         }
         return isDuplicate(option, savedOptions: savedOptions) ? option.id : nil
     }

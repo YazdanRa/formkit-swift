@@ -40,6 +40,7 @@ enum FormKitComponentRegistry {
         if context.section.uiComponent == .dynamicOptions {
             guard context.descriptor.itemKind == .scalar,
                   context.descriptor.itemScalarType == .string,
+                  !context.descriptor.itemAllowsNull,
                   !context.descriptor.itemHasValueConstraint,
                   let source = dynamicOptions?(.arraySection(context))
             else { return nil }

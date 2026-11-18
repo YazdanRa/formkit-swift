@@ -152,6 +152,27 @@ final class DynamicOptionsUITests: XCTestCase {
     }
 
     @MainActor
+    func testHostScopeRemountDismissesSheetAndRejectsOldOptions() {
+        let app = launch(arguments: ["-DYNAMIC_SCOPE_CHANGE"])
+        let picker = app.buttons["demo_issued_to_picker"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 5))
+        picker.tap()
+        waitForValue("1:true", id: "demo_catalog_scope", in: app)
+        let dismissed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"), object: app.buttons["formkit_dynamic_done"]
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed)
+        waitForValue("company-contact:saved", id: "demo_issued_to_value", in: app)
+        picker.tap()
+        let current = app.buttons["formkit_dynamic_option_new-scope-option"]
+        XCTAssertTrue(current.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["formkit_dynamic_option_old-scope-option"].exists)
+        XCTAssertFalse(app.staticTexts["Old scope option"].exists)
+        current.tap()
+        waitForValue("new-scope-option", id: "demo_issued_to_value", in: app)
+    }
+
+    @MainActor
     private func capture(_ name: String, app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name

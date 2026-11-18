@@ -319,7 +319,12 @@ extension FormKitRenderer {
         _ section: PreparedArraySection,
         rows: [FormKitArrayRowDescriptor]
     ) -> FormKitRenderPlan.SectionDescriptor {
-        FormKitRenderPlan.SectionDescriptor(
+        let itemAllowsNull: Bool = if case .scalar(_, let allowsNull) = section.itemType {
+            allowsNull
+        } else {
+            false
+        }
+        return FormKitRenderPlan.SectionDescriptor(
             id: sectionIdentifier(for: section.pointer),
             pointer: section.pointer,
             parentPointer: parentPointer(for: section.request.pointerTokens),
@@ -343,6 +348,7 @@ extension FormKitRenderer {
                 propertyKey: section.request.propertyKey,
                 itemKind: section.itemType == .object ? .object : .scalar,
                 itemScalarType: section.itemScalarType,
+                itemAllowsNull: itemAllowsNull,
                 itemHasValueConstraint: section.itemSchema["enum"] != nil
                     || section.itemSchema["const"] != nil,
                 itemTitle: section.itemTitle,

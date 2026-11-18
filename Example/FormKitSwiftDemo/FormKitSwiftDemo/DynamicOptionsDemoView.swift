@@ -5,6 +5,8 @@ struct DynamicOptionsDemoView: View {
     @State private var issuedTo: String? = "company-contact:saved"
     @State private var equipment: [String] = []
     @State private var isLocked = false
+    @State private var catalogScope = 0
+    @State private var oldScopeReturned = false
     @State private var registrySession: FormKitSession
 
     private let contacts = [
@@ -43,8 +45,11 @@ struct DynamicOptionsDemoView: View {
                     selection: .single($issuedTo),
                     savedOptions: [.init(id: "company-contact:saved", label: "Saved contact")],
                     isEditingLocked: isLocked,
-                    provider: { search, cursor in try await page(contacts, search: search, cursor: cursor) }
+                    provider: { [scope = catalogScope] search, cursor in
+                        try await contactPage(scope: scope, search: search, cursor: cursor)
+                    }
                 )
+                .id(catalogScope)
                 .accessibilityIdentifier("demo_issued_to_picker")
             }
             Section("Equipment") {
@@ -60,6 +65,10 @@ struct DynamicOptionsDemoView: View {
                 .accessibilityIdentifier("demo_equipment_picker")
             }
             Section("Saved identifiers") {
+                if ProcessInfo.processInfo.arguments.contains("-DYNAMIC_SCOPE_CHANGE") {
+                    Text(verbatim: "\(catalogScope):\(oldScopeReturned)")
+                        .accessibilityIdentifier("demo_catalog_scope")
+                }
                 Text(issuedTo ?? "none").accessibilityIdentifier("demo_issued_to_value")
                 Text(equipment.joined(separator: ",")).accessibilityIdentifier("demo_equipment_value")
             }
@@ -88,6 +97,22 @@ struct DynamicOptionsDemoView: View {
             })
         default: nil
         }
+    }
+
+    private func contactPage(scope: Int, search: String, cursor: String?) async throws -> FormKitDynamicOptionsPage {
+        guard ProcessInfo.processInfo.arguments.contains("-DYNAMIC_SCOPE_CHANGE") else {
+            return try await page(contacts, search: search, cursor: cursor)
+        }
+        if scope == 0 {
+            catalogScope = 1
+            // Model an old provider that completes even after the host remount cancels its task.
+            await withCheckedContinuation { continuation in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { continuation.resume() }
+            }
+            oldScopeReturned = true
+            return .init(options: [.init(id: "old-scope-option", label: "Old scope option")])
+        }
+        return .init(options: [.init(id: "new-scope-option", label: "New scope option")])
     }
 
     private func page(

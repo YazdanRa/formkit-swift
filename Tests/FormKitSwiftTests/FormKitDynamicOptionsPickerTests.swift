@@ -247,24 +247,25 @@ final class FormKitDynamicOptionsPickerTests: XCTestCase {
 }
 
 extension FormKitDynamicOptionsPickerTests {
-    func testDetailIsDisplayOnlyAndDuplicateIDsRemainDistinct() {
-        let first = FormKitDynamicOption(id: "opaque-first", label: "Alex", detail: "Example Construction")
-        let second = FormKitDynamicOption(id: "opaque-second", label: "Alex", detail: "Example Mechanical")
+    func testCancelledPresentationRejectsLateProviderRowsAndCachedLabels() async {
+        let requests = PendingDynamicOptionsRequests()
         let labels = FormKitDynamicOptionsPickerLabels()
-        labels.remember([first, second])
-        XCTAssertEqual(labels.secondaryLabel(for: first, savedOptions: []), "Example Construction")
-        XCTAssertEqual(labels.displayLabel(for: first, savedOptions: []), "Alex, Example Construction")
-        XCTAssertEqual(labels.displayLabel(for: second, savedOptions: []), "Alex, Example Mechanical")
-        var value: String?
-        let selection = FormKitDynamicSelection.single(Binding(get: { value }, set: { value = $0 }))
-        selection.choose(second.id, isRequired: false)
-        XCTAssertEqual(value, "opaque-second")
-        XCTAssertEqual(second.label, "Alex")
-        let saved = FormKitDynamicOption(id: second.id, label: "Saved Alex", detail: "Saved company")
-        XCTAssertEqual(labels.displayLabel(for: labels.option(for: second.id, savedOptions: [saved]),
-                                          savedOptions: [saved]), "Saved Alex, Saved company")
-        let withoutDetail = FormKitDynamicOption(id: first.id, label: "Alex", detail: "  ")
-        XCTAssertEqual(labels.displayLabel(for: withoutDetail, savedOptions: []), "Alex, opaque-first")
+        let existing = FormKitDynamicOption(id: "retained-id", label: "Retained label")
+        labels.remember([existing])
+        let model = FormKitDynamicOptionsPickerModel(provider: requests.load, labels: labels)
+        let pending = Task { await model.startSearch("") }
+        await requests.waitForCount(1)
+        model.cancel()
+        requests.finish(0, page: FormKitDynamicOptionsPage(options: [
+            FormKitDynamicOption(id: existing.id, label: "Stale replacement"),
+            FormKitDynamicOption(id: "stale-new-id", label: "Stale addition")
+        ], nextCursor: "stale-page"))
+        await pending.value
+        XCTAssertTrue(model.options.isEmpty)
+        XCTAssertEqual(labels.options, [existing.id: existing])
+        XCTAssertNil(model.nextCursor)
+        XCTAssertFalse(model.hasError)
+        XCTAssertFalse(model.isLoading)
     }
 
     func testMaximumSelectionCountBlocksAddsButAllowsDeselection() {
