@@ -102,7 +102,17 @@ final class FormKitPeoplePickerLabels {
             || savedPeople.contains { $0.id != person.id && $0.displayName == person.displayName }
     }
 
+    func secondaryLabel(for person: FormKitPersonOption, savedPeople: [FormKitPersonOption]) -> String? {
+        if let detail = person.detail, !detail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return detail
+        }
+        return isDuplicate(person, savedPeople: savedPeople) ? person.id : nil
+    }
+
     func displayLabel(for person: FormKitPersonOption, savedPeople: [FormKitPersonOption]) -> String {
-        isDuplicate(person, savedPeople: savedPeople) ? "\(person.displayName), \(person.id)" : person.displayName
+        guard let secondary = secondaryLabel(for: person, savedPeople: savedPeople) else {
+            return person.displayName
+        }
+        return "\(person.displayName), \(secondary)"
     }
 }

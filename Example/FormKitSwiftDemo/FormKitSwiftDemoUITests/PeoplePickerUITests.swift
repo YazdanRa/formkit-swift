@@ -13,14 +13,14 @@ final class PeoplePickerUITests: XCTestCase {
         XCTAssertTrue(sameNameContact.waitForExistence(timeout: 5))
         let firstContact = app.buttons["formkit_person_company-contact:101"]
         XCTAssertTrue(firstContact.exists)
-        XCTAssertEqual(firstContact.label, "Alex Morgan, company-contact:101")
-        XCTAssertEqual(sameNameContact.label, "Alex Morgan, company-contact:102")
-        XCTAssertTrue(firstContact.staticTexts["company-contact:101"].exists)
-        XCTAssertTrue(sameNameContact.staticTexts["company-contact:102"].exists)
+        XCTAssertEqual(firstContact.label, "Alex Morgan, Northline Engineering")
+        XCTAssertEqual(sameNameContact.label, "Alex Morgan, City Mechanical")
+        XCTAssertTrue(firstContact.staticTexts["Northline Engineering"].exists)
+        XCTAssertTrue(sameNameContact.staticTexts["City Mechanical"].exists)
         capture("people-duplicate-names", app: app)
         sameNameContact.tap()
         waitForValue("company-contact:102", id: "demo_issued_to_value", in: app)
-        XCTAssertEqual(picker.value as? String, "Alex Morgan, company-contact:102")
+        XCTAssertEqual(picker.value as? String, "Alex Morgan, City Mechanical")
 
         picker.tap()
         let clear = app.buttons["formkit_people_clear"]
@@ -63,6 +63,31 @@ final class PeoplePickerUITests: XCTestCase {
         XCTAssertFalse(app.buttons["formkit_people_clear"].exists)
         app.buttons["formkit_people_done"].tap()
         waitForValue("company-user:101", id: "demo_assigned_to_value", in: app)
+    }
+
+    @MainActor
+    func testMaximumSelectionDisablesNewPeopleUntilOneIsRemoved() {
+        let app = launch(arguments: ["-PEOPLE_LIMIT_TWO"])
+        app.buttons["demo_assigned_to_picker"].tap()
+        let first = app.buttons["formkit_person_company-user:101"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        first.tap()
+        app.buttons["formkit_person_company-user:102"].tap()
+        let loadMore = app.buttons["formkit_people_load_more"]
+        XCTAssertTrue(loadMore.waitForExistence(timeout: 5))
+        loadMore.tap()
+
+        let later = app.buttons["formkit_person_company-user:103"]
+        XCTAssertTrue(later.waitForExistence(timeout: 5))
+        let disabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == false"), object: later)
+        XCTAssertEqual(XCTWaiter.wait(for: [disabled], timeout: 5), .completed)
+        XCTAssertTrue(first.isEnabled)
+        first.tap()
+        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true"), object: later)
+        XCTAssertEqual(XCTWaiter.wait(for: [enabled], timeout: 5), .completed)
+        later.tap()
+        app.buttons["formkit_people_done"].tap()
+        waitForValue("company-user:102,company-user:103", id: "demo_assigned_to_value", in: app)
     }
 
     @MainActor

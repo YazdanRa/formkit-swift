@@ -240,6 +240,92 @@ final class FormKitPeoplePickerTests: XCTestCase {
     }
 }
 
+extension FormKitPeoplePickerTests {
+    func testCompanyDetailIsDisplayOnlyAndDuplicateIDsRemainDistinct() {
+        let first = FormKitPersonOption(id: "opaque-first", displayName: "Alex", detail: "Example Construction")
+        let second = FormKitPersonOption(id: "opaque-second", displayName: "Alex", detail: "Example Mechanical")
+        let labels = FormKitPeoplePickerLabels()
+        labels.remember([first, second])
+        XCTAssertEqual(labels.secondaryLabel(for: first, savedPeople: []), "Example Construction")
+        XCTAssertEqual(labels.displayLabel(for: first, savedPeople: []), "Alex, Example Construction")
+        XCTAssertEqual(labels.displayLabel(for: second, savedPeople: []), "Alex, Example Mechanical")
+        var value: String?
+        let selection = FormKitPeopleSelection.single(Binding(get: { value }, set: { value = $0 }))
+        selection.choose(second.id, isRequired: false)
+        XCTAssertEqual(value, "opaque-second")
+        XCTAssertEqual(second.displayName, "Alex")
+        let saved = FormKitPersonOption(id: second.id, displayName: "Saved Alex", detail: "Saved company")
+        XCTAssertEqual(labels.displayLabel(for: labels.person(for: second.id, savedPeople: [saved]),
+                                          savedPeople: [saved]), "Saved Alex, Saved company")
+        let withoutDetail = FormKitPersonOption(id: first.id, displayName: "Alex", detail: "  ")
+        XCTAssertEqual(labels.displayLabel(for: withoutDetail, savedPeople: []), "Alex, opaque-first")
+    }
+
+    func testMaximumSelectionCountBlocksAddsButAllowsDeselection() {
+        var value = ["one"]
+        let selection = FormKitPeopleSelection.multiple(Binding(get: { value }, set: { value = $0 }))
+        XCTAssertTrue(selection.canChoose("two", maximumSelectionCount: 2))
+        selection.choose("two", isRequired: false, maximumSelectionCount: 2)
+        XCTAssertEqual(value, ["one", "two"])
+        XCTAssertFalse(selection.canChoose("three", maximumSelectionCount: 2))
+        selection.choose("three", isRequired: false, maximumSelectionCount: 2)
+        XCTAssertEqual(value, ["one", "two"])
+        XCTAssertTrue(selection.canChoose("one", maximumSelectionCount: 2))
+        selection.choose("one", isRequired: false, maximumSelectionCount: 2)
+        selection.choose("three", isRequired: false, maximumSelectionCount: 2)
+        XCTAssertEqual(value, ["two", "three"])
+    }
+
+    func testPublishedFiftyPersonBoundaryAndOversizedHydrationPreserveAllIDs() {
+        var value = (1...49).map { "company-user:\($0)" }
+        var writes = 0
+        let selection = FormKitPeopleSelection.multiple(Binding(get: { value }, set: {
+            writes += 1
+            value = $0
+        }))
+        selection.choose("company-user:50", isRequired: false, maximumSelectionCount: 50)
+        XCTAssertEqual(value.count, 50)
+        XCTAssertEqual(writes, 1)
+        selection.choose("company-user:51", isRequired: false, maximumSelectionCount: 50)
+        XCTAssertEqual(value.count, 50)
+        XCTAssertEqual(writes, 1)
+        value = (1...52).map { "company-user:\($0)" }
+        let hydrated = selection.ids
+        XCTAssertEqual(hydrated.count, 52)
+        XCTAssertEqual(writes, 1)
+        XCTAssertFalse(selection.canChoose("new-id", maximumSelectionCount: 50))
+        selection.choose("company-user:52", isRequired: true, maximumSelectionCount: 50)
+        XCTAssertEqual(value, Array(hydrated.dropLast()))
+        XCTAssertEqual(writes, 2)
+        XCTAssertFalse(selection.canChoose("new-id", maximumSelectionCount: 50))
+    }
+
+    func testSingleIgnoresArrayLimitAndRequiredEmptySelectionNeverAutofills() {
+        var value: String?
+        let single = FormKitPeopleSelection.single(Binding(get: { value }, set: { value = $0 }))
+        XCTAssertTrue(single.canChoose("one", maximumSelectionCount: 0))
+        XCTAssertNil(value)
+        single.choose("one", isRequired: true, maximumSelectionCount: 0)
+        XCTAssertEqual(value, "one")
+        var empty: [String] = []
+        var writes = 0
+        let multiple = FormKitPeopleSelection.multiple(Binding(get: { empty }, set: {
+            writes += 1
+            empty = $0
+        }))
+        XCTAssertTrue(multiple.ids.isEmpty)
+        XCTAssertEqual(writes, 0)
+        multiple.choose("one", isRequired: true, maximumSelectionCount: 0)
+        XCTAssertTrue(multiple.ids.isEmpty)
+        XCTAssertEqual(writes, 0)
+        multiple.choose("one", isRequired: true, maximumSelectionCount: 1)
+        multiple.choose("one", isRequired: true, maximumSelectionCount: 1)
+        XCTAssertEqual(empty, ["one"])
+        XCTAssertEqual(writes, 1)
+    }
+
+}
+
 @MainActor
 private final class PendingPeopleRequests {
     struct Request {

@@ -22,7 +22,18 @@ public enum FormKitPeopleSelection {
         return false
     }
 
-    func choose(_ id: String, isRequired: Bool) {
+    func canChoose(_ id: String, maximumSelectionCount: Int?) -> Bool {
+        switch self {
+        case .single:
+            return true
+        case .multiple(let binding):
+            return binding.wrappedValue.contains(id)
+                || maximumSelectionCount.map { binding.wrappedValue.count < $0 } ?? true
+        }
+    }
+
+    func choose(_ id: String, isRequired: Bool, maximumSelectionCount: Int? = nil) {
+        guard canChoose(id, maximumSelectionCount: maximumSelectionCount) else { return }
         switch self {
         case .single(let binding):
             binding.wrappedValue = id

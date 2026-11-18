@@ -7,9 +7,9 @@ struct PeoplePickerDemoView: View {
     @State private var isLocked = false
 
     private let contacts = [
-        FormKitPersonOption(id: "company-contact:101", displayName: "Alex Morgan"),
-        FormKitPersonOption(id: "company-contact:102", displayName: "Alex Morgan"),
-        FormKitPersonOption(id: "company-contact:103", displayName: "Jamie Patel")
+        FormKitPersonOption(id: "company-contact:101", displayName: "Alex Morgan", detail: "Northline Engineering"),
+        FormKitPersonOption(id: "company-contact:102", displayName: "Alex Morgan", detail: "City Mechanical"),
+        FormKitPersonOption(id: "company-contact:103", displayName: "Jamie Patel", detail: "Contact #103")
     ]
     private let members = [
         FormKitPersonOption(id: "company-user:101", displayName: "Alex Morgan"),
@@ -35,6 +35,8 @@ struct PeoplePickerDemoView: View {
                         title: "Assigned to",
                         selection: .multiple($assignedTo),
                         isRequired: ProcessInfo.processInfo.arguments.contains("-PEOPLE_REQUIRED"),
+                        maximumSelectionCount: ProcessInfo.processInfo.arguments.contains("-PEOPLE_LIMIT_TWO")
+                            ? 2 : nil,
                         isEditingLocked: isLocked,
                         provider: { search, cursor in try await page(members, search: search, cursor: cursor) }
                     )

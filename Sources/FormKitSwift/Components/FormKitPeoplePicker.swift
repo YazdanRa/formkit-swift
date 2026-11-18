@@ -6,6 +6,7 @@ public struct FormKitPeoplePicker: View {
     private let title: String
     private let selection: FormKitPeopleSelection
     private let savedPeople: [FormKitPersonOption]
+    private let maximumSelectionCount: Int?
     private let isRequired: Bool
     private let isEditingLocked: Bool
     private let provider: FormKitPeopleProvider
@@ -17,6 +18,7 @@ public struct FormKitPeoplePicker: View {
         selection: FormKitPeopleSelection,
         savedPeople: [FormKitPersonOption] = [],
         isRequired: Bool = false,
+        maximumSelectionCount: Int? = nil,
         isEditingLocked: Bool = false,
         provider: @escaping FormKitPeopleProvider
     ) {
@@ -24,6 +26,7 @@ public struct FormKitPeoplePicker: View {
         self.selection = selection
         self.savedPeople = savedPeople
         self.isRequired = isRequired
+        self.maximumSelectionCount = maximumSelectionCount
         self.isEditingLocked = isEditingLocked
         self.provider = provider
     }
@@ -53,6 +56,7 @@ public struct FormKitPeoplePicker: View {
                 savedPeople: savedPeople,
                 labels: labels,
                 isRequired: isRequired,
+                maximumSelectionCount: maximumSelectionCount,
                 isEditingLocked: isEditingLocked,
                 provider: provider
             )

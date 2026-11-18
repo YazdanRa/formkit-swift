@@ -5,6 +5,7 @@ struct FormKitPeoplePickerSheet: View {
     let selection: FormKitPeopleSelection
     let savedPeople: [FormKitPersonOption]
     let labels: FormKitPeoplePickerLabels
+    let maximumSelectionCount: Int?
     let isRequired: Bool
     let isEditingLocked: Bool
     @Environment(\.dismiss) private var dismiss
@@ -18,6 +19,7 @@ struct FormKitPeoplePickerSheet: View {
         savedPeople: [FormKitPersonOption],
         labels: FormKitPeoplePickerLabels,
         isRequired: Bool,
+        maximumSelectionCount: Int?,
         isEditingLocked: Bool,
         provider: @escaping FormKitPeopleProvider
     ) {
@@ -26,6 +28,7 @@ struct FormKitPeoplePickerSheet: View {
         self.savedPeople = savedPeople
         self.labels = labels
         self.isRequired = isRequired
+        self.maximumSelectionCount = maximumSelectionCount
         self.isEditingLocked = isEditingLocked
         _model = State(initialValue: FormKitPeoplePickerModel(provider: provider, labels: labels))
     }
@@ -86,7 +89,7 @@ struct FormKitPeoplePickerSheet: View {
     private func personRow(_ person: FormKitPersonOption, isSelected: Bool) -> some View {
         Button {
             guard !isEditingLocked else { return }
-            selection.choose(person.id, isRequired: isRequired)
+            selection.choose(person.id, isRequired: isRequired, maximumSelectionCount: maximumSelectionCount)
             if selection.isSingle {
                 dismiss()
             }
@@ -95,8 +98,8 @@ struct FormKitPeoplePickerSheet: View {
                 VStack(alignment: .leading) {
                     Text(person.displayName)
                         .foregroundStyle(.primary)
-                    if labels.isDuplicate(person, savedPeople: savedPeople) {
-                        Text(person.id)
+                    if let detail = labels.secondaryLabel(for: person, savedPeople: savedPeople) {
+                        Text(detail)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -112,7 +115,7 @@ struct FormKitPeoplePickerSheet: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(isEditingLocked)
+        .disabled(isEditingLocked || !selection.canChoose(person.id, maximumSelectionCount: maximumSelectionCount))
         .accessibilityLabel(labels.displayLabel(for: person, savedPeople: savedPeople))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityIdentifier("formkit_person_\(person.id)")

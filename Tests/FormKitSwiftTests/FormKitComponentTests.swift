@@ -3,6 +3,40 @@ import XCTest
 
 @MainActor
 final class FormKitComponentTests: XCTestCase {
+    func testRequiredPeopleRemainInvalidUntilNonemptyIdentifiersAreSelected() throws {
+        let session = FormKitRenderer().makeFormSession(
+            schemaJSON: """
+            {
+              "type": "object", "required": ["issued_to", "cc"],
+              "properties": {
+                "issued_to": {
+                  "type": "string", "minLength": 1,
+                  "x-formkit-ui-component": "people-picker"
+                },
+                "cc": {
+                  "type": "array", "minItems": 1, "maxItems": 50,
+                  "items": { "type": "string", "minLength": 1 },
+                  "x-formkit-ui-component": "people-picker"
+                }
+              }
+            }
+            """,
+            instanceJSON: """
+            {"issued_to":null,"cc":[]}
+            """
+        )
+
+        XCTAssertFalse(session.validate())
+        let person = tryUnwrapField("issued_to", in: session)
+        let recipients = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == "cc" })
+        session.setStringValue("company-contact:7", for: person)
+        session.setArrayValue([.string("company-contact:8")], for: recipients)
+        XCTAssertTrue(session.validate())
+        let currentRecipients = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == "cc" })
+        session.setArrayValue([], for: currentRecipients)
+        XCTAssertFalse(session.validate())
+    }
+
     func testPeoplePickerMarkerPreservesFlatScalarAndArrayFields() throws {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
