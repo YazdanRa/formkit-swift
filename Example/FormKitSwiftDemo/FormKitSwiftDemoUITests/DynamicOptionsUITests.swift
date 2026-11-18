@@ -272,6 +272,65 @@ final class DynamicOptionsUITests: XCTestCase {
 
 @MainActor
 extension DynamicOptionsUITests {
+    func testRegistryPreservesBlankScalarAndArrayIdentifiers() throws {
+        let app = launch(arguments: ["-DYNAMIC_REGISTRY", "-DYNAMIC_BLANK_IDS"])
+        try selectAndClearEmptyScalarID(in: app)
+        let equipment = app.buttons["Equipment"]
+        XCTAssertTrue(equipment.waitForExistence(timeout: 5))
+        equipment.tap()
+        let first = app.buttons["formkit_dynamic_option_"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        XCTAssertEqual(first.label, "First option")
+        first.tap()
+        let second = app.buttons["formkit_dynamic_option_  "]
+        XCTAssertTrue(second.waitForExistence(timeout: 5))
+        XCTAssertEqual(second.label, "Second option")
+        second.tap()
+        let third = app.buttons["formkit_dynamic_option_ordinary"]
+        XCTAssertTrue(third.waitForExistence(timeout: 5))
+        let disabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == false"), object: third)
+        XCTAssertEqual(XCTWaiter.wait(for: [disabled], timeout: 5), .completed)
+        app.buttons["formkit_dynamic_done"].tap()
+        waitForJSON("\"equipment\" : [", in: app)
+        let json = app.staticTexts["demo_dynamic_json"]
+        let savedJSON = json.label
+        let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(savedJSON.utf8)) as? [String: Any])
+        XCTAssertEqual(saved["equipment"] as? [String], ["", "  "])
+        equipment.tap()
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        XCTAssertTrue(first.isSelected)
+        XCTAssertTrue(second.isSelected)
+        XCTAssertTrue(third.waitForExistence(timeout: 5))
+        XCTAssertFalse(third.isEnabled)
+        capture("dynamic-blank-identifiers", app: app)
+        app.buttons["formkit_dynamic_done"].tap()
+        XCTAssertEqual(json.label, savedJSON)
+    }
+
+    private func selectAndClearEmptyScalarID(in app: XCUIApplication) throws {
+        let category = app.buttons["Category"]
+        XCTAssertTrue(category.waitForExistence(timeout: 5))
+        category.tap()
+        let first = app.buttons["formkit_dynamic_option_"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        XCTAssertEqual(first.label, "First option")
+        first.tap()
+        waitForJSON("\"choice\" : \"\"", in: app)
+        let json = app.staticTexts["demo_dynamic_json"]
+        let selected = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(json.label.utf8)) as? [String: Any])
+        XCTAssertEqual(selected["choice"] as? String, "")
+        XCTAssertFalse(selected["choice"] is NSNull)
+        XCTAssertEqual(category.value as? String, "First option")
+        category.tap()
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        XCTAssertTrue(first.isSelected)
+        app.buttons["formkit_dynamic_clear"].tap()
+        app.buttons["formkit_dynamic_done"].tap()
+        waitForJSON("\"choice\" : null", in: app)
+        let cleared = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(json.label.utf8)) as? [String: Any])
+        XCTAssertTrue(cleared["choice"] is NSNull)
+    }
+
     func testRequiredZeroCapacityArrayCanExplicitlyClearWithoutDynamicSource() throws {
         let app = launch(arguments: ["-DYNAMIC_REGISTRY", "-DYNAMIC_EMPTY_REQUIRED", "-DYNAMIC_NO_SOURCE"])
         let json = app.staticTexts["demo_dynamic_json"]

@@ -167,7 +167,7 @@ public extension FormKitSession {
             return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
         }
 
-        guard primitiveValue(for: field).map(hasConcreteToolValue) == true else {
+        guard primitiveValue(for: field).map({ field.usesDynamicOptions || hasConcreteToolValue($0) }) == true else {
             return rejected(edit, reason: "no_change", message: "The field is already empty.")
         }
 
@@ -353,7 +353,8 @@ public extension FormKitSession {
                 return nil
             }
             if case .string(let value) = currentValues[field.pointer],
-               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               self.field(forToolPointer: field.pointer).map({ !preservesDynamicOptionID(for: $0) }) ?? true
             {
                 return field.title
             }

@@ -74,7 +74,7 @@ public enum FormKitDynamicOptionsContext {
                     guard let section = context.session.renderPlan.sections.first(where: {
                         $0.pointer == context.section.pointer && $0.isArraySection
                     }) else { return [] }
-                    return context.session.arrayValue(for: section)?.compactMap(\.string).filter { !$0.isEmpty } ?? []
+                    return context.session.arrayValue(for: section)?.compactMap(\.string) ?? []
                 },
                 set: { ids in
                     guard !context.isEditingLocked,

@@ -107,6 +107,9 @@ extension FormKitSession {
         case .null:
             return field.allowsNull
         case .string(let value):
+            if preservesDynamicOptionID(for: field) {
+                return true
+            }
             return !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .integer, .number, .boolean:
             return true

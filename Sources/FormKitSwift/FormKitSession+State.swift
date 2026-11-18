@@ -5,7 +5,7 @@ extension FormKitSession {
     func restoreConcreteValue(for field: FormKitFieldDescriptor) -> FormKitFieldDescriptor.PrimitiveValue? {
         if let seededValue = seededValue(for: field, preferInitialInstance: false, usesNullFallback: false),
            seededValue != .null,
-           !seededValue.isBlankString
+           field.usesDynamicOptions || !seededValue.isBlankString
         {
             return seededValue
         }
@@ -169,9 +169,9 @@ extension FormKitSession {
 
         for field in nextPlan.fields {
             if touchedFieldIDs.contains(field.id),
-               let preservedValue = previousFieldValues[field.id]
+               previousFieldValues[field.id] != nil || field.usesDynamicOptions
             {
-                nextFieldValues[field.id] = preservedValue
+                nextFieldValues[field.id] = previousFieldValues[field.id]
                 continue
             }
 
@@ -251,7 +251,7 @@ extension FormKitSession {
             from: initialValue,
             scalarType: field.scalarType,
             allowsNull: field.allowsNull,
-            normalizesEmptyText: !field.enumOptions.contains {
+            normalizesEmptyText: !field.usesDynamicOptions && !field.enumOptions.contains {
                 jsonValue(from: $0.value) == initialValue
             }
            )

@@ -86,7 +86,10 @@ extension FormKitRenderer {
             from: request.schemaObject["default"],
             scalarType: fieldScalarType,
             allowsNull: allowsNull,
-            normalizesEmptyText: !options.contains {
+            normalizesEmptyText: !FormKitDynamicOptionsScalarCompatibility.supports(
+                component: uiComponent(from: request.schemaObject), scalarType: fieldScalarType,
+                hasValueConstraint: !options.isEmpty || request.schemaObject["const"] != nil
+            ) && !options.contains {
                 jsonValue(from: $0.value) == request.schemaObject["default"]
             }
         )
@@ -237,7 +240,7 @@ extension FormKitRenderer {
                 from: instanceValue,
                 scalarType: field.scalarType,
                 allowsNull: field.allowsNull,
-                normalizesEmptyText: !field.enumOptions.contains {
+                normalizesEmptyText: !field.usesDynamicOptions && !field.enumOptions.contains {
                     jsonValue(from: $0.value) == instanceValue
                 }
             )

@@ -72,7 +72,7 @@ extension FormKitSession {
             }
 
             let value = instance.value(at: JSONPointer(from: field.pointer))
-            let isBlank = !field.allowsNull
+            let isBlank = !preservesDynamicOptionID(for: field) && !field.allowsNull
                 && value?.string?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
             if value == nil || isBlank {
                 result[field.id] = [String(localized: "This field is required.", bundle: .module)]

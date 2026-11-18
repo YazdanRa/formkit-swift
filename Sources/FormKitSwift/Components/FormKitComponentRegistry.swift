@@ -11,7 +11,7 @@ enum FormKitComponentRegistry {
         }
 
         switch component {
-        case .dynamicOptions where !context.field.isEnum && context.field.scalarType == .string:
+        case .dynamicOptions where context.field.usesDynamicOptions:
             guard let source = dynamicOptions?(.field(context)) else { return nil }
             return AnyView(FormKitDynamicOptionsPicker(
                 title: context.field.title,

@@ -22,11 +22,18 @@ struct DynamicOptionsDemoView: View {
     ]
 
     init() {
-        let instance = ProcessInfo.processInfo.arguments.contains("-DYNAMIC_HYDRATE_ON_LOAD")
+        let arguments = ProcessInfo.processInfo.arguments
+        let instance = arguments.contains("-DYNAMIC_HYDRATE_ON_LOAD")
             ? #"{"request":{"contact":"saved-opaque-contact"}}"# : nil
+        let schema = if arguments.contains("-DYNAMIC_BLANK_IDS") {
+            Self.blankIDSchema
+        } else if arguments.contains("-DYNAMIC_EMPTY_REQUIRED") {
+            Self.emptyRequiredSchema
+        } else {
+            Self.registrySchema
+        }
         _registrySession = State(initialValue: FormKitRenderer().makeFormSession(
-            schemaJSON: ProcessInfo.processInfo.arguments.contains("-DYNAMIC_EMPTY_REQUIRED")
-                ? Self.emptyRequiredSchema : Self.registrySchema, instanceJSON: instance
+            schemaJSON: schema, instanceJSON: instance
         ))
     }
 
@@ -101,7 +108,12 @@ struct DynamicOptionsDemoView: View {
         _ context: FormKitDynamicOptionsContext,
         savedOptions: [FormKitDynamicOption]
     ) -> FormKitDynamicOptionsSource? {
-        switch context.pointer {
+        if ProcessInfo.processInfo.arguments.contains("-DYNAMIC_BLANK_IDS") {
+            return FormKitDynamicOptionsSource(savedOptions: Self.blankIDOptions, provider: { _, _ in
+                FormKitDynamicOptionsPage(options: Self.blankIDOptions)
+            })
+        }
+        return switch context.pointer {
         case "#/request/contact":
             FormKitDynamicOptionsSource(savedOptions: savedOptions, provider: { search, cursor in
                 try await registryContactPage(search: search, cursor: cursor)
@@ -164,6 +176,20 @@ struct DynamicOptionsDemoView: View {
     private enum DemoLookupError: Error {
         case unavailable
     }
+
+    private static let blankIDOptions = [
+        FormKitDynamicOption(id: "", label: "First option"),
+        FormKitDynamicOption(id: "  ", label: "Second option"),
+        FormKitDynamicOption(id: "ordinary", label: "Third option")
+    ]
+
+    private static let blankIDSchema = #"""
+    {"type":"object","required":["choice","equipment"],"properties":{
+      "choice":{"type":["string","null"],"title":"Category","x-formkit-ui-component":"dynamic-options"},
+      "equipment":{"type":"array","title":"Equipment","minItems":1,"maxItems":2,"items":{"type":"string"},
+        "x-formkit-ui-component":"dynamic-options"}
+    }}
+    """#
 
     private static let emptyRequiredSchema = #"""
     {"type":"object","required":["equipment"],"properties":{"equipment":{

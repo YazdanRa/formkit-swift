@@ -51,7 +51,7 @@ public extension FormKitSession {
                 from: initialValue,
                 scalarType: field.scalarType,
                 allowsNull: field.allowsNull,
-                normalizesEmptyText: !field.enumOptions.contains {
+                normalizesEmptyText: !field.usesDynamicOptions && !field.enumOptions.contains {
                     jsonValue(from: $0.value) == initialValue
                 }
               ) != nil
@@ -113,7 +113,7 @@ public extension FormKitSession {
 
         pendingConcreteFieldIDs.remove(field.id)
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty, field.scalarType != .boolean {
+        if trimmed.isEmpty, field.scalarType != .boolean, !field.usesDynamicOptions {
             setPrimitiveValue(field.allowsNull ? .null : .string(text), for: field)
             handleFieldEdit(for: field)
             return
@@ -266,7 +266,8 @@ public extension FormKitSession {
         pendingConcreteFieldIDs.remove(field.id)
         if field.allowsNull {
             setPrimitiveValue(.null, for: field)
-        } else if field.isEnum || field.scalarType == .boolean {
+        } else if field.isEnum || field.scalarType == .boolean || field.usesDynamicOptions {
+            // Only the scalar's own marker changes clearing; array slots retain their generic position semantics.
             setPrimitiveValue(nil, for: field)
         } else {
             setPrimitiveValue(.string(""), for: field)
