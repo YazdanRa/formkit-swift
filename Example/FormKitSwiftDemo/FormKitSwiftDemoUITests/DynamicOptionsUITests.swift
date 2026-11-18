@@ -272,6 +272,47 @@ final class DynamicOptionsUITests: XCTestCase {
 
 @MainActor
 extension DynamicOptionsUITests {
+    func testSummaryIncludesRequiredDynamicArrayBeforeAnyRowsExist() throws {
+        let app = launch(arguments: ["-DYNAMIC_REGISTRY", "-DYNAMIC_REQUIRED_SUMMARY"])
+        let json = app.staticTexts["demo_dynamic_json"]
+        XCTAssertTrue(json.waitForExistence(timeout: 5))
+        let initialJSON = json.label
+        let initial = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(initialJSON.utf8)) as? [String: Any])
+        let selection = try XCTUnwrap(initial["selection"] as? [String: Any])
+        XCTAssertNil(selection["equipment"])
+        let jump = app.buttons["formkit_page_jump"]
+        XCTAssertTrue(jump.waitForExistence(timeout: 5))
+        XCTAssertTrue(jump.label.hasPrefix("1 of 2"), jump.label)
+        app.buttons["formkit_page_next"].tap()
+        app.buttons["formkit_page_next"].tap()
+        XCTAssertEqual(jump.label, "Summary")
+        XCTAssertTrue(app.staticTexts["Still required"].waitForExistence(timeout: 5))
+        let missingTitle = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Equipment")).firstMatch
+        XCTAssertTrue(missingTitle.waitForExistence(timeout: 5))
+        XCTAssertEqual(json.label, initialJSON)
+        capture("dynamic-empty-required-summary", app: app)
+        app.buttons["formkit_page_row_0"].tap()
+        let equipment = app.buttons["Equipment"]
+        XCTAssertTrue(equipment.waitForExistence(timeout: 5))
+        equipment.tap()
+        let option = app.buttons["formkit_dynamic_option_equipment:excavator"]
+        XCTAssertTrue(option.waitForExistence(timeout: 5))
+        option.tap()
+        app.buttons["formkit_dynamic_done"].tap()
+        waitForJSON("equipment:excavator", in: app)
+        let savedJSON = json.label
+        let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(savedJSON.utf8)) as? [String: Any])
+        let savedSelection = try XCTUnwrap(saved["selection"] as? [String: Any])
+        XCTAssertEqual(savedSelection["equipment"] as? [String], ["equipment:excavator"])
+        app.buttons["formkit_page_next"].tap()
+        app.buttons["formkit_page_next"].tap()
+        XCTAssertEqual(jump.label, "Summary")
+        XCTAssertFalse(app.staticTexts["Still required"].exists)
+        XCTAssertFalse(missingTitle.exists)
+        XCTAssertEqual(json.label, savedJSON)
+        capture("dynamic-selected-required-summary", app: app)
+    }
+
     func testRegistryPreservesBlankScalarAndArrayIdentifiers() throws {
         let app = launch(arguments: ["-DYNAMIC_REGISTRY", "-DYNAMIC_BLANK_IDS"])
         try selectAndClearEmptyScalarID(in: app)

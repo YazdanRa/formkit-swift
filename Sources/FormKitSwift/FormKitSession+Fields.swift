@@ -29,6 +29,11 @@ public extension FormKitSession {
             return nil
         }
 
+        if let rowSeed = renderPlan.dynamicOptionsRowSeed(for: field) {
+            return primitiveValue(from: rowSeed, scalarType: field.scalarType, allowsNull: field.allowsNull,
+                                  normalizesEmptyText: !field.usesDynamicOptions)
+        }
+
         return seededValue(for: field)
     }
 
@@ -266,7 +271,9 @@ public extension FormKitSession {
         pendingConcreteFieldIDs.remove(field.id)
         if field.allowsNull {
             setPrimitiveValue(.null, for: field)
-        } else if field.isEnum || field.scalarType == .boolean || field.usesDynamicOptions {
+        } else if field.isEnum || field.scalarType == .boolean
+            || (field.usesDynamicOptions && !field.isScalarArrayItem)
+        {
             // Only the scalar's own marker changes clearing; array slots retain their generic position semantics.
             setPrimitiveValue(nil, for: field)
         } else {

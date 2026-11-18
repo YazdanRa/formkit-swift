@@ -9,7 +9,7 @@ final class FormKitDynamicOpaqueIDTests: XCTestCase {
             for nullable in [false, true]
         {
                 for required in [false, true] {
-                    for id in ["", " \t\n", "saved:1"] {
+                    for id in ["", " \t\n", "0", "01", "saved:1"] {
                         let definition = try schema(nullable: nullable, required: required)
                         let data = try JSONSerialization.data(withJSONObject: ["choice": id])
                         let session = renderer.makeFormSession(

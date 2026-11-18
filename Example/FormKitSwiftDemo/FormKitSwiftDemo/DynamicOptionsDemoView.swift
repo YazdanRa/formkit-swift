@@ -25,7 +25,9 @@ struct DynamicOptionsDemoView: View {
         let arguments = ProcessInfo.processInfo.arguments
         let instance = arguments.contains("-DYNAMIC_HYDRATE_ON_LOAD")
             ? #"{"request":{"contact":"saved-opaque-contact"}}"# : nil
-        let schema = if arguments.contains("-DYNAMIC_BLANK_IDS") {
+        let schema = if arguments.contains("-DYNAMIC_REQUIRED_SUMMARY") {
+            Self.requiredSummarySchema
+        } else if arguments.contains("-DYNAMIC_BLANK_IDS") {
             Self.blankIDSchema
         } else if arguments.contains("-DYNAMIC_EMPTY_REQUIRED") {
             Self.emptyRequiredSchema
@@ -120,7 +122,7 @@ struct DynamicOptionsDemoView: View {
             })
         case "#/equipment":
             FormKitDynamicOptionsSource(provider: { _, _ in FormKitDynamicOptionsPage(options: []) })
-        case "#/assets/equipment":
+        case "#/assets/equipment", "#/selection/equipment":
             FormKitDynamicOptionsSource(provider: { search, cursor in
                 try await page(equipmentOptions, search: search, cursor: cursor)
             })
@@ -176,6 +178,18 @@ struct DynamicOptionsDemoView: View {
     private enum DemoLookupError: Error {
         case unavailable
     }
+
+    private static let requiredSummarySchema = #"""
+    {"type":"object","x-formkit-layout":"section-pages","required":["selection"],"properties":{
+      "selection":{"type":"object","title":"Selection","x-formkit-order":0,"required":["equipment"],"properties":{
+        "equipment":{"type":"array","title":"Equipment","minItems":1,"items":{"type":"string"},
+          "x-formkit-ui-component":"dynamic-options"}
+      }},
+      "details":{"type":"object","title":"Details","x-formkit-order":1,"properties":{
+        "note":{"type":"string","title":"Note"}
+      }}
+    }}
+    """#
 
     private static let blankIDOptions = [
         FormKitDynamicOption(id: "", label: "First option"),

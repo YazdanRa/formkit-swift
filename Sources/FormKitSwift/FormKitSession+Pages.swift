@@ -35,12 +35,20 @@ public extension FormKitSession {
     /// The field's title prefixed with the titles of the sections it sits in, such as
     /// "Housekeeping › Observation".
     func qualifiedTitle(for field: FormKitFieldDescriptor) -> String {
+        qualifiedTitle(field.title, parentPointer: field.parentPointer)
+    }
+
+    internal func qualifiedTitle(for section: FormKitRenderPlan.SectionDescriptor) -> String {
+        qualifiedTitle(section.title, parentPointer: section.parentPointer)
+    }
+
+    private func qualifiedTitle(_ title: String, parentPointer: String?) -> String {
         let sectionsByPointer = Dictionary(
             renderPlan.sections.filter { !$0.isOwnedByArrayRow }.map { ($0.pointer, $0) },
             uniquingKeysWith: { first, _ in first }
         )
-        var titles = [field.title]
-        var pointer: String? = field.parentPointer
+        var titles = [title]
+        var pointer = parentPointer
         while let current = pointer, current != "#", let section = sectionsByPointer[current] {
             titles.insert(section.title, at: 0)
             pointer = section.parentPointer
@@ -65,37 +73,58 @@ extension FormKitSession {
                 fieldsByID[fieldID].map { hasValue(for: $0) } ?? true
             } && rule.matches(instance)
         }
+        let missingRequired = visibleFields.filter { field in
+            field.isRequired && !isDynamicOptionsArrayItem(field) && !hasValue(for: field)
+        }
+
+        return FormKitFormSummary(
+            pages: pageProgress(pages, visibleFields: visibleFields, rules: rules,
+                                activeRules: activeRules, instance: instance),
+            general: generalAnswers(outside: pages, visibleFields: visibleFields),
+            flagged: flaggedAnswers(for: activeRules, pages: pages, visibleFields: visibleFields),
+            missingRequired: missingRequired,
+            missingRequiredArraySections: missingDynamicOptionsArrays(in: instance)
+        )
+    }
+
+    private func pageProgress(
+        _ pages: [FormKitFormPage],
+        visibleFields: [FormKitFieldDescriptor],
+        rules: [FormKitConditionalRule],
+        activeRules: [FormKitConditionalRule],
+        instance: FormKitJSONValue
+    ) -> [FormKitPageProgress] {
+        let visibleIDs = Set(visibleFields.map(\.id))
         let dependentIDs = Set(rules.flatMap(\.dependentFieldIDs))
         let openedRequiredIDs = Set(activeRules.flatMap(\.dependentFieldIDs))
-
-        let missingRequired = visibleFields.filter { field in
-            field.isRequired && !hasValue(for: field)
+        let missingRequired = visibleFields.filter {
+            $0.isRequired && !isDynamicOptionsArrayItem($0) && !hasValue(for: $0)
         }
         let attentionIDs = Set(missingRequired.map(\.id).filter(openedRequiredIDs.contains))
             .union(fieldErrors.filter { !$0.value.isEmpty }.keys)
         let invalidArrayPointers = renderPlan.sections
             .filter { $0.isArraySection && !(arrayErrors[$0.id] ?? []).isEmpty }
             .map(\.pointer)
+            + missingDynamicOptionsArrays(in: instance).map(\.pointer).filter(openedRequiredIDs.contains)
+        let dynamicArrays = visibleDynamicOptionsArrays
 
-        let progress = pages.map { page in
+        return pages.map { page in
             let questions = page.fieldIDs.filter { fieldID in
                 visibleIDs.contains(fieldID) && !dependentIDs.contains(fieldID) && page.isSectionField(fieldID)
+                    && fieldsByID[fieldID].map { !isDynamicOptionsArrayItem($0) } == true
+            }
+            let arrays = dynamicArrays.filter { section in
+                page.isSectionField(section.pointer) && !dependentIDs.contains(section.pointer)
             }
             return FormKitPageProgress(
                 page: page,
-                answered: questions.count { fieldID in fieldsByID[fieldID].map(hasAnswer(for:)) ?? false },
-                total: questions.count,
+                answered: questions.count { fieldID in fieldsByID[fieldID].map(hasAnswer(for:)) ?? false }
+                    + arrays.count { hasAnswer(for: $0, in: instance) },
+                total: questions.count + arrays.count,
                 needsAttention: page.fieldIDs.contains(where: attentionIDs.contains)
                     || invalidArrayPointers.contains { page.holds(pointer: $0) }
             )
         }
-
-        return FormKitFormSummary(
-            pages: progress,
-            general: generalAnswers(outside: pages, visibleFields: visibleFields),
-            flagged: flaggedAnswers(for: activeRules, pages: pages, visibleFields: visibleFields),
-            missingRequired: missingRequired
-        )
     }
 
     /// Whether the field holds a value validation accepts as present. An explicit null counts on a

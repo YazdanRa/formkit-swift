@@ -224,18 +224,19 @@ extension FormKitRenderer {
         instance: FormKitJSONValue?
     ) -> [String: FormKitFieldDescriptor.PrimitiveValue?] {
         renderPlan.fields.reduce(into: [:]) { result, field in
-            let seededValue = seededValue(for: field, instance: instance)
+            let seededValue = seededValue(for: field, instance: instance) {
+                renderPlan.dynamicOptionsRowSeed(for: field)
+            }
             result[field.id] = seededValue
         }
     }
 
     func seededValue(
         for field: FormKitFieldDescriptor,
-        instance: FormKitJSONValue?
+        instance: FormKitJSONValue?,
+        rowSeed: () -> FormKitJSONValue? = { nil }
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
-        if let instance,
-           let instanceValue = instance.value(at: JSONPointer(from: field.pointer))
-        {
+        if let instanceValue = instance?.value(at: JSONPointer(from: field.pointer)) ?? rowSeed() {
             return primitiveValue(
                 from: instanceValue,
                 scalarType: field.scalarType,
