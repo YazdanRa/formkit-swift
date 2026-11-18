@@ -77,6 +77,7 @@ extension FormKitRenderer {
         let options = enumOptions(
             from: request.schemaObject["enum"]?.array ?? request.schemaObject["const"].map { [$0] },
             colors: request.schemaObject["x-formkit-option-color-map"]?.object,
+            labels: request.schemaObject["x-formkit-option-label-map"]?.object,
             scalarType: fieldScalarType,
             location: pointer,
             reasons: &reasons
@@ -98,6 +99,8 @@ extension FormKitRenderer {
             description: request.description,
             scalarType: fieldScalarType,
             enumOptions: options,
+            isConstant: request.schemaObject["const"] != nil,
+            isScalarArrayItem: request.isScalarArrayItem,
             isRequired: request.isRequired,
             allowsNull: allowsNull,
             defaultValue: defaultValue,
@@ -242,6 +245,10 @@ extension FormKitRenderer {
 
         if let defaultValue = field.defaultValue {
             return defaultValue
+        }
+
+        if requiresExplicitEnumSelection, field.supportsExplicitEnumSelection {
+            return nil
         }
 
         if field.allowsNull, field.isRequired {

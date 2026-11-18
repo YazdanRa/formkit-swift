@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		F7A49FCBDF45436AA346200E /* TextAreaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28AFF836A7234189B750CF0B /* TextAreaUITests.swift */; };
 		431F6D37EDB14D0FB826D4C1 /* TextAreaDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE648FE97534F13AA641A12 /* TextAreaDemoView.swift */; };
+		E31C00200000000000000002 /* ExplicitChoicesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31C00200000000000000001 /* ExplicitChoicesUITests.swift */; };
+		E31C00100000000000000002 /* ExplicitChoicesDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31C00100000000000000001 /* ExplicitChoicesDemoView.swift */; };
 		64B636C587D7BFFFA9FBA433 /* SectionPagesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A9DDF86186F33EFD83DD09 /* SectionPagesUITests.swift */; };
 		2DD685BDC1089D46FEE0B099 /* SectionPagesDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE983C473600F33059D3F9E /* SectionPagesDemoView.swift */; };
 		1B5F9869C0830DF9D01FB478 /* ControlledFocusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A9F180633733506391117 /* ControlledFocusUITests.swift */; };
@@ -34,6 +36,8 @@
 /* Begin PBXFileReference section */
 		28AFF836A7234189B750CF0B /* TextAreaUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextAreaUITests.swift; sourceTree = "<group>"; };
 		3BE648FE97534F13AA641A12 /* TextAreaDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextAreaDemoView.swift; sourceTree = "<group>"; };
+		E31C00200000000000000001 /* ExplicitChoicesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplicitChoicesUITests.swift; sourceTree = "<group>"; };
+		E31C00100000000000000001 /* ExplicitChoicesDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplicitChoicesDemoView.swift; sourceTree = "<group>"; };
 		F7A9DDF86186F33EFD83DD09 /* SectionPagesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionPagesUITests.swift; sourceTree = "<group>"; };
 		3EE983C473600F33059D3F9E /* SectionPagesDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionPagesDemoView.swift; sourceTree = "<group>"; };
 		04AB8C5008A9C47D58CE7475 /* FormKitSwiftDemo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FormKitSwiftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +69,7 @@
 			children = (
 				E13A9F180633733506391117 /* ControlledFocusUITests.swift */,
 				28AFF836A7234189B750CF0B /* TextAreaUITests.swift */,
+				E31C00200000000000000001 /* ExplicitChoicesUITests.swift */,
 				B3F9156D268F25015FD63EAC /* PickerLayoutUITests.swift */,
 				F7A9DDF86186F33EFD83DD09 /* SectionPagesUITests.swift */,
 			);
@@ -76,6 +81,7 @@
 			children = (
 				FC0C4CEBE2AD09D4FB592A3A /* ControlledFocusDemoView.swift */,
 				3BE648FE97534F13AA641A12 /* TextAreaDemoView.swift */,
+				E31C00100000000000000001 /* ExplicitChoicesDemoView.swift */,
 				758A1BC341341C4E3B8DBDEA /* DemoContentView.swift */,
 				F15F4C9601E92F8A4086731F /* DemoSchemas.swift */,
 				278DEF029F4DBB5E7BBC7035 /* FormKitSwiftDemoApp.swift */,
@@ -200,6 +206,7 @@
 			files = (
 				1B5F9869C0830DF9D01FB478 /* ControlledFocusUITests.swift in Sources */,
 				F7A49FCBDF45436AA346200E /* TextAreaUITests.swift in Sources */,
+				E31C00200000000000000002 /* ExplicitChoicesUITests.swift in Sources */,
 				5F94A3B21A647214F139A470 /* PickerLayoutUITests.swift in Sources */,
 				64B636C587D7BFFFA9FBA433 /* SectionPagesUITests.swift in Sources */,
 			);
@@ -211,6 +218,7 @@
 			files = (
 				4312386199F6F243B59FC66E /* ControlledFocusDemoView.swift in Sources */,
 				431F6D37EDB14D0FB826D4C1 /* TextAreaDemoView.swift in Sources */,
+				E31C00100000000000000002 /* ExplicitChoicesDemoView.swift in Sources */,
 				4A10DB2D7A6819A1BFC6D258 /* DemoContentView.swift in Sources */,
 				991FDE561C96A64DBB2BAEEB /* DemoSchemas.swift in Sources */,
 				AFDE6FDD8B453844AB213B8B /* FormKitSwiftDemoApp.swift in Sources */,

@@ -208,7 +208,10 @@ extension FormKitContainerView {
                 set: { session.setSelectedEnumChoiceID($0, for: field) }
             )
         ) {
-            if !field.isRequired {
+            if !field.isRequired || (session.requiresExplicitEnumSelection
+                && field.supportsExplicitEnumSelection
+                && session.selectedEnumChoiceID(for: field) == nil)
+            {
                 Text(options.labels.notSet).tag(String?.none)
             }
             ForEach(field.enumOptions) { choice in

@@ -34,8 +34,8 @@ extension FormKitRenderer {
 
         var merged = resolvedSchema
         for (key, value) in schemaObject where key != "$ref" {
-            if key == "x-formkit-option-color-map" {
-                merged[key] = mergeOptionColorMaps(merged[key], value)
+            if key == "x-formkit-option-color-map" || key == "x-formkit-option-label-map" {
+                merged[key] = mergeOptionMaps(merged[key], value)
             } else if let existingObject = merged[key]?.object,
                let overlayObject = value.object
             {

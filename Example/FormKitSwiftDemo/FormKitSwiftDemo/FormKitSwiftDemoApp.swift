@@ -6,6 +6,8 @@ struct FormKitSwiftDemoApp: App {
         WindowGroup {
             if ProcessInfo.processInfo.arguments.contains("-UITEST_TEXT_AREA") {
                 TextAreaDemoView()
+            } else if ProcessInfo.processInfo.arguments.contains("-UITEST_EXPLICIT_CHOICES") {
+                ExplicitChoicesDemoView()
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_CONTROLLED_FOCUS") {
                 ControlledFocusDemoView()
             } else if ProcessInfo.processInfo.arguments.contains("-UITEST_ROW_REMOVAL") {
