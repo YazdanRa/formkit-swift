@@ -17,7 +17,7 @@ enum FormKitComponentRegistry {
                 title: context.field.title,
                 selection: FormKitDynamicOptionsContext.field(context).selection(canSelect: source.canSelect),
                 savedOptions: source.savedOptions,
-                isRequired: context.field.isRequired,
+                isRequired: FormKitDynamicOptionsContext.field(context).requiresSelection,
                 isEditingLocked: context.isEditingLocked || context.field.isDisabled,
                 provider: source.provider
             ))

@@ -32,6 +32,13 @@ public enum FormKitDynamicOptionsContext {
 
     public var selectedIDs: [String] { selection().ids }
 
+    var requiresSelection: Bool {
+        switch self {
+        case .field(let context): context.field.isRequired && !context.field.allowsNull
+        case .arraySection(let context): context.descriptor.minItems > 0
+        }
+    }
+
     func selection(canSelect: @escaping @MainActor (String) -> Bool = { _ in true }) -> FormKitDynamicSelection {
         switch self {
         case .field(let context):
@@ -67,7 +74,7 @@ public enum FormKitDynamicOptionsContext {
                     guard let section = context.session.renderPlan.sections.first(where: {
                         $0.pointer == context.section.pointer && $0.isArraySection
                     }) else { return [] }
-                    return context.session.arrayValue(for: section)?.compactMap(\.string) ?? []
+                    return context.session.arrayValue(for: section)?.compactMap(\.string).filter { !$0.isEmpty } ?? []
                 },
                 set: { ids in
                     guard !context.isEditingLocked,
@@ -110,7 +117,7 @@ struct FormKitDynamicOptionsArraySection: View {
                 title: context.section.title,
                 selection: FormKitDynamicOptionsContext.arraySection(context).selection(canSelect: source.canSelect),
                 savedOptions: source.savedOptions,
-                isRequired: context.descriptor.minItems > 0,
+                isRequired: FormKitDynamicOptionsContext.arraySection(context).requiresSelection,
                 maximumSelectionCount: context.descriptor.maxItems,
                 isEditingLocked: context.isEditingLocked || context.section.isDisabled,
                 provider: source.provider

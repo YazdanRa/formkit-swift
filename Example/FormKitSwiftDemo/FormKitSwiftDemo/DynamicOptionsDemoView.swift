@@ -165,7 +165,7 @@ struct DynamicOptionsDemoView: View {
     {
       "type":"object", "x-formkit-layout":"section-pages",
       "properties":{
-        "request":{"type":"object","title":"Request","x-formkit-order":0,"properties":{
+        "request":{"type":"object","title":"Request","x-formkit-order":0,"required":["contact"],"properties":{
           "contact":{"type":["string","null"],"title":"Contact","x-formkit-ui-component":"dynamic-options"}
         }},
         "assets":{"type":"object","title":"Assets","x-formkit-order":1,"properties":{

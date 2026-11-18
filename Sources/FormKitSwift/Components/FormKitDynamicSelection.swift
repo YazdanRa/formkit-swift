@@ -11,7 +11,8 @@ public enum FormKitDynamicSelection {
         case .single(let binding):
             return binding.wrappedValue.map { [$0] } ?? []
         case .multiple(let binding):
-            return binding.wrappedValue
+            var seen: Set<String> = []
+            return binding.wrappedValue.filter { seen.insert($0).inserted }
         }
     }
 
@@ -26,9 +27,11 @@ public enum FormKitDynamicSelection {
         switch self {
         case .single:
             return true
-        case .multiple(let binding):
-            return binding.wrappedValue.contains(id)
-                || maximumSelectionCount.map { binding.wrappedValue.count < $0 } ?? true
+        case .multiple:
+            let current = ids
+            return current.contains(id)
+                || (maximumSelectionCount == 1 && current.count == 1)
+                || maximumSelectionCount.map { current.count < $0 } ?? true
         }
     }
 
@@ -38,12 +41,14 @@ public enum FormKitDynamicSelection {
         case .single(let binding):
             binding.wrappedValue = id
         case .multiple(let binding):
-            let current = binding.wrappedValue
+            let current = ids
             if current.contains(id) {
                 let remaining = current.filter { $0 != id }
                 if !isRequired || !remaining.isEmpty {
                     binding.wrappedValue = remaining
                 }
+            } else if maximumSelectionCount == 1, current.count == 1 {
+                binding.wrappedValue = [id]
             } else {
                 binding.wrappedValue = current + [id]
             }
