@@ -2,17 +2,18 @@ import FormKitSwift
 import SwiftUI
 
 struct DynamicOptionsDemoView: View {
-    @State private var issuedTo: String? = "company-contact:saved"
+    @State private var contactSelection: String? = "contact-saved"
     @State private var equipment: [String] = []
     @State private var isLocked = false
     @State private var catalogScope = 0
     @State private var oldScopeReturned = false
+    @State private var cachedContactOptions: [FormKitDynamicOption] = []
     @State private var registrySession: FormKitSession
 
     private let contacts = [
-        FormKitDynamicOption(id: "company-contact:101", label: "Alex Morgan", detail: "Northline Engineering"),
-        FormKitDynamicOption(id: "company-contact:102", label: "Alex Morgan", detail: "City Mechanical"),
-        FormKitDynamicOption(id: "company-contact:103", label: "Jamie Patel", detail: "Contact #103")
+        FormKitDynamicOption(id: "contact-101", label: "Alex Morgan", detail: "Northline Engineering"),
+        FormKitDynamicOption(id: "contact-102", label: "Alex Morgan", detail: "City Mechanical"),
+        FormKitDynamicOption(id: "contact-103", label: "Jamie Patel", detail: "Contact #103")
     ]
     private let equipmentOptions = [
         FormKitDynamicOption(id: "equipment:excavator", label: "Excavator"),
@@ -21,7 +22,11 @@ struct DynamicOptionsDemoView: View {
     ]
 
     init() {
-        _registrySession = State(initialValue: FormKitRenderer().makeFormSession(schemaJSON: Self.registrySchema))
+        let instance = ProcessInfo.processInfo.arguments.contains("-DYNAMIC_HYDRATE_ON_LOAD")
+            ? #"{"request":{"contact":"saved-opaque-contact"}}"# : nil
+        _registrySession = State(initialValue: FormKitRenderer().makeFormSession(
+            schemaJSON: Self.registrySchema, instanceJSON: instance
+        ))
     }
 
     var body: some View {
@@ -39,18 +44,18 @@ struct DynamicOptionsDemoView: View {
 
     private var standaloneForm: some View {
         Form {
-            Section("Issued to") {
+            Section("Contact") {
                 FormKitDynamicOptionsPicker(
-                    title: "Issued to",
-                    selection: .single($issuedTo),
-                    savedOptions: [.init(id: "company-contact:saved", label: "Saved contact")],
+                    title: "Contact",
+                    selection: .single($contactSelection),
+                    savedOptions: [.init(id: "contact-saved", label: "Saved contact")],
                     isEditingLocked: isLocked,
                     provider: { [scope = catalogScope] search, cursor in
                         try await contactPage(scope: scope, search: search, cursor: cursor)
                     }
                 )
                 .id(catalogScope)
-                .accessibilityIdentifier("demo_issued_to_picker")
+                .accessibilityIdentifier("demo_contact_picker")
             }
             Section("Equipment") {
                 FormKitDynamicOptionsPicker(
@@ -69,7 +74,7 @@ struct DynamicOptionsDemoView: View {
                     Text(verbatim: "\(catalogScope):\(oldScopeReturned)")
                         .accessibilityIdentifier("demo_catalog_scope")
                 }
-                Text(issuedTo ?? "none").accessibilityIdentifier("demo_issued_to_value")
+                Text(contactSelection ?? "none").accessibilityIdentifier("demo_contact_value")
                 Text(equipment.joined(separator: ",")).accessibilityIdentifier("demo_equipment_value")
             }
         }
@@ -77,7 +82,12 @@ struct DynamicOptionsDemoView: View {
 
     private var registryForm: some View {
         VStack {
-            FormKitView(session: registrySession, options: FormKitOptions(dynamicOptions: registrySource))
+            FormKitView(
+                session: registrySession,
+                options: FormKitOptions(dynamicOptions: { [saved = cachedContactOptions] context in
+                    registrySource(context, savedOptions: saved)
+                })
+            )
             Text(registrySession.currentInstanceJSON)
                 .font(.caption.monospaced())
                 .accessibilityIdentifier("demo_dynamic_json")
@@ -85,11 +95,14 @@ struct DynamicOptionsDemoView: View {
         }
     }
 
-    private func registrySource(_ context: FormKitDynamicOptionsContext) -> FormKitDynamicOptionsSource? {
+    private func registrySource(
+        _ context: FormKitDynamicOptionsContext,
+        savedOptions: [FormKitDynamicOption]
+    ) -> FormKitDynamicOptionsSource? {
         switch context.pointer {
         case "#/request/contact":
-            FormKitDynamicOptionsSource(provider: { search, cursor in
-                try await page(contacts, search: search, cursor: cursor)
+            FormKitDynamicOptionsSource(savedOptions: savedOptions, provider: { search, cursor in
+                try await registryContactPage(search: search, cursor: cursor)
             })
         case "#/assets/equipment":
             FormKitDynamicOptionsSource(provider: { search, cursor in
@@ -97,6 +110,14 @@ struct DynamicOptionsDemoView: View {
             })
         default: nil
         }
+    }
+
+    private func registryContactPage(search: String, cursor: String?) async throws -> FormKitDynamicOptionsPage {
+        if ProcessInfo.processInfo.arguments.contains("-DYNAMIC_HYDRATE_ON_LOAD"), cachedContactOptions.isEmpty {
+            await Task.yield()
+            cachedContactOptions = [.init(id: "saved-opaque-contact", label: "Hydrated contact", detail: "New company")]
+        }
+        return try await page(contacts, search: search, cursor: cursor)
     }
 
     private func contactPage(scope: Int, search: String, cursor: String?) async throws -> FormKitDynamicOptionsPage {

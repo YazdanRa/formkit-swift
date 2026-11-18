@@ -160,8 +160,8 @@ final class FormKitDynamicOptionsPickerTests: XCTestCase {
     }
 
     func testDuplicateNamesUseTypedIDsAcrossPagesAndSavedSelections() async {
-        let first = FormKitDynamicOption(id: "company-contact:101", label: "Alex Example")
-        let second = FormKitDynamicOption(id: "company-contact:102", label: "Alex Example")
+        let first = FormKitDynamicOption(id: "contact-101", label: "Alex Example")
+        let second = FormKitDynamicOption(id: "contact-102", label: "Alex Example")
         let model = FormKitDynamicOptionsPickerModel { _, cursor in
             FormKitDynamicOptionsPage(
                 options: cursor == nil ? [first] : [second],
@@ -172,8 +172,8 @@ final class FormKitDynamicOptionsPickerTests: XCTestCase {
         XCTAssertEqual(model.labels.displayLabel(for: first, savedOptions: []), "Alex Example")
         XCTAssertTrue(model.labels.isDuplicate(first, savedOptions: [second]))
         await model.loadMore()
-        XCTAssertEqual(model.labels.displayLabel(for: first, savedOptions: []), "Alex Example, company-contact:101")
-        XCTAssertEqual(model.labels.displayLabel(for: second, savedOptions: []), "Alex Example, company-contact:102")
+        XCTAssertEqual(model.labels.displayLabel(for: first, savedOptions: []), "Alex Example, contact-101")
+        XCTAssertEqual(model.labels.displayLabel(for: second, savedOptions: []), "Alex Example, contact-102")
         XCTAssertEqual(model.options.map(\.label), ["Alex Example", "Alex Example"])
         await model.startSearch("another search")
         XCTAssertTrue(model.labels.isDuplicate(first, savedOptions: []))
@@ -206,12 +206,12 @@ final class FormKitDynamicOptionsPickerTests: XCTestCase {
 
     func testStaleSavedLabelDoesNotMaskDuplicateProviderNames() {
         let labels = FormKitDynamicOptionsPickerLabels()
-        let first = FormKitDynamicOption(id: "company-contact:101", label: "Alex")
-        let second = FormKitDynamicOption(id: "company-contact:102", label: "Alex")
+        let first = FormKitDynamicOption(id: "contact-101", label: "Alex")
+        let second = FormKitDynamicOption(id: "contact-102", label: "Alex")
         let saved = [FormKitDynamicOption(id: first.id, label: "Old name")]
         labels.remember([first, second])
-        XCTAssertEqual(labels.displayLabel(for: first, savedOptions: saved), "Alex, company-contact:101")
-        XCTAssertEqual(labels.displayLabel(for: second, savedOptions: saved), "Alex, company-contact:102")
+        XCTAssertEqual(labels.displayLabel(for: first, savedOptions: saved), "Alex, contact-101")
+        XCTAssertEqual(labels.displayLabel(for: second, savedOptions: saved), "Alex, contact-102")
         XCTAssertEqual(labels.option(for: first.id, savedOptions: saved).label, "Old name")
     }
 
@@ -284,24 +284,24 @@ extension FormKitDynamicOptionsPickerTests {
     }
 
     func testPublishedFiftyOptionBoundaryAndOversizedHydrationPreserveAllIDs() {
-        var value = (1...49).map { "company-user:\($0)" }
+        var value = (1...49).map { "member-\($0)" }
         var writes = 0
         let selection = FormKitDynamicSelection.multiple(Binding(get: { value }, set: {
             writes += 1
             value = $0
         }))
-        selection.choose("company-user:50", isRequired: false, maximumSelectionCount: 50)
+        selection.choose("member-50", isRequired: false, maximumSelectionCount: 50)
         XCTAssertEqual(value.count, 50)
         XCTAssertEqual(writes, 1)
-        selection.choose("company-user:51", isRequired: false, maximumSelectionCount: 50)
+        selection.choose("member-51", isRequired: false, maximumSelectionCount: 50)
         XCTAssertEqual(value.count, 50)
         XCTAssertEqual(writes, 1)
-        value = (1...52).map { "company-user:\($0)" }
+        value = (1...52).map { "member-\($0)" }
         let hydrated = selection.ids
         XCTAssertEqual(hydrated.count, 52)
         XCTAssertEqual(writes, 1)
         XCTAssertFalse(selection.canChoose("new-id", maximumSelectionCount: 50))
-        selection.choose("company-user:52", isRequired: true, maximumSelectionCount: 50)
+        selection.choose("member-52", isRequired: true, maximumSelectionCount: 50)
         XCTAssertEqual(value, Array(hydrated.dropLast()))
         XCTAssertEqual(writes, 2)
         XCTAssertFalse(selection.canChoose("new-id", maximumSelectionCount: 50))

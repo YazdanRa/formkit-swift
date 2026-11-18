@@ -7,13 +7,13 @@ final class FormKitComponentTests: XCTestCase {
         let session = FormKitRenderer().makeFormSession(
             schemaJSON: """
             {
-              "type": "object", "required": ["issued_to", "cc"],
+              "type": "object", "required": ["contact", "observers"],
               "properties": {
-                "issued_to": {
+                "contact": {
                   "type": "string", "minLength": 1,
                   "x-formkit-ui-component": "dynamic-options"
                 },
-                "cc": {
+                "observers": {
                   "type": "array", "minItems": 1, "maxItems": 50,
                   "items": { "type": "string", "minLength": 1 },
                   "x-formkit-ui-component": "dynamic-options"
@@ -22,17 +22,17 @@ final class FormKitComponentTests: XCTestCase {
             }
             """,
             instanceJSON: """
-            {"issued_to":null,"cc":[]}
+            {"contact":null,"observers":[]}
             """
         )
 
         XCTAssertFalse(session.validate())
-        let person = tryUnwrapField("issued_to", in: session)
-        let recipients = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == "cc" })
-        session.setStringValue("company-contact:7", for: person)
-        session.setArrayValue([.string("company-contact:8")], for: recipients)
+        let person = tryUnwrapField("contact", in: session)
+        let recipients = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == "observers" })
+        session.setStringValue("contact-7", for: person)
+        session.setArrayValue([.string("contact-8")], for: recipients)
         XCTAssertTrue(session.validate())
-        let currentRecipients = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == "cc" })
+        let currentRecipients = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == "observers" })
         session.setArrayValue([], for: currentRecipients)
         XCTAssertFalse(session.validate())
     }
@@ -43,12 +43,12 @@ final class FormKitComponentTests: XCTestCase {
             {
               "type": "object",
               "properties": {
-                "issued_to": { "type": "string", "x-formkit-ui-component": "dynamic-options" },
-                "assigned_to": {
+                "contact": { "type": "string", "x-formkit-ui-component": "dynamic-options" },
+                "equipment": {
                   "type": "array", "items": { "type": "string" },
                   "x-formkit-ui-component": "dynamic-options"
                 },
-                "cc": {
+                "observers": {
                   "type": "array", "items": { "type": "string" },
                   "x-formkit-ui-component": "dynamic-options"
                 }
@@ -56,21 +56,21 @@ final class FormKitComponentTests: XCTestCase {
             }
             """,
             instanceJSON: """
-            {"issued_to":"company-contact:7","assigned_to":["company-user:8"],"cc":["company-contact:9"]}
+            {"contact":"contact-7","equipment":["equipment-8"],"observers":["contact-9"]}
             """
         )
 
         XCTAssertEqual(FormKitUIComponent.dynamicOptions.rawValue, "dynamic-options")
-        XCTAssertEqual(tryUnwrapField("issued_to", in: session).uiComponent, .dynamicOptions)
-        for key in ["assigned_to", "cc"] {
+        XCTAssertEqual(tryUnwrapField("contact", in: session).uiComponent, .dynamicOptions)
+        for key in ["equipment", "observers"] {
             let section = try XCTUnwrap(session.renderPlan.sections.first { $0.propertyKey == key })
             XCTAssertEqual(section.uiComponent, .dynamicOptions)
         }
         XCTAssertTrue(session.validate())
         let instance = try decodeJSONObject(session.currentInstanceJSON)
-        XCTAssertEqual(instance["issued_to"] as? String, "company-contact:7")
-        XCTAssertEqual(instance["assigned_to"] as? [String], ["company-user:8"])
-        XCTAssertEqual(instance["cc"] as? [String], ["company-contact:9"])
+        XCTAssertEqual(instance["contact"] as? String, "contact-7")
+        XCTAssertEqual(instance["equipment"] as? [String], ["equipment-8"])
+        XCTAssertEqual(instance["observers"] as? [String], ["contact-9"])
     }
 
     func testUIComponentAnnotationsPropagateToFieldsAndSections() throws {

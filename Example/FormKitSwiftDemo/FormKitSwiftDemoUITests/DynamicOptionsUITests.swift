@@ -4,14 +4,14 @@ final class DynamicOptionsUITests: XCTestCase {
     @MainActor
     func testSingleSelectionUsesTypedIdentifierAndCanClear() {
         let app = launch()
-        let picker = app.buttons["demo_issued_to_picker"]
+        let picker = app.buttons["demo_contact_picker"]
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
         XCTAssertEqual(picker.value as? String, "Saved contact")
         picker.tap()
 
-        let sameNameContact = app.buttons["formkit_dynamic_option_company-contact:102"]
+        let sameNameContact = app.buttons["formkit_dynamic_option_contact-102"]
         XCTAssertTrue(sameNameContact.waitForExistence(timeout: 5))
-        let firstContact = app.buttons["formkit_dynamic_option_company-contact:101"]
+        let firstContact = app.buttons["formkit_dynamic_option_contact-101"]
         XCTAssertTrue(firstContact.exists)
         XCTAssertEqual(firstContact.label, "Alex Morgan, Northline Engineering")
         XCTAssertEqual(sameNameContact.label, "Alex Morgan, City Mechanical")
@@ -19,7 +19,7 @@ final class DynamicOptionsUITests: XCTestCase {
         XCTAssertTrue(sameNameContact.staticTexts["City Mechanical"].exists)
         capture("dynamic-contact-companies", app: app)
         sameNameContact.tap()
-        waitForValue("company-contact:102", id: "demo_issued_to_value", in: app)
+        waitForValue("contact-102", id: "demo_contact_value", in: app)
         XCTAssertEqual(picker.value as? String, "Alex Morgan, City Mechanical")
 
         picker.tap()
@@ -27,7 +27,7 @@ final class DynamicOptionsUITests: XCTestCase {
         XCTAssertTrue(clear.waitForExistence(timeout: 5))
         clear.tap()
         app.buttons["formkit_dynamic_done"].tap()
-        waitForValue("none", id: "demo_issued_to_value", in: app)
+        waitForValue("none", id: "demo_contact_value", in: app)
     }
 
     @MainActor
@@ -93,26 +93,26 @@ final class DynamicOptionsUITests: XCTestCase {
     @MainActor
     func testSavedSelectionSurvivesLookupFailure() {
         let app = launch(arguments: ["-DYNAMIC_LOOKUP_FAILS"])
-        app.buttons["demo_issued_to_picker"].tap()
+        app.buttons["demo_contact_picker"].tap()
         XCTAssertTrue(app.staticTexts["Options could not be loaded."].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["formkit_dynamic_option_company-contact:saved"].exists)
+        XCTAssertTrue(app.buttons["formkit_dynamic_option_contact-saved"].exists)
         capture("dynamic-saved-option", app: app)
         app.buttons["formkit_dynamic_done"].tap()
-        waitForValue("company-contact:saved", id: "demo_issued_to_value", in: app)
-        XCTAssertEqual(app.buttons["demo_issued_to_picker"].value as? String, "Saved contact")
+        waitForValue("contact-saved", id: "demo_contact_value", in: app)
+        XCTAssertEqual(app.buttons["demo_contact_picker"].value as? String, "Saved contact")
     }
 
     @MainActor
     func testLockChangeDisablesSelectionWhileSheetIsOpen() {
         let app = launch(arguments: ["-DYNAMIC_LOCK_ON_LOAD"])
-        app.buttons["demo_issued_to_picker"].tap()
-        let contact = app.buttons["formkit_dynamic_option_company-contact:101"]
+        app.buttons["demo_contact_picker"].tap()
+        let contact = app.buttons["formkit_dynamic_option_contact-101"]
         XCTAssertTrue(contact.waitForExistence(timeout: 5))
         let disabled = NSPredicate(format: "isEnabled == false")
         expectation(for: disabled, evaluatedWith: contact)
         waitForExpectations(timeout: 5)
         app.buttons["formkit_dynamic_done"].tap()
-        waitForValue("company-contact:saved", id: "demo_issued_to_value", in: app)
+        waitForValue("contact-saved", id: "demo_contact_value", in: app)
     }
 
     @MainActor
@@ -121,10 +121,10 @@ final class DynamicOptionsUITests: XCTestCase {
         let contact = app.buttons["Contact"]
         XCTAssertTrue(contact.waitForExistence(timeout: 5))
         contact.tap()
-        let option = app.buttons["formkit_dynamic_option_company-contact:102"]
+        let option = app.buttons["formkit_dynamic_option_contact-102"]
         XCTAssertTrue(option.waitForExistence(timeout: 5))
         option.tap()
-        waitForJSON("\"contact\" : \"company-contact:102\"", in: app)
+        waitForJSON("\"contact\" : \"contact-102\"", in: app)
         waitForJSON("\"request\" : {", in: app)
         app.buttons["formkit_page_next"].tap()
         let equipment = app.buttons["Equipment"]
@@ -154,7 +154,7 @@ final class DynamicOptionsUITests: XCTestCase {
     @MainActor
     func testHostScopeRemountDismissesSheetAndRejectsOldOptions() {
         let app = launch(arguments: ["-DYNAMIC_SCOPE_CHANGE"])
-        let picker = app.buttons["demo_issued_to_picker"]
+        let picker = app.buttons["demo_contact_picker"]
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
         picker.tap()
         waitForValue("1:true", id: "demo_catalog_scope", in: app)
@@ -162,14 +162,45 @@ final class DynamicOptionsUITests: XCTestCase {
             predicate: NSPredicate(format: "exists == false"), object: app.buttons["formkit_dynamic_done"]
         )
         XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed)
-        waitForValue("company-contact:saved", id: "demo_issued_to_value", in: app)
+        waitForValue("contact-saved", id: "demo_contact_value", in: app)
         picker.tap()
         let current = app.buttons["formkit_dynamic_option_new-scope-option"]
         XCTAssertTrue(current.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["formkit_dynamic_option_old-scope-option"].exists)
         XCTAssertFalse(app.staticTexts["Old scope option"].exists)
         current.tap()
-        waitForValue("new-scope-option", id: "demo_issued_to_value", in: app)
+        waitForValue("new-scope-option", id: "demo_contact_value", in: app)
+    }
+
+    @MainActor
+    func testRegistryHydratesMountedSavedOptionWithoutChangingItsIdentifier() {
+        let app = launch(arguments: ["-DYNAMIC_REGISTRY", "-DYNAMIC_HYDRATE_ON_LOAD"])
+        let contact = app.buttons["Contact"]
+        XCTAssertTrue(contact.waitForExistence(timeout: 5))
+        XCTAssertEqual(contact.value as? String, "saved-opaque-contact")
+        let json = app.staticTexts["demo_dynamic_json"]
+        let originalJSON = json.label
+        XCTAssertTrue(originalJSON.contains("\"contact\" : \"saved-opaque-contact\""))
+        contact.tap()
+        let savedRows = app.buttons.matching(identifier: "formkit_dynamic_option_saved-opaque-contact")
+        let saved = savedRows.firstMatch
+        XCTAssertTrue(saved.waitForExistence(timeout: 5))
+        let hydrated = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label == %@", "Hydrated contact, New company"), object: saved
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [hydrated], timeout: 5), .completed)
+        XCTAssertTrue(saved.isSelected)
+        XCTAssertEqual(savedRows.count, 1)
+        let browse = app.buttons["formkit_dynamic_option_contact-101"]
+        XCTAssertTrue(browse.waitForExistence(timeout: 5))
+        XCTAssertFalse(browse.isSelected)
+        capture("dynamic-registry-hydrated-saved-option", app: app)
+        app.buttons["formkit_dynamic_done"].tap()
+        let summary = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "Hydrated contact, New company"), object: contact
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [summary], timeout: 5), .completed)
+        XCTAssertEqual(json.label, originalJSON)
     }
 
     @MainActor

@@ -88,8 +88,24 @@ struct FormKitDynamicOptionsArraySection: View {
     let context: FormKitArraySectionComponentContext
     let source: FormKitDynamicOptionsSource
 
+    var validationMessages: [String] {
+        let session = context.session
+        guard let section = session.renderPlan.sections.first(where: {
+            $0.pointer == context.section.pointer && $0.isArraySection
+        }), section.isVisible, section.shouldSerialize else { return [] }
+        let prefix = section.pointer + "/"
+        let itemMessages = session.orderedFields.flatMap { field -> [String] in
+            guard field.pointer.hasPrefix(prefix),
+                  field.isVisible, field.shouldSerialize else { return [] }
+            return session.errorMessages(for: field)
+        }
+        var seen: Set<String> = []
+        return (session.errorMessages(for: section) + itemMessages).filter { seen.insert($0).inserted }
+    }
+
     var body: some View {
-        Section {
+        let messages = validationMessages
+        return Section {
             FormKitDynamicOptionsPicker(
                 title: context.section.title,
                 selection: FormKitDynamicOptionsContext.arraySection(context).selection(canSelect: source.canSelect),
@@ -99,8 +115,8 @@ struct FormKitDynamicOptionsArraySection: View {
                 isEditingLocked: context.isEditingLocked || context.section.isDisabled,
                 provider: source.provider
             )
-            if !context.errors.isEmpty {
-                FormKitMessageRow(message: context.errors.joined(separator: "\n"), color: context.style.destructive)
+            if !messages.isEmpty {
+                FormKitMessageRow(message: messages.joined(separator: "\n"), color: context.style.destructive)
                     .accessibilityIdentifier("\(context.section.id)_error")
             }
         } header: {
