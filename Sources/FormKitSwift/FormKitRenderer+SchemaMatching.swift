@@ -48,7 +48,10 @@ extension FormKitRenderer {
             from: rawDefaultValue,
             scalarType: scalarType,
             allowsNull: allowsNull,
-            normalizesEmptyText: !declaredValues.contains { $0 == rawDefaultValue }
+            normalizesEmptyText: !FormKitDynamicOptionsScalarCompatibility.supports(
+                component: uiComponent(from: schemaObject), scalarType: scalarType,
+                hasValueConstraint: !declaredValues.isEmpty || schemaObject["const"] != nil
+            ) && !declaredValues.contains { $0 == rawDefaultValue }
         ) {
             return jsonValue(from: defaultValue)
         }

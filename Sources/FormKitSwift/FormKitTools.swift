@@ -167,7 +167,9 @@ public extension FormKitSession {
             return .applied(FormKitToolEdit(pointer: publicPointer, operation: .clear))
         }
 
-        guard primitiveValue(for: field).map(hasConcreteToolValue) == true else {
+        guard primitiveValue(for: field).map({
+            (field.usesDynamicOptions && !field.isScalarArrayItem) || hasConcreteToolValue($0)
+        }) == true else {
             return rejected(edit, reason: "no_change", message: "The field is already empty.")
         }
 
@@ -341,6 +343,7 @@ public extension FormKitSession {
         for field in renderPlan.fields where field.isVisible {
             messages.append(contentsOf: errorMessages(for: field))
         }
+        messages += visibleArraySections.flatMap { errorMessages(for: $0) }
         return Array(NSOrderedSet(array: messages)) as? [String] ?? messages
     }
 
@@ -348,20 +351,20 @@ public extension FormKitSession {
         for fields: [FormKitToolField],
         currentValues: [String: FormKitJSONValue]
     ) -> String {
+        let arrayItemPointers = Set(orderedFields.filter(isDynamicOptionsArrayItem)
+            .map(\.pointer).map(publicToolPointer(for:)))
         let missingRequiredTitles = fields.compactMap { field -> String? in
-            guard field.isVisible, field.isRequired else {
+            guard field.isVisible, field.isRequired, !arrayItemPointers.contains(field.pointer) else {
                 return nil
             }
             if case .string(let value) = currentValues[field.pointer],
-               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               self.field(forToolPointer: field.pointer).map({ !preservesDynamicOptionID(for: $0) }) ?? true
             {
                 return field.title
             }
-            guard currentValues[field.pointer] == nil else {
-                return nil
-            }
-            return field.title
-        }
+            return currentValues[field.pointer] == nil ? field.title : nil
+        } + missingDynamicOptionsArrays(in: makeInstanceJSONValue()).map(qualifiedTitle(for:))
         return missingRequiredTitles.isEmpty
             ? "All currently visible required fields are filled."
             : "Missing required fields: \(missingRequiredTitles.joined(separator: ", "))."

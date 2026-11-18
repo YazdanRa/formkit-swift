@@ -135,6 +135,9 @@ extension FormKitContainerView {
         }
 
         if options.mode == .editable {
+            if section.offersEmptyDynamicOptionsSelection {
+                emptyDynamicOptionsButton(section)
+            }
             arrayAddButton(section, descriptor: descriptor)
         }
 
@@ -143,6 +146,21 @@ extension FormKitContainerView {
             FormKitMessageRow(message: arrayErrors.joined(separator: "\n"), color: options.style.destructive)
                 .accessibilityIdentifier("\(section.id)_error")
         }
+    }
+
+    private func emptyDynamicOptionsButton(_ section: FormKitRenderPlan.SectionDescriptor) -> some View {
+        Button {
+            guard options.mode == .editable, !isEditingLocked, !section.isDisabled else { return }
+            session.setArrayValue([], for: section)
+        } label: {
+            Text("Clear selection", bundle: .module)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        }
+        .disabled(section.isDisabled || isEditingLocked)
+        .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .accessibilityIdentifier("\(section.id)_clear_button")
     }
 
     private func arrayAddButton(

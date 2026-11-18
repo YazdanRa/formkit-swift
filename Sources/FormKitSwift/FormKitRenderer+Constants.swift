@@ -59,6 +59,7 @@ extension FormKitRenderer {
         let itemSchema: [String: FormKitJSONValue]
         let itemType: SupportedSchemaType
         let itemScalarType: FormKitFieldDescriptor.ScalarType?
+        let usesDynamicOptions: Bool
         let pointer: String
         let order: Int
         let title: String
@@ -154,6 +155,11 @@ extension FormKitRenderer {
         case array
         case scalar(PrimitiveSchemaType, allowsNull: Bool)
         case unsupported
+
+        var allowsNull: Bool {
+            guard case .scalar(_, let allowsNull) = self else { return false }
+            return allowsNull
+        }
     }
 
     enum PrimitiveSchemaType: Equatable {

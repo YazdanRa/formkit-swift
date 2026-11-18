@@ -86,7 +86,10 @@ extension FormKitRenderer {
             from: request.schemaObject["default"],
             scalarType: fieldScalarType,
             allowsNull: allowsNull,
-            normalizesEmptyText: !options.contains {
+            normalizesEmptyText: !FormKitDynamicOptionsScalarCompatibility.supports(
+                component: uiComponent(from: request.schemaObject), scalarType: fieldScalarType,
+                hasValueConstraint: !options.isEmpty || request.schemaObject["const"] != nil
+            ) && !options.contains {
                 jsonValue(from: $0.value) == request.schemaObject["default"]
             }
         )
@@ -221,23 +224,24 @@ extension FormKitRenderer {
         instance: FormKitJSONValue?
     ) -> [String: FormKitFieldDescriptor.PrimitiveValue?] {
         renderPlan.fields.reduce(into: [:]) { result, field in
-            let seededValue = seededValue(for: field, instance: instance)
+            let seededValue = seededValue(for: field, instance: instance) {
+                renderPlan.dynamicOptionsRowSeed(for: field)
+            }
             result[field.id] = seededValue
         }
     }
 
     func seededValue(
         for field: FormKitFieldDescriptor,
-        instance: FormKitJSONValue?
+        instance: FormKitJSONValue?,
+        rowSeed: () -> FormKitJSONValue? = { nil }
     ) -> FormKitFieldDescriptor.PrimitiveValue? {
-        if let instance,
-           let instanceValue = instance.value(at: JSONPointer(from: field.pointer))
-        {
+        if let instanceValue = instance?.value(at: JSONPointer(from: field.pointer)) ?? rowSeed() {
             return primitiveValue(
                 from: instanceValue,
                 scalarType: field.scalarType,
                 allowsNull: field.allowsNull,
-                normalizesEmptyText: !field.enumOptions.contains {
+                normalizesEmptyText: !field.usesDynamicOptions && !field.enumOptions.contains {
                     jsonValue(from: $0.value) == instanceValue
                 }
             )

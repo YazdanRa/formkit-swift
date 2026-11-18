@@ -102,7 +102,7 @@ public extension FormKitSession {
                     from: rawValue,
                     scalarType: field.scalarType,
                     allowsNull: field.allowsNull,
-                    normalizesEmptyText: !field.enumOptions.contains {
+                    normalizesEmptyText: !field.usesDynamicOptions && !field.enumOptions.contains {
                         jsonValue(from: $0.value) == rawValue
                     }
                 )

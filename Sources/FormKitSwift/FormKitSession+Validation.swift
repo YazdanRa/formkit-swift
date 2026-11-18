@@ -19,7 +19,14 @@ extension FormKitSession {
             let result = validator.validate(instance.jsonSchemaValue)
             if let validationErrors = result.errors {
                 for error in flatten(errors: validationErrors) {
-                    guard error.keyword != "required" else {
+                    if error.keyword == "required" {
+                        for section in missingDynamicOptionsArrays(in: instance) where section.isRequired
+                            && section.parentPointer == error.instanceLocation.description
+                            && instance.value(at: JSONPointer(from: section.pointer)) == nil
+                        {
+                            appendError(String(localized: "This field is required.", bundle: .module),
+                                        to: section.id, in: &nextArrayErrors)
+                        }
                         continue
                     }
 
@@ -65,7 +72,7 @@ extension FormKitSession {
             }
 
             let value = instance.value(at: JSONPointer(from: field.pointer))
-            let isBlank = !field.allowsNull
+            let isBlank = !preservesDynamicOptionID(for: field) && !field.allowsNull
                 && value?.string?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true
             if value == nil || isBlank {
                 result[field.id] = [String(localized: "This field is required.", bundle: .module)]

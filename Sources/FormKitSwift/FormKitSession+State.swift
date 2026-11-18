@@ -5,7 +5,7 @@ extension FormKitSession {
     func restoreConcreteValue(for field: FormKitFieldDescriptor) -> FormKitFieldDescriptor.PrimitiveValue? {
         if let seededValue = seededValue(for: field, preferInitialInstance: false, usesNullFallback: false),
            seededValue != .null,
-           !seededValue.isBlankString
+           field.usesDynamicOptions || !seededValue.isBlankString
         {
             return seededValue
         }
@@ -26,16 +26,7 @@ extension FormKitSession {
 
     func makeInstanceJSONValue() -> FormKitJSONValue {
         var rootObject: [String: FormKitJSONValue] = [:]
-        let requiredSectionPointers = Set(
-            renderPlan.sections
-                .filter(\.isRequired)
-                .filter(\.shouldSerialize)
-                .filter { !$0.isOwnedByArrayRow }
-                .map(\.pointer)
-                .filter { $0 != "#" }
-        )
-
-        for pointer in requiredSectionPointers.sorted(by: { $0.count < $1.count }) {
+        for pointer in objectSectionPointers().sorted(by: { $0.count < $1.count }) {
             ensureObjectExists(at: pointer, in: &rootObject)
         }
 
@@ -68,11 +59,7 @@ extension FormKitSession {
         restoreHiddenObjectContainers(into: &rootObject)
 
         for field in orderedFields {
-            guard shouldSerialize(field) else {
-                continue
-            }
-
-            guard let storedValue = primitiveValue(for: field) else {
+            guard shouldSerialize(field), let storedValue = primitiveValue(for: field) else {
                 continue
             }
 
@@ -86,31 +73,59 @@ extension FormKitSession {
         return .object(rootObject)
     }
 
+    private func objectSectionPointers() -> Set<String> {
+        let required = renderPlan.sections
+            .filter { $0.isRequired && $0.shouldSerialize && !$0.usesDynamicOptions && !$0.isOwnedByArrayRow }
+            .map(\.pointer)
+            .filter { $0 != "#" }
+        let supplied = includesHiddenToolFields ? suppliedInstance : initialInstance
+        let dynamicArrayParents = renderPlan.sections.compactMap { section -> String? in
+            guard section.usesDynamicOptions, section.shouldSerialize,
+                  let parent = section.parentPointer, parent != "#",
+                  supplied?.value(at: JSONPointer(from: parent))?.object != nil
+            else { return nil }
+            return parent
+        }
+        return Set(required).union(dynamicArrayParents)
+    }
+
     private func arrayRowSeed(
         _ row: FormKitArrayRowDescriptor,
         in section: FormKitRenderPlan.SectionDescriptor
     ) -> FormKitJSONValue {
-        guard includesHiddenToolFields else { return row.placeholderValue }
+        guard includesHiddenToolFields || touchedFieldIDs.contains(where: {
+            guard $0.hasPrefix(row.pointer + "/"), let field = fieldsByID[$0] else { return false }
+            return shouldRemoveFromRowSeed(field)
+        }) else { return row.placeholderValue }
         // Keep row positions available to later edits without copying hidden schema defaults.
         var seed = section.isVisible ? row.placeholderValue
             : suppliedInstance?.value(at: JSONPointer(from: row.pointer))
                 ?? (section.arrayDescriptor?.itemKind == .object ? .object([:]) : .null)
         let rowPath = Self.tokens(from: row.pointer)
-        for child in renderPlan.sections where !child.isVisible && child.pointer.hasPrefix(row.pointer + "/") {
-            let path = Array(Self.tokens(from: child.pointer).dropFirst(rowPath.count))
-            if let supplied = suppliedInstance?.value(at: JSONPointer(from: child.pointer)) {
-                insert(supplied, at: JSONPointer.pointerString(from: path), into: &seed)
-            } else {
-                seed = removingValue(from: seed, path: path)
+        if includesHiddenToolFields {
+            for child in renderPlan.sections where !child.isVisible && child.pointer.hasPrefix(row.pointer + "/") {
+                let path = Array(Self.tokens(from: child.pointer).dropFirst(rowPath.count))
+                if let supplied = suppliedInstance?.value(at: JSONPointer(from: child.pointer)) {
+                    insert(supplied, at: JSONPointer.pointerString(from: path), into: &seed)
+                } else {
+                    seed = removingValue(from: seed, path: path)
+                }
             }
         }
         for field in orderedFields where field.pointer == row.pointer || field.pointer.hasPrefix(row.pointer + "/") {
-            guard !shouldSerialize(field)
-                || (touchedFieldIDs.contains(field.id) && primitiveValue(for: field) == nil) else { continue }
+            guard shouldRemoveFromRowSeed(field) else { continue }
             let path = Array(Self.tokens(from: field.pointer).dropFirst(rowPath.count))
             seed = path.isEmpty ? .null : removingValue(from: seed, path: path)
         }
         return seed
+    }
+
+    private func shouldRemoveFromRowSeed(_ field: FormKitFieldDescriptor) -> Bool {
+        if includesHiddenToolFields, !shouldSerialize(field) {
+            return true
+        }
+        guard touchedFieldIDs.contains(field.id), primitiveValue(for: field) == nil else { return false }
+        return includesHiddenToolFields || (field.usesDynamicOptions && !field.isScalarArrayItem)
     }
 
     private func shouldSerializeArray(_ section: FormKitRenderPlan.SectionDescriptor) -> Bool {
@@ -166,9 +181,9 @@ extension FormKitSession {
 
         for field in nextPlan.fields {
             if touchedFieldIDs.contains(field.id),
-               let preservedValue = previousFieldValues[field.id]
+               previousFieldValues[field.id] != nil || field.usesDynamicOptions
             {
-                nextFieldValues[field.id] = preservedValue
+                nextFieldValues[field.id] = previousFieldValues[field.id]
                 continue
             }
 
@@ -248,7 +263,7 @@ extension FormKitSession {
             from: initialValue,
             scalarType: field.scalarType,
             allowsNull: field.allowsNull,
-            normalizesEmptyText: !field.enumOptions.contains {
+            normalizesEmptyText: !field.usesDynamicOptions && !field.enumOptions.contains {
                 jsonValue(from: $0.value) == initialValue
             }
            )

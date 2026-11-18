@@ -106,3 +106,44 @@ Set ``FormKitMode/readOnly`` to preserve the rendered form while locking mutatio
 Stock text input titles, normal editable outlines, and validation messages use the platform's primary foreground color for legibility. Validation icons and error outlines use the configured status colors. `secondaryText` continues to style supporting text and custom input captions.
 
 For file and signature inputs, provide a host upload handler through ``FormKitOptions/uploadHandler``. See <doc:SchemaDrivenComponents>.
+
+## Dynamic Options
+
+Annotate a string or an array of strings with `"x-formkit-ui-component": "dynamic-options"`. Supply `FormKitOptions.dynamicOptions` to resolve a host data source for each actual field or array pointer. The registry supplies scalar and array bindings, schema limits, locked state, and validation presentation. A host field or array override still takes precedence; an incompatible schema or unresolved source retains the standard input. Fixed schema enums continue to use `line-options-choice`.
+
+```swift
+FormKitView(
+    session: session,
+    options: FormKitOptions(dynamicOptions: { context in
+        FormKitDynamicOptionsSource(
+            savedOptions: directory.cachedOptions(for: context.selectedIDs),
+            provider: { search, cursor in
+                try await directory.options(
+                    at: context.pointer,
+                    search: search,
+                    cursor: cursor
+                )
+            }
+        )
+    })
+)
+.id(catalogIdentity)
+```
+
+The source factory runs during rendering and should return cached presentation data and a provider without starting work. Lookup starts when the picker opens. The provider owns authorization, networking, search, pagination, caching and any selected-ID hydration; `context.selectedIDs` includes saved identifiers outside the current page. Supply the source's optional `canSelect` callback to recheck current host eligibility when adding an identifier, including when permissions change while the sheet is open. Existing identifiers can still be removed or cleared. No URL or transport is defined by the schema. Different pointers can resolve unrelated sources such as contacts and equipment. The context also exposes the existing field or array-section component context.
+
+An option contains an opaque `id`, visible `label` and optional `detail`. Use detail for supporting text such as a company name or a readable identifier. Rows, accessible labels and selected summaries use the same detail. Duplicate labels without detail, or with identical detail, also show the opaque identifier. Only identifiers enter the selection binding. Learned labels survive closing and reopening; supply saved labels through `savedOptions` for offline presentation, and scope the view identity to the form and catalog so cached labels belong to that context.
+
+Identifiers are strings that the package does not trim or parse. Empty and whitespace identifiers remain strings; schema constraints such as `minLength` and `pattern` determine their validity. Selecting an empty identifier differs from clearing a scalar to null or absence.
+
+For custom presentation, use `FormKitDynamicOptionsPicker` directly with `FormKitDynamicSelection.single($selectedID)` or `.multiple($selectedIDs)`. Pass schema `maxItems` as `maximumSelectionCount`. At the limit additional options are disabled while selected options can still be removed. When the limit is one and one distinct option is selected, choosing another replaces it. Existing oversized selections remain intact. Selection writes unique identifiers immediately; Done closes the sheet. Required multiple selection keeps its last identifier. For a scalar, require a selection only when the schema requires a non-null answer. Requiredness and validity remain schema-owned.
+
+Opening, loading, or failing to resolve a saved identifier never writes selection. Optional clearing writes nil for a scalar or an empty array for multiple selection. The registry emits explicit null for a nullable scalar, omits an optional nonnullable scalar, and emits an empty array for multiple selection. An untouched optional scalar remains absent. Direct picker users own their serialization mapping. Previously saved identifiers stay selected when absent from results or when lookup fails.
+
+For compatible `dynamic-options` arrays of non-null plain strings without `enum` or `const`, an absent array remains absent through unrelated edits and reopening. An explicitly supplied `[]` remains empty, and authored array defaults and supplied items are preserved. The renderer does not add rows to meet `minItems`: a missing required array or a supplied empty array below `minItems` fails validation with an array error. Ordinary and incompatible array controls retain their existing placeholder behavior.
+
+When multiple selection permits zero items, Clear selection is available even before any option is selected. It explicitly records `[]`; opening the sheet or tapping Done preserves an absent array.
+
+Tool clearing a compatible scalar writes null when nullable and otherwise removes the value, including an invalid draft when the property is required. Generic tool edits of individual scalar-array slots retain their existing position-based string behavior; remove or clear dynamic array identifiers through the whole-array selection binding.
+
+An omitted nonnullable property can receive its authored default again when a new session opens or its object-array row is reconstructed. An explicit nullable clear remains null when reopened, including when the schema declares a default.

@@ -98,8 +98,10 @@ public struct FormKitFormSummary: Sendable, Equatable {
     /// Answered fields that sit outside every section.
     public let general: [FormKitSummaryAnswer]
     public let flagged: [FormKitFlaggedAnswer]
-    /// Required fields that are still empty, in form order.
+    /// Required fields still empty, in form order; dynamic-option item fields are represented by their collection.
     public let missingRequired: [FormKitFieldDescriptor]
+    /// Visible dynamic-option collections that are absent when required or below their minimum item count.
+    public let missingRequiredArraySections: [FormKitRenderPlan.SectionDescriptor]
 }
 
 enum FormKitFormPageBuilder {

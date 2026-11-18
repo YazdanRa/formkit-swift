@@ -80,6 +80,8 @@ If the view owns the session, pass the same override map through `FormKitOptions
 
 For deeper customization, set `FormKitOptions.components.field` or `sectionHeader` and render with package-owned context types. Future package-native components can be added behind these same options without leaking host app models.
 
+For `dynamic-options` arrays of non-null plain strings without `enum` or `const`, FormKit preserves absence and explicit `[]` separately. It adds no placeholder rows for `minItems`; missing required arrays and explicitly empty arrays below `minItems` fail validation. Authored array defaults and supplied items remain unchanged until an explicit edit.
+
 ### Per-Option Colors
 
 Use `line-options-choice` for an enum with 2–6 options, and map each enum value to a hex color with `x-formkit-option-color-map`:

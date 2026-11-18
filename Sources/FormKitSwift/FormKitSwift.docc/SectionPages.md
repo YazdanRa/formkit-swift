@@ -53,6 +53,10 @@ Text comes from ``FormKitLabels/pages``. Colors come from ``FormKitStyle``.
 - **Flagged answers** are answers that satisfied an `if` whose `then` requires or declares other fields, such as "Failed" opening its observation. Rules are read from the object they are declared in, including its `allOf` members and local `$ref` targets.
 - A page **needs attention** when a follow-up an answer opened is still empty, or when a field on it failed validation. A required field nobody has reached yet does not flag the page, so a fresh form does not open in an error state.
 
+Compatible `dynamic-options` arrays count as one question instead of one per item. Supplied or deliberately selected identifiers, including an allowed empty identifier, can answer the collection; renderer defaults do not count as user answers. A deliberately supplied empty array answers a collection that permits zero items.
+
+``FormKitFormSummary/missingRequired`` continues to return missing field descriptors. ``FormKitFormSummary/missingRequiredArraySections`` returns actual visible dynamic-option array sections that are absent when required or below their minimum item count. Both appear under Still required and in tool summary text. An absent optional array or an absent optional parent object does not introduce a missing requirement. Array validation messages remain available through ``FormKitSession/toolValidationMessages()``.
+
 ## Turning Pages from the Host
 
 ``FormKitView`` keeps its own ``FormKitPageNavigator`` unless the host passes one. Pass one to turn pages from the host, for example when a voice assistant moves to its next question, or to react when the person pages by hand:

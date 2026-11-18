@@ -29,7 +29,8 @@ extension FormKitContainerView {
                 if navigator.isSummaryOpen {
                     FormKitPageSummarySections(
                         summary: summary,
-                        missingTitles: summary.missingRequired.map(session.qualifiedTitle(for:)),
+                        missingTitles: summary.missingRequired.map(session.qualifiedTitle(for:))
+                            + summary.missingRequiredArraySections.map(session.qualifiedTitle(for:)),
                         style: options.style,
                         labels: labels,
                         onPick: { navigator.goToPage($0, origin: .user) }

@@ -79,6 +79,7 @@ public struct FormKitArraySectionDescriptor: Sendable, Equatable {
     public let propertyKey: String?
     public let itemKind: ItemKind
     public let itemScalarType: FormKitFieldDescriptor.ScalarType?
+    public let itemAllowsNull: Bool
     public let itemHasValueConstraint: Bool
     public let itemTitle: String
     public let minItems: Int
