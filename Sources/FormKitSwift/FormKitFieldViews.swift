@@ -310,7 +310,8 @@ extension FormKitContainerView {
                     return
                 }
                 session.setStringValue(updatedText, for: field)
-            }
+            },
+            minimumLines: field.scalarType == .string && field.uiComponent == .textArea ? 3 : 1
         )
     }
 }

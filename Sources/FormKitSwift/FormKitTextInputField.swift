@@ -9,6 +9,7 @@ struct FormKitDebouncedTextInputField: View {
     let submitLabel: SubmitLabel
     let focusedFieldID: FocusState<String?>.Binding
     let inputTraits: FormKitTextInputTraits
+    let minimumLines: Int
     let isEditingLocked: Bool
     let onDraftChange: (String?) -> Void
     let onSubmit: () -> Void
@@ -28,7 +29,8 @@ struct FormKitDebouncedTextInputField: View {
         isEditingLocked: Bool,
         onDraftChange: @escaping (String?) -> Void,
         onSubmit: @escaping () -> Void,
-        onCommit: @escaping (String) -> Void
+        onCommit: @escaping (String) -> Void,
+        minimumLines: Int = 1
     ) {
         self.fieldID = fieldID
         self.accessibilityIdentifier = accessibilityIdentifier
@@ -38,6 +40,7 @@ struct FormKitDebouncedTextInputField: View {
         self.submitLabel = submitLabel
         self.focusedFieldID = focusedFieldID
         self.inputTraits = inputTraits
+        self.minimumLines = minimumLines
         self.isEditingLocked = isEditingLocked
         self.onDraftChange = onDraftChange
         self.onSubmit = onSubmit
@@ -62,7 +65,7 @@ struct FormKitDebouncedTextInputField: View {
             ),
             axis: inputTraits.supportsVerticalExpansion ? .vertical : .horizontal
         )
-        .lineLimit(1...)
+        .lineLimit(minimumLines...)
         .submitLabel(inputTraits.supportsVerticalExpansion ? .return : submitLabel)
         .focused(focusedFieldID, equals: fieldID)
         .disabled(isEditingLocked)

@@ -1,6 +1,6 @@
 # Schema-Driven Components
 
-Select package-native choice, file, and signature inputs from the schema.
+Select package-native text, choice, file, and signature inputs from the schema.
 
 ## Select a Component
 
@@ -50,9 +50,12 @@ Supported values and shapes are:
 | `file-field` | Non-enum string field, normally with `format: "uri"` |
 | `multiple-file-field` | Array of strings without item `enum` or `const`, normally with item `format: "uri"` |
 | `signature-pad` | Non-enum string field, normally with `format: "uri"` |
+| `text-area` | Non-enum string field without a specialized format |
 | `line-options-choice` | Scalar enum field with 2–6 options, including any explicit `null` option |
 
 Unknown or incompatible annotations remain available on descriptors but fall back to stock rendering. Annotation values are trimmed and case-insensitive.
+
+`text-area` reserves three visible lines for a narrative and grows vertically as text wraps. It uses the existing text input, focus handling, validation, and string binding. Plain text fields keep their existing layout. For example, use `{"type":"string","title":"Description","x-formkit-ui-component":"text-area"}`. Newlines and stored strings remain unchanged.
 
 `line-options-choice` displays one slim, rounded outline with 2–6 segments and dividers. Up to three short options share one row of equal-width segments. With more than three options, or when any label is longer than 14 characters, the segments stack vertically as full-width, leading-aligned rows. They also stack at accessibility text sizes, keeping labels readable and touch targets at least 44 points. Unselected segments have a neutral background; the selected segment uses a highlighted fill and a selected accessibility trait. Larger enums use the standard picker. Selection changes respect Reduce Motion. Required fields show an asterisk and retain their selection; optional fields can be cleared by tapping the selected option again. Existing enum defaults, validation, and read-only behavior apply.
 
