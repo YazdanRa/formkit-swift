@@ -35,11 +35,20 @@ final class PickerLayoutUITests: XCTestCase {
         XCTAssertTrue(last.isHittable)
         let initialFrame = last.frame
         last.tap()
-        XCTAssertTrue(last.isSelected)
+        waitForSelection(true, of: last)
         XCTAssertEqual(last.frame.height, initialFrame.height, accuracy: 1)
         XCTAssertEqual(last.frame.width, initialFrame.width, accuracy: 1)
         last.tap()
-        XCTAssertFalse(last.isSelected)
+        waitForSelection(false, of: last)
+    }
+
+    @MainActor
+    private func waitForSelection(_ selected: Bool, of option: XCUIElement) {
+        let predicate = NSPredicate(format: "isSelected == %@", NSNumber(value: selected))
+        _ = XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: predicate, object: option)], timeout: 5
+        )
+        XCTAssertEqual(option.isSelected, selected, option.debugDescription)
     }
 
     @MainActor
