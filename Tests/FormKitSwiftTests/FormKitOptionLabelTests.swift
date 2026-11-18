@@ -4,36 +4,36 @@ import XCTest
 @MainActor
 final class FormKitOptionLabelTests: XCTestCase {
     func testLabelsChangePresentationWithoutChangingSelectionReopeningOrClearing() throws {
-        let session = FormKitRenderer().makeFormSession(schemaJSON: prioritySchema)
+        let session = FormKitRenderer().makeFormSession(schemaJSON: shippingSchema)
         let field = try XCTUnwrap(session.renderPlan.fields.first)
         XCTAssertEqual(field.enumOptions.map(\.title), [
-            "Critical", "Schedule Impact", "Critical and Schedule Impact", "High", "Medium", "Low"
+            "express", "insured", "Express and insured", "economy", "standard", "pickup"
         ])
-        let combined = try XCTUnwrap(field.enumOptions.first { $0.value == .string("Critical|Schedule Impact") })
-        XCTAssertEqual(combined.id, "string:Critical|Schedule Impact")
+        let combined = try XCTUnwrap(field.enumOptions.first { $0.value == .string("express|insured") })
+        XCTAssertEqual(combined.id, "string:express|insured")
         XCTAssertEqual(field.enumOptions.map(\.color), [
-            FormKitOptionColor(hex: "#FF5F5F"), FormKitOptionColor(hex: "#707174"), nil, nil, nil, nil
+            FormKitOptionColor(hex: "#2563EB"), FormKitOptionColor(hex: "#16A34A"), nil, nil, nil, nil
         ])
         session.setSelectedEnumChoiceID(combined.id, for: field)
         XCTAssertTrue(session.validate())
-        XCTAssertEqual(try object(session)["priority"] as? String, "Critical|Schedule Impact")
+        XCTAssertEqual(try object(session)["shippingMethod"] as? String, "express|insured")
 
         let reopened = FormKitRenderer().makeFormSession(
-            schemaJSON: prioritySchema, instanceJSON: session.currentInstanceJSON
+            schemaJSON: shippingSchema, instanceJSON: session.currentInstanceJSON
         )
         let reopenedField = try XCTUnwrap(reopened.renderPlan.fields.first)
         XCTAssertEqual(reopened.selectedEnumChoiceID(for: reopenedField), combined.id)
         XCTAssertEqual(reopenedField.enumOptions, field.enumOptions)
         reopened.setSelectedEnumChoiceID(nil, for: reopenedField)
-        XCTAssertNil(try object(reopened)["priority"])
+        XCTAssertNil(try object(reopened)["shippingMethod"])
 
-        for legacy in ["High", "Medium", "Low"] {
+        for legacy in ["economy", "standard", "pickup"] {
             let old = FormKitRenderer().makeFormSession(
-                schemaJSON: prioritySchema, instanceJSON: "{\"priority\":\"\(legacy)\"}"
+                schemaJSON: shippingSchema, instanceJSON: "{\"shippingMethod\":\"\(legacy)\"}"
             )
             let oldField = try XCTUnwrap(old.renderPlan.fields.first)
             XCTAssertEqual(old.selectedEnumChoiceID(for: oldField), "string:\(legacy)")
-            XCTAssertEqual(try object(old)["priority"] as? String, legacy)
+            XCTAssertEqual(try object(old)["shippingMethod"] as? String, legacy)
         }
     }
 
@@ -102,13 +102,13 @@ final class FormKitOptionLabelTests: XCTestCase {
         try XCTUnwrap(JSONSerialization.jsonObject(with: Data(session.currentInstanceJSON.utf8)) as? [String: Any])
     }
 
-    private var prioritySchema: String {
+    private var shippingSchema: String {
         #"""
-        {"type":"object","properties":{"priority":{"type":"string",
-          "enum":["Critical","Schedule Impact","Critical|Schedule Impact","High","Medium","Low"],
+        {"type":"object","properties":{"shippingMethod":{"type":"string",
+          "enum":["express","insured","express|insured","economy","standard","pickup"],
           "x-formkit-ui-component":"line-options-choice",
-          "x-formkit-option-color-map":{"Critical":"#FF5F5F","Schedule Impact":"#707174"},
-          "x-formkit-option-label-map":{"Critical|Schedule Impact":"Critical and Schedule Impact"}
+          "x-formkit-option-color-map":{"express":"#2563EB","insured":"#16A34A"},
+          "x-formkit-option-label-map":{"express|insured":"Express and insured"}
         }}}
         """#
     }

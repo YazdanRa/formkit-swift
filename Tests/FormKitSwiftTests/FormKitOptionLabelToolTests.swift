@@ -41,27 +41,29 @@ final class FormKitOptionLabelToolTests: XCTestCase {
 
     func testCombinedAndLegacyValuesRoundtripThroughToolsWithoutPresentationLabels() throws {
         let schema = #"""
-        {"type":"object","properties":{"priority":{"type":"string",
-          "enum":["Critical","Schedule Impact","Critical|Schedule Impact","High","Medium","Low"],
-          "x-formkit-option-label-map":{"Critical|Schedule Impact":"Critical and Schedule Impact"}
+        {"type":"object","properties":{"shippingMethod":{"type":"string",
+          "enum":["express","insured","express|insured","economy","standard","pickup"],
+          "x-formkit-option-label-map":{"express|insured":"Express and insured"}
         }}}
         """#
-        for value in ["Critical|Schedule Impact", "High", "Medium", "Low"] {
+        for value in ["express|insured", "economy", "standard", "pickup"] {
             let session = FormKitRenderer().makeFormSession(schemaJSON: schema)
             XCTAssertEqual(session.makeToolContext().fields.first?.enumOptions, [
-                "Critical", "Schedule Impact", "Critical|Schedule Impact", "High", "Medium", "Low"
+                "express", "insured", "express|insured", "economy", "standard", "pickup"
             ])
-            let result = session.applyToolEdits([.init(pointer: "/priority", operation: .set, value: .string(value))])
+            let result = session.applyToolEdits([
+                .init(pointer: "/shippingMethod", operation: .set, value: .string(value))
+            ])
             XCTAssertTrue(result.rejectedEdits.isEmpty, value)
             XCTAssertEqual(result.appliedEdits.first?.value, .string(value))
-            XCTAssertEqual(try object(session)["priority"] as? String, value)
+            XCTAssertEqual(try object(session)["shippingMethod"] as? String, value)
             let reopened = FormKitRenderer().makeFormSession(
                 schemaJSON: schema, instanceJSON: session.currentInstanceJSON
             )
-            XCTAssertEqual(reopened.makeToolContext().currentValues["/priority"], .string(value))
-            let cleared = reopened.applyToolEdits([.init(pointer: "/priority", operation: .clear)])
+            XCTAssertEqual(reopened.makeToolContext().currentValues["/shippingMethod"], .string(value))
+            let cleared = reopened.applyToolEdits([.init(pointer: "/shippingMethod", operation: .clear)])
             XCTAssertTrue(cleared.rejectedEdits.isEmpty)
-            XCTAssertNil(try object(reopened)["priority"])
+            XCTAssertNil(try object(reopened)["shippingMethod"])
         }
     }
 

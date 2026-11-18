@@ -63,16 +63,16 @@ Use `x-formkit-option-label-map` on a scalar enum when its stored value differs 
 ```json
 {
   "type": "string",
-  "title": "Priority",
-  "enum": ["Critical", "Schedule Impact", "Critical|Schedule Impact", "High", "Medium", "Low"],
+  "title": "Shipping method",
+  "enum": ["express", "insured", "express|insured", "economy", "standard", "pickup"],
   "x-formkit-ui-component": "line-options-choice",
   "x-formkit-option-label-map": {
-    "Critical|Schedule Impact": "Critical and Schedule Impact"
+    "express|insured": "Express and insured"
   }
 }
 ```
 
-Both the standard picker and `line-options-choice` use these labels, including accessible names. Labels never change choice identifiers, validation, defaults, or submitted values. Existing answers such as `High` remain unchanged.
+Both the standard picker and `line-options-choice` use these labels, including accessible names. Labels never change choice identifiers, validation, defaults, or submitted values. Existing answers such as `economy` remain unchanged.
 
 Tool contexts and edits retain the original option strings and existing primitive aliases, including localized boolean titles. Mapped display labels are not new tool-write aliases.
 
