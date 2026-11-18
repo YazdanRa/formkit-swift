@@ -77,6 +77,7 @@ extension FormKitRenderer {
         let options = enumOptions(
             from: request.schemaObject["enum"]?.array ?? request.schemaObject["const"].map { [$0] },
             colors: request.schemaObject["x-formkit-option-color-map"]?.object,
+            labels: request.schemaObject["x-formkit-option-label-map"]?.object,
             scalarType: fieldScalarType,
             location: pointer,
             reasons: &reasons

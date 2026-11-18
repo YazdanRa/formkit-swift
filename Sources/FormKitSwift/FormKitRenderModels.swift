@@ -148,7 +148,7 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
             }
         }
 
-        var optionColorKey: String {
+        var optionMapKey: String {
             switch self {
             case .string(let value): return value
             case .integer(let value): return String(value)
