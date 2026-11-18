@@ -20,6 +20,9 @@ public internal(set) var formErrorMessage: String?
     let includesHiddenToolFields: Bool
 
     @ObservationIgnored
+    let requiresExplicitEnumSelection: Bool
+
+    @ObservationIgnored
     let validator: Schema?
 
     @ObservationIgnored
@@ -67,6 +70,7 @@ public internal(set) var formErrorMessage: String?
     init(
         renderPlan: FormKitRenderPlan,
         includesHiddenToolFields: Bool = false,
+        requiresExplicitEnumSelection: Bool = false,
         validator: Schema?,
         initialInstance: FormKitJSONValue?,
         initialFieldValues: [String: FormKitFieldDescriptor.PrimitiveValue?],
@@ -80,6 +84,7 @@ public internal(set) var formErrorMessage: String?
         ) -> [String: FormKitFieldDescriptor.PrimitiveValue?]
     ) {
         self.includesHiddenToolFields = includesHiddenToolFields
+        self.requiresExplicitEnumSelection = requiresExplicitEnumSelection
         self.renderPlan = Self.failClosed(renderPlan)
         self.validator = validator
         self.initialInstance = initialInstance

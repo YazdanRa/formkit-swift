@@ -174,6 +174,8 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
     public let description: String?
     public let scalarType: ScalarType
     public let enumOptions: [Choice]
+    let isConstant: Bool
+    let isScalarArrayItem: Bool
     public let isRequired: Bool
     public let allowsNull: Bool
     public let defaultValue: PrimitiveValue?
@@ -184,6 +186,10 @@ public struct FormKitFieldDescriptor: Identifiable, Sendable, Equatable {
 
     public var isEnum: Bool {
         !enumOptions.isEmpty
+    }
+
+    var supportsExplicitEnumSelection: Bool {
+        isEnum && !isConstant && !isScalarArrayItem
     }
 
     public var isConditionallyInactive: Bool {

@@ -138,7 +138,8 @@ extension FormKitRenderer {
                 parentPointer: parentPointer,
                 title: childRequest.fallbackTitle,
                 description: childRequest.fallbackDescription,
-                isRequired: childRequest.isRequiredInParent
+                isRequired: childRequest.isRequiredInParent,
+                isScalarArrayItem: false
             ),
             reasons: &state.reasons
         ) else {

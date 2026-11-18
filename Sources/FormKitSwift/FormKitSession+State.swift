@@ -260,6 +260,10 @@ extension FormKitSession {
             return defaultValue
         }
 
+        if requiresExplicitEnumSelection, field.supportsExplicitEnumSelection {
+            return nil
+        }
+
         if field.allowsNull, field.isRequired, usesNullFallback {
             return .null
         }

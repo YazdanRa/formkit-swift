@@ -98,6 +98,8 @@ extension FormKitRenderer {
             description: request.description,
             scalarType: fieldScalarType,
             enumOptions: options,
+            isConstant: request.schemaObject["const"] != nil,
+            isScalarArrayItem: request.isScalarArrayItem,
             isRequired: request.isRequired,
             allowsNull: allowsNull,
             defaultValue: defaultValue,
@@ -242,6 +244,10 @@ extension FormKitRenderer {
 
         if let defaultValue = field.defaultValue {
             return defaultValue
+        }
+
+        if requiresExplicitEnumSelection, field.supportsExplicitEnumSelection {
+            return nil
         }
 
         if field.allowsNull, field.isRequired {
