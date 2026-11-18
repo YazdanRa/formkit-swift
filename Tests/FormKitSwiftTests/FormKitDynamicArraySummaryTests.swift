@@ -118,7 +118,7 @@ final class FormKitDynamicArraySummaryTests: XCTestCase {
         XCTAssertEqual(constrained.formSummary().pages.first?.status, .needsAttention)
         let array = try section(constrained)
         constrained.arrayErrors[array.id] = ["Array issue", "Array issue"]
-        XCTAssertEqual(constrained.toolValidationMessages().filter { $0 == "Array issue" }.count, 1)
+        XCTAssertEqual(constrained.toolValidationMessages().count { $0 == "Array issue" }, 1)
     }
 
     private func section(_ session: FormKitSession) throws -> FormKitRenderPlan.SectionDescriptor {
