@@ -59,6 +59,30 @@ Unknown or incompatible annotations remain available on descriptors but fall bac
 
 `line-options-choice` displays one slim, rounded outline with 2–6 segments and dividers. Up to three short options share one row of equal-width segments. With more than three options, or when any label is longer than 14 characters, the segments stack vertically as full-width, leading-aligned rows. They also stack at accessibility text sizes, keeping labels readable and touch targets at least 44 points. Unselected segments have a neutral background; the selected segment uses a highlighted fill and a selected accessibility trait. Larger enums use the standard picker. Selection changes respect Reduce Motion. Required fields show an asterisk and retain their selection; optional fields can be cleared by tapping the selected option again. Existing enum defaults, validation, and read-only behavior apply.
 
+## Set Option Labels
+
+Use `x-formkit-option-label-map` on a scalar enum when its stored value differs from its visible label:
+
+```json
+{
+  "type": "string",
+  "title": "Shipping method",
+  "enum": ["express", "insured", "express|insured", "economy", "standard", "pickup"],
+  "x-formkit-ui-component": "line-options-choice",
+  "x-formkit-option-label-map": {
+    "express|insured": "Express and insured"
+  }
+}
+```
+
+Both the standard picker and `line-options-choice` use these labels, including accessible names. Labels never change choice identifiers, validation, defaults, or submitted values. Existing answers such as `economy` remain unchanged.
+
+Tool contexts and edits retain the original option strings and existing primitive aliases, including localized boolean titles. Mapped display labels are not new tool-write aliases.
+
+String keys match values exactly, including case and whitespace. Other scalar keys use `true`, `false`, `null`, or numeric strings such as `1` and `1.5`; integral numbers use `1`, and a string `"null"` shares its key with explicit `null`. Label text is trimmed. Missing, blank, or non-string labels fall back to the original title. Unknown keys do not add choices, and an invalid map does not invalidate the form.
+
+Maps merge by literal option key through local references, `allOf`, and active conditional overlays. Later entries override the same key; other entries remain. Combine label and color maps independently. Custom renderers receive the resolved label through ``FormKitFieldDescriptor/Choice/title``.
+
 ## Set Option Colors
 
 Add `x-formkit-option-color-map` to the same field schema as `enum` and `x-formkit-ui-component`. The map keys are enum values, and the values are opaque sRGB hex colors:

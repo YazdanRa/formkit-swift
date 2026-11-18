@@ -97,6 +97,10 @@ Host overrides run before package-native component selection. Use an entire `fie
 
 ## Editing and Labels
 
+For forms that require a deliberate enum answer, create the injected session with `FormKitRenderer(requiresExplicitEnumSelection: true)`. Missing enum fields on objects, including nested objects and object array rows, stay unselected, omitted from JSON and incomplete when required until chosen. The first option can be selected normally. Explicit supplied values, schema `default` values and fixed `const` values remain intact; the default renderer behavior and non-enum fallbacks are unchanged.
+
+Generated scalar-enum array items retain the existing placeholder behavior, including under this option. A JSON array has no absent-item representation, so distinguishing an untouched nullable placeholder from an explicitly chosen null after reopening requires a different persisted contract. This option does not change that contract.
+
 Set ``FormKitMode/readOnly`` to preserve the rendered form while locking mutations. Use ``FormKitLabels`` for host-provided control text and ``FormKitStyle`` for colors and spacing.
 
 Stock text input titles, normal editable outlines, and validation messages use the platform's primary foreground color for legibility. Validation icons and error outlines use the configured status colors. `secondaryText` continues to style supporting text and custom input captions.

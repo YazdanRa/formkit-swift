@@ -101,7 +101,8 @@ extension FormKitRenderer {
         return FormKitRenderer(
             defaultConditionalRenderBehavior: effectiveDefault,
             conditionalRenderBehaviorOverrides: effectiveOverrides,
-            includesHiddenToolFields: includesHiddenToolFields
+            includesHiddenToolFields: includesHiddenToolFields,
+            requiresExplicitEnumSelection: requiresExplicitEnumSelection
         )
     }
 
@@ -175,6 +176,7 @@ extension FormKitRenderer {
         let session = FormKitSession(
             renderPlan: assembly.renderPlan,
             includesHiddenToolFields: includesHiddenToolFields,
+            requiresExplicitEnumSelection: requiresExplicitEnumSelection,
             validator: assembly.validator,
             initialInstance: assembly.decodedInstance.value,
             initialFieldValues: seedFieldValues(

@@ -251,7 +251,8 @@ extension FormKitRenderer {
                 parentPointer: section.pointer,
                 title: rowTitle,
                 description: rowItemSchema["description"]?.string?.trimmedForJSONSchemaForm(),
-                isRequired: true
+                isRequired: true,
+                isScalarArrayItem: true
             ),
             reasons: &state.reasons
         ) else {

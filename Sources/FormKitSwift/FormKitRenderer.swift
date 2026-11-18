@@ -61,15 +61,18 @@ public extension FormKitRendering {
 @MainActor
 public final class FormKitRenderer: FormKitRendering {
     let includesHiddenToolFields: Bool
+    let requiresExplicitEnumSelection: Bool
     let defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior
     let conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior]
 
     public init(
         defaultConditionalRenderBehavior: FormKitConditionalRenderBehavior = .hide,
         conditionalRenderBehaviorOverrides: [String: FormKitConditionalRenderBehavior] = [:],
-        includesHiddenToolFields: Bool = false
+        includesHiddenToolFields: Bool = false,
+        requiresExplicitEnumSelection: Bool = false
     ) {
         self.includesHiddenToolFields = includesHiddenToolFields
+        self.requiresExplicitEnumSelection = requiresExplicitEnumSelection
         self.defaultConditionalRenderBehavior = defaultConditionalRenderBehavior
         self.conditionalRenderBehaviorOverrides = Self.normalizedConditionalRenderBehaviorOverrides(
             conditionalRenderBehaviorOverrides

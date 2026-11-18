@@ -14,8 +14,7 @@ public extension FormKitSession {
 
     /// Progress per page, the answers that opened follow-ups, and required fields that are still empty.
     ///
-    /// Only visible fields count. A field is required when the schema says so or when an answer has
-    /// opened it as a follow-up.
+    /// Only visible fields count. Required fields follow the active schema, including conditional requirements.
     func formSummary() -> FormKitFormSummary {
         formSummary(pages: formPages)
     }
@@ -70,7 +69,7 @@ extension FormKitSession {
         let openedRequiredIDs = Set(activeRules.flatMap(\.dependentFieldIDs))
 
         let missingRequired = visibleFields.filter { field in
-            (field.isRequired || openedRequiredIDs.contains(field.id)) && !hasValue(for: field)
+            field.isRequired && !hasValue(for: field)
         }
         let attentionIDs = Set(missingRequired.map(\.id).filter(openedRequiredIDs.contains))
             .union(fieldErrors.filter { !$0.value.isEmpty }.keys)
