@@ -85,6 +85,7 @@ extension FormKitRenderer {
         let title: String
         let description: String?
         let isRequired: Bool
+        let isScalarArrayItem: Bool
     }
 
     struct PlaceholderRequest {

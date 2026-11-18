@@ -201,6 +201,8 @@ private func makeStaticRenderPlanField() -> FormKitFieldDescriptor {
         description: nil,
         scalarType: .string,
         enumOptions: [],
+        isConstant: false,
+        isScalarArrayItem: false,
         isRequired: false,
         allowsNull: false,
         defaultValue: nil,
