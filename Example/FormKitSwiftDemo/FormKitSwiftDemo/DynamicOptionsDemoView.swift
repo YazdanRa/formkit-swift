@@ -86,7 +86,8 @@ struct DynamicOptionsDemoView: View {
             FormKitView(
                 session: registrySession,
                 options: FormKitOptions(dynamicOptions: { [saved = cachedContactOptions] context in
-                    registrySource(context, savedOptions: saved)
+                    ProcessInfo.processInfo.arguments.contains("-DYNAMIC_NO_SOURCE")
+                        ? nil : registrySource(context, savedOptions: saved)
                 })
             )
             Text(registrySession.currentInstanceJSON)

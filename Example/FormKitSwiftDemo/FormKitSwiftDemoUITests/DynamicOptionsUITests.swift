@@ -269,3 +269,32 @@ final class DynamicOptionsUITests: XCTestCase {
         return app
     }
 }
+
+@MainActor
+extension DynamicOptionsUITests {
+    func testRequiredZeroCapacityArrayCanExplicitlyClearWithoutDynamicSource() throws {
+        let app = launch(arguments: ["-DYNAMIC_REGISTRY", "-DYNAMIC_EMPTY_REQUIRED", "-DYNAMIC_NO_SOURCE"])
+        let json = app.staticTexts["demo_dynamic_json"]
+        XCTAssertTrue(json.waitForExistence(timeout: 5))
+        let originalJSON = json.label
+        let original = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(originalJSON.utf8)) as? [String: Any])
+        XCTAssertNil(original["equipment"])
+        XCTAssertTrue(app.staticTexts["No items added yet."].waitForExistence(timeout: 5))
+        let stockButtons = app.buttons.matching(identifier: "json_form_section_equipment")
+        let add = stockButtons.matching(NSPredicate(format: "label == %@", "Add Equipment")).firstMatch
+        XCTAssertTrue(add.exists)
+        XCTAssertFalse(add.isEnabled)
+        XCTAssertFalse(app.buttons["Equipment"].exists)
+        XCTAssertFalse(app.buttons["formkit_dynamic_done"].exists)
+        let clear = stockButtons.matching(NSPredicate(format: "label == %@", "Clear selection")).firstMatch
+        XCTAssertTrue(clear.waitForExistence(timeout: 5))
+        XCTAssertGreaterThanOrEqual(clear.frame.height, 44)
+        XCTAssertEqual(json.label, originalJSON)
+        capture("dynamic-empty-array-stock-fallback", app: app)
+        clear.tap()
+        waitForJSON("\"equipment\" : [", in: app)
+        let saved = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(json.label.utf8)) as? [String: Any])
+        XCTAssertEqual(saved["equipment"] as? [String], [])
+        XCTAssertFalse(add.isEnabled)
+    }
+}

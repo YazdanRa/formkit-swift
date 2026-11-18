@@ -12,6 +12,10 @@ enum FormKitDynamicOptionsArrayCompatibility {
 }
 
 extension FormKitRenderPlan.SectionDescriptor {
+    var offersEmptyDynamicOptionsSelection: Bool {
+        usesDynamicOptions && arrayDescriptor?.minItems == 0 && arrayDescriptor?.rows.isEmpty == true
+    }
+
     var usesDynamicOptions: Bool {
         guard let descriptor = arrayDescriptor else { return false }
         return FormKitDynamicOptionsArrayCompatibility.supports(

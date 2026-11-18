@@ -51,6 +51,53 @@ final class FormKitDynamicEmptySelectionTests: XCTestCase {
         XCTAssertFalse(sheet(selection: selection, isRequired: true).showsClearSelection)
     }
 
+    func testUnresolvedSourceStockFallbackCanExplicitlyRecordAnEmptyArray() throws {
+        let session = FormKitRenderer().makeFormSession(schemaJSON: schema(minimum: 0))
+        guard case .arraySection(let arrayContext) = try context(session) else {
+            return XCTFail("Expected an array context")
+        }
+        let revision = session.revision
+        XCTAssertNil(FormKitComponentRegistry.arraySection(for: arrayContext))
+        XCTAssertNil(FormKitComponentRegistry.arraySection(for: arrayContext, dynamicOptions: { _ in nil }))
+        XCTAssertTrue(arrayContext.section.offersEmptyDynamicOptionsSelection)
+        XCTAssertNil(try object(session)["equipment"])
+        XCTAssertEqual(session.revision, revision)
+        XCTAssertFalse(session.validate())
+
+        session.setArrayValue([], for: arrayContext.section)
+        XCTAssertEqual(try object(session)["equipment"] as? [String], [])
+        XCTAssertTrue(session.validate())
+        let reopened = FormKitRenderer().makeFormSession(schemaJSON: schema(minimum: 0),
+                                                        instanceJSON: session.currentInstanceJSON)
+        XCTAssertEqual(try object(reopened)["equipment"] as? [String], [])
+        XCTAssertTrue(reopened.validate())
+    }
+
+    func testStockEmptyActionDoesNotApplyToOrdinaryIncompatibleOrPositiveMinimumArrays() throws {
+        for (component, items, minimum, instance) in [
+            ("", #"{"type":"string"}"#, 0, nil),
+            ("dynamic-options", #"{"type":["string","null"]}"#, 0, nil),
+            ("dynamic-options", #"{"type":"string","enum":["one","two"]}"#, 0, nil),
+            ("dynamic-options", #"{"type":"string","const":"one"}"#, 0, nil),
+            ("dynamic-options", #"{"type":"string","format":"date"}"#, 0, nil),
+            ("dynamic-options", #"{"type":"string"}"#, 1, nil),
+            ("dynamic-options", #"{"type":"string"}"#, 0, #"{"equipment":["saved"]}"#)
+        ] {
+            let definition = #"""
+            {"type":"object","properties":{"equipment":{"type":"array","minItems":MINIMUM,
+              "items":ITEMS,"x-formkit-ui-component":"COMPONENT"}}}
+            """#
+                .replacingOccurrences(of: "MINIMUM", with: String(minimum))
+                .replacingOccurrences(of: "ITEMS", with: items)
+                .replacingOccurrences(of: "COMPONENT", with: component)
+            let session = FormKitRenderer().makeFormSession(schemaJSON: definition, instanceJSON: instance)
+            guard case .arraySection(let arrayContext) = try context(session) else {
+                return XCTFail("Expected an array context")
+            }
+            XCTAssertFalse(arrayContext.section.offersEmptyDynamicOptionsSelection)
+        }
+    }
+
     private func sheet(selection: FormKitDynamicSelection, isRequired: Bool) -> FormKitDynamicOptionsPickerSheet {
         FormKitDynamicOptionsPickerSheet(
             title: "Equipment", selection: selection, savedOptions: [], labels: FormKitDynamicOptionsPickerLabels(),
