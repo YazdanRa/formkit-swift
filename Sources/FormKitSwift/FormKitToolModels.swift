@@ -43,6 +43,10 @@ public struct FormKitToolField: Equatable, Sendable {
     public let enumOptions: [String]
     public let isLocked: Bool
     public let validationMessages: [String]
+    /// The minimum count for a whole-array tool field; nil for scalar fields.
+    public let minItems: Int?
+    /// The maximum count for a whole-array tool field, when bounded.
+    public let maxItems: Int?
 
     public init(
         pointer: String,
@@ -55,7 +59,9 @@ public struct FormKitToolField: Equatable, Sendable {
         description: String? = nil,
         enumOptions: [String] = [],
         isLocked: Bool = false,
-        validationMessages: [String] = []
+        validationMessages: [String] = [],
+        minItems: Int? = nil,
+        maxItems: Int? = nil
     ) {
         self.pointer = pointer
         self.title = title
@@ -68,6 +74,8 @@ public struct FormKitToolField: Equatable, Sendable {
         self.enumOptions = enumOptions
         self.isLocked = isLocked
         self.validationMessages = validationMessages
+        self.minItems = minItems
+        self.maxItems = maxItems
     }
 }
 
