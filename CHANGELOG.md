@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/YazdanRa/formkit-swift/compare/v1.10.0...v1.11.0) (2026-11-19)
+
+
+### Features
+
+* **tools:** edit and confirm dynamic-option arrays ([#55](https://github.com/YazdanRa/formkit-swift/issues/55)) ([a27a83a](https://github.com/YazdanRa/formkit-swift/commit/a27a83a155ba21d2316d4fedeafbeb77fe1db8ad))
+
 ## [1.10.0](https://github.com/YazdanRa/formkit-swift/compare/v1.9.1...v1.10.0) (2026-11-18)
 
 
