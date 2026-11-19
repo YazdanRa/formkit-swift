@@ -54,6 +54,26 @@ Tool pointers omit the descriptor's leading `#`. Set edits require a value. Clea
 
 Each ``FormKitToolField`` exposes an optional ``FormKitToolField/valueSource``. ``FormKitToolValueSource/initialInstance`` means the value was present when the session was created, ``FormKitToolValueSource/defaultValue`` means FormKit supplied a schema or required-control fallback, and ``FormKitToolValueSource/sessionEdit`` means the value was set or confirmed during the current session. A missing value has no source. Host apps can use this provenance without changing the effective values or ``FormKitSession/currentInstanceJSON``.
 
+Use `.clear` to select null for a nullable scalar. Clearing an active field's untouched null default records `.sessionEdit` without changing its value. An already supplied or confirmed null remains `no_change`.
+
+### Whole Dynamic-Option Arrays
+
+Compatible `dynamic-options` arrays of nonnullable plain strings also expose a parent tool field with `type = "array"`, including when absent or empty. Its `minItems` and `maxItems` describe collection cardinality, and `currentValues` contains the whole array when present. Existing indexed item fields remain available. Parent fields follow schema property order, independently of the currently displayed form page.
+
+Use the existing operations to replace or clear a collection:
+
+```swift
+FormKitToolEdit(pointer: "/equipment", operation: .set,
+                value: .array([.string("asset:1"), .string("asset:2")]))
+FormKitToolEdit(pointer: "/equipment", operation: .clear)
+```
+
+Set requires an array containing only strings and respecting its current item-count bounds. IDs and their order remain literal. Clear deliberately writes `[]`; it is rejected when the minimum count is nonzero. Context reads never turn absence into an empty array. Item constraints continue through normal session validation.
+
+An untouched array default, including `[]`, has source `.defaultValue`. Setting that same array explicitly confirms it as `.sessionEdit`. An array containing an unconfirmed generated item remains default-sourced. Initial values, explicit empty answers and confirmed replacements retain their provenance across unrelated edits.
+
+Edits to these collections require the current schema section to be active, visible and editable, even with `includesHiddenToolFields`; retained indexed targets enforce the same activity and ancestor locks. Existing supplied hidden answers remain retained by the opted-in session. A lock on the parent or any indexed descendant blocks replacement. View-only read-only mode and ID authorization remain host responsibilities; callers must reject unauthorized edits or pass the appropriate pointer locks. Nullable outer arrays and nullable-item fallback arrays do not gain whole-array tool editing.
+
 Date, time, and date-time fields also expose ``FormKitToolField/valueFormat``. Temporal set edits may use the documented local wall-clock form or an explicit-offset form. FormKit validates and normalizes those strings through the same date codec used by its controls; malformed or ambiguous local values are rejected with `invalid_format`.
 
 Use ``FormKitSession/instanceJSONOmittingNonArrayDefaults`` when persistence must distinguish untouched renderer defaults from supplied or confirmed non-array values. It omits untouched default-sourced properties and optional object ancestors emptied by those omissions while retaining required objects, initial values, and session edits, including same-value confirmations. Arrays and all their descendants remain unchanged because FormKit cannot omit their defaults without losing authored container structure or array identity.

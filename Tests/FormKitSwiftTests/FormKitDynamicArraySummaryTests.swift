@@ -15,7 +15,7 @@ final class FormKitDynamicArraySummaryTests: XCTestCase {
             XCTAssertEqual(summary.pages.first?.answered, 0)
             XCTAssertEqual(summary.pages.first?.status, .notStarted)
             XCTAssertTrue(session.makeToolContext().summary.contains("Selection › Equipment"))
-            XCTAssertFalse(session.makeToolContext().fields.contains { $0.pointer == "/selection/equipment" })
+            XCTAssertTrue(session.makeToolContext().fields.contains { $0.pointer == "/selection/equipment" })
             XCTAssertFalse(session.hasAttemptedValidation)
             XCTAssertEqual(session.currentInstanceJSON, before)
             XCTAssertEqual(session.revision, revision)

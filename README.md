@@ -131,6 +131,8 @@ let result = session.applyToolEdits(
 
 Host apps map `FormKitToolContext`, `FormKitToolEdit`, and `FormKitToolEditResult` to their own assistant, automation, or collaboration protocols.
 
+Dynamic-option string arrays expose a parent tool field (`type: "array"`) with cardinality and value-source metadata, including when empty. The existing edit API replaces the whole collection or explicitly clears it to `[]`, subject to current schema activity, item-count bounds and pointer locks. Setting the same default array confirms it without changing its values; hosts retain responsibility for authorized ID lookup.
+
 ## Supported Surface
 
 The first public package pass focuses on the current renderer behavior:

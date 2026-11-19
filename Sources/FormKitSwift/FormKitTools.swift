@@ -1,7 +1,7 @@
 import Foundation
 
 public extension FormKitSession {
-    private enum ToolEditApplicationOutcome {
+    internal enum ToolEditApplicationOutcome {
         case applied(FormKitToolEdit)
         case rejected(FormKitRejectedEdit)
     }
@@ -10,7 +10,7 @@ public extension FormKitSession {
         let normalizedFocusedPointers = Set(focusedPointers.map(normalizedToolPointer))
         let toolFields = orderedFields.filter { $0.isVisible || includesHiddenToolFields }
 
-        let fields = toolFields.map { field in
+        var fields = toolFields.map { field in
             let pointer = publicToolPointer(for: field.pointer)
             return FormKitToolField(
                 pointer: pointer,
@@ -22,12 +22,13 @@ public extension FormKitSession {
                 valueSource: toolValueSource(for: field),
                 description: field.description,
                 enumOptions: field.enumOptions.map(\.value.title),
-                isLocked: field.isDisabled || normalizedFocusedPointers.contains(normalizedToolPointer(pointer)),
+                isLocked: field.isDisabled || isUnavailableToolArrayItem(field)
+                    || isToolFieldLocked(field, by: normalizedFocusedPointers),
                 validationMessages: errorMessages(for: field)
             )
         }
 
-        let currentValues: [String: FormKitJSONValue] = Dictionary(
+        var currentValues: [String: FormKitJSONValue] = Dictionary(
             uniqueKeysWithValues: toolFields.compactMap { field in
                 guard let value = toolValue(for: field) else {
                     return nil
@@ -35,6 +36,17 @@ public extension FormKitSession {
                 return (publicToolPointer(for: field.pointer), value)
             }
         )
+
+        let arrays = renderPlan.sections.filter { $0.usesDynamicOptions && ($0.isVisible || includesHiddenToolFields) }
+        if !arrays.isEmpty {
+            let instance = makeInstanceJSONValue()
+            fields += toolArrayFields(for: arrays, in: instance, focusedPointers: normalizedFocusedPointers)
+            for section in arrays {
+                let pointer = publicToolPointer(for: section.pointer)
+                currentValues[pointer] = instance.value(atPointer: section.pointer)
+            }
+            fields = orderedToolFields(fields)
+        }
 
         return FormKitToolContext(
             revision: revision,
@@ -99,6 +111,12 @@ public extension FormKitSession {
         _ edit: FormKitToolEdit,
         lockedPointers: Set<String>
     ) -> ToolEditApplicationOutcome {
+        if let section = renderPlan.sections.first(where: {
+            $0.usesDynamicOptions && normalizedToolPointer($0.pointer) == normalizedToolPointer(edit.pointer)
+        }) {
+            return applyToolArrayEdit(edit, to: section, lockedPointers: lockedPointers)
+        }
+
         guard let field = field(forToolPointer: edit.pointer) else {
             return rejected(
                 edit,
@@ -107,7 +125,9 @@ public extension FormKitSession {
             )
         }
 
-        guard field.isVisible || includesHiddenToolFields, field.isDisabled == false else {
+        guard field.isVisible || includesHiddenToolFields, field.isDisabled == false,
+              !isUnavailableToolArrayItem(field)
+        else {
             return rejected(
                 edit,
                 reason: "field_not_visible",
@@ -116,7 +136,7 @@ public extension FormKitSession {
         }
 
         let publicPointer = publicToolPointer(for: field.pointer)
-        guard !lockedPointers.contains(normalizedToolPointer(publicPointer)) else {
+        guard !isToolFieldLocked(field, by: lockedPointers) else {
             return rejected(edit, reason: "field_locked", message: "The requested field is locked.")
         }
 
@@ -150,7 +170,8 @@ public extension FormKitSession {
         publicPointer: String
     ) -> ToolEditApplicationOutcome {
         if field.allowsNull {
-            guard primitiveValue(for: field) != .null else {
+            let confirmsDefault = !field.isConditionallyInactive && toolValueSource(for: field) == .defaultValue
+            guard primitiveValue(for: field) != .null || confirmsDefault else {
                 return rejected(edit, reason: "no_change", message: "The field is already empty.")
             }
 
@@ -265,7 +286,7 @@ public extension FormKitSession {
         return appliedSetEdit(for: field, pointer: publicPointer)
     }
 
-    private func rejected(
+    internal func rejected(
         _ edit: FormKitToolEdit,
         reason: String,
         message: String
@@ -292,7 +313,7 @@ public extension FormKitSession {
         )
     }
 
-    private func field(forToolPointer pointer: String) -> FormKitFieldDescriptor? {
+    internal func field(forToolPointer pointer: String) -> FormKitFieldDescriptor? {
         let normalizedPointer = normalizedToolPointer(pointer)
         return renderPlan.fields.first {
             ($0.isVisible || includesHiddenToolFields) && normalizedToolPointer($0.pointer) == normalizedPointer
@@ -347,34 +368,11 @@ public extension FormKitSession {
         return Array(NSOrderedSet(array: messages)) as? [String] ?? messages
     }
 
-    private func toolSummary(
-        for fields: [FormKitToolField],
-        currentValues: [String: FormKitJSONValue]
-    ) -> String {
-        let arrayItemPointers = Set(orderedFields.filter(isDynamicOptionsArrayItem)
-            .map(\.pointer).map(publicToolPointer(for:)))
-        let missingRequiredTitles = fields.compactMap { field -> String? in
-            guard field.isVisible, field.isRequired, !arrayItemPointers.contains(field.pointer) else {
-                return nil
-            }
-            if case .string(let value) = currentValues[field.pointer],
-               value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-               self.field(forToolPointer: field.pointer).map({ !preservesDynamicOptionID(for: $0) }) ?? true
-            {
-                return field.title
-            }
-            return currentValues[field.pointer] == nil ? field.title : nil
-        } + missingDynamicOptionsArrays(in: makeInstanceJSONValue()).map(qualifiedTitle(for:))
-        return missingRequiredTitles.isEmpty
-            ? "All currently visible required fields are filled."
-            : "Missing required fields: \(missingRequiredTitles.joined(separator: ", "))."
-    }
-
-    private func publicToolPointer(for pointer: String) -> String {
+    internal func publicToolPointer(for pointer: String) -> String {
         normalizedToolPointer(pointer)
     }
 
-    private func normalizedToolPointer(_ pointer: String) -> String {
+    internal func normalizedToolPointer(_ pointer: String) -> String {
         let trimmed = pointer.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.hasPrefix("#") {
             return String(trimmed.dropFirst())
